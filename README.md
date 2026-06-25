@@ -30,7 +30,10 @@
 # 构建本地开发镜像（包含 cvat/server:dev 和 cvat/ui:dev）
 docker compose -f docker-compose.yml -f docker-compose.dev.yml build
 
-# 启动本地服务
+# 启动本地服务（推荐用于本机试用，不占用宿主机 PostgreSQL 5432 端口）
+docker compose -f docker-compose.yml up -d
+
+# 如需开发调试端口，可叠加开发配置；该模式会额外暴露 PostgreSQL、Redis 等服务端口
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 # 首次部署后创建管理员账号
