@@ -26,11 +26,12 @@ urlpatterns = [
     path("rules", RulesView.as_view(), name="rules"),
 ]
 
-if settings.IAM_TYPE == "BASIC":
+if settings.IAM_TYPE == "BASIC" and settings.CVAT_REGISTRATION_ENABLED:
     urlpatterns += [
         path("register", RegisterViewEx.as_view(), name=BASIC_REGISTER_PATH_NAME),
     ]
 
+if settings.IAM_TYPE == "BASIC":
     password_change_view_kwargs = {}
 
     if "cvat.apps.access_tokens" in settings.INSTALLED_APPS:

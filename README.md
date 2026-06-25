@@ -42,6 +42,8 @@ docker exec -it cvat_server bash -ic 'python3 ~/manage.py createsuperuser'
 
 启动完成后，在浏览器打开 [http://localhost:8080](http://localhost:8080) 访问本地 CVAT。若修改了 `CVAT_HOST`，请使用对应的主机名或域名访问。
 
+默认关闭公开注册，只允许管理员在 [http://localhost:8080/admin/](http://localhost:8080/admin/) 后台添加用户。若需要临时开放注册，可设置环境变量 `CVAT_REGISTRATION_ENABLED=true` 后重启后端服务。
+
 ## What is CVAT Community?
 
 **CVAT Community** is the free, self-hosted open-source edition of [CVAT](https://www.cvat.ai/) — one of
