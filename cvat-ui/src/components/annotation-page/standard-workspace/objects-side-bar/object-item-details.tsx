@@ -52,19 +52,19 @@ const sizeFields: {
         key: 'length',
         type: SizeType.LENGTH,
         label: 'L',
-        tooltip: 'Length along X axis',
+        tooltip: 'X 轴长度',
     },
     {
         key: 'width',
         type: SizeType.WIDTH,
         label: 'W',
-        tooltip: 'Width along Y axis',
+        tooltip: 'Y 轴宽度',
     },
     {
         key: 'height',
         type: SizeType.HEIGHT,
         label: 'H',
-        tooltip: 'Height along Z axis',
+        tooltip: 'Z 轴高度',
     },
 ];
 
@@ -111,7 +111,7 @@ function ItemAttributesComponent(props: Props): JSX.Element | null {
 
     const scoreTag = withScore ? (
         <CVATTooltip
-            title='Consensus score'
+            title='共识分数'
             align={{
                 ...baseTooltipAlign,
                 targetOffset: ['25%', '40%'],
@@ -124,7 +124,7 @@ function ItemAttributesComponent(props: Props): JSX.Element | null {
     ) : null;
     const votesTag = withVotes ? (
         <CVATTooltip
-            title='Number of votes'
+            title='投票数'
             align={{
                 ...baseTooltipAlign,
                 targetOffset: ['40%', '40%'],

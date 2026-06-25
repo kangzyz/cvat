@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Select from 'antd/lib/select';
 import { JobStage, JobState } from 'cvat-core-wrapper';
 import { handleDropdownKeyDown } from 'utils/dropdown-utils';
@@ -13,6 +14,8 @@ interface JobStateSelectorProps {
 }
 
 export function JobStateSelector({ value, onSelect }: Readonly<JobStateSelectorProps>): JSX.Element {
+    const { t } = useTranslation('resources');
+
     return (
         <Select
             className='cvat-job-item-state'
@@ -20,12 +23,12 @@ export function JobStateSelector({ value, onSelect }: Readonly<JobStateSelectorP
             value={value}
             onChange={onSelect}
             onKeyDown={handleDropdownKeyDown}
-            placeholder='Select a state'
+            placeholder={t('jobItem.selectState')}
         >
-            <Select.Option value={JobState.NEW}>{JobState.NEW}</Select.Option>
-            <Select.Option value={JobState.IN_PROGRESS}>{JobState.IN_PROGRESS}</Select.Option>
-            <Select.Option value={JobState.REJECTED}>{JobState.REJECTED}</Select.Option>
-            <Select.Option value={JobState.COMPLETED}>{JobState.COMPLETED}</Select.Option>
+            <Select.Option value={JobState.NEW}>{t('jobState.new')}</Select.Option>
+            <Select.Option value={JobState.IN_PROGRESS}>{t('jobState.inProgress')}</Select.Option>
+            <Select.Option value={JobState.REJECTED}>{t('jobState.rejected')}</Select.Option>
+            <Select.Option value={JobState.COMPLETED}>{t('jobState.completed')}</Select.Option>
         </Select>
     );
 }
@@ -36,6 +39,8 @@ interface JobStageSelectorProps {
 }
 
 export function JobStageSelector({ value, onSelect }: Readonly<JobStageSelectorProps>): JSX.Element {
+    const { t } = useTranslation('resources');
+
     return (
         <Select
             className='cvat-job-item-stage'
@@ -43,16 +48,16 @@ export function JobStageSelector({ value, onSelect }: Readonly<JobStageSelectorP
             value={value}
             onChange={onSelect}
             onKeyDown={handleDropdownKeyDown}
-            placeholder='Select a stage'
+            placeholder={t('jobItem.selectStage')}
         >
             <Select.Option value={JobStage.ANNOTATION}>
-                {JobStage.ANNOTATION}
+                {t('jobStage.annotation')}
             </Select.Option>
             <Select.Option value={JobStage.VALIDATION}>
-                {JobStage.VALIDATION}
+                {t('jobStage.validation')}
             </Select.Option>
             <Select.Option value={JobStage.ACCEPTANCE}>
-                {JobStage.ACCEPTANCE}
+                {t('jobStage.acceptance')}
             </Select.Option>
         </Select>
     );

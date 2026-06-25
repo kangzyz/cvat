@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback, useRef } from 'react';
+import i18n from 'i18n';
 
 import { Attribute, Label, LabelType } from 'cvat-core-wrapper';
 import ObjectMatcher from './object-mapper';
@@ -150,8 +151,8 @@ function LabelsMapperComponent(props: Props): JSX.Element {
             rightData={taskLabels}
             allowManyToOne
             defaultMapping={computeLabelsAutoMapping(modelLabels, taskLabels)}
-            deleteMappingLabel='Remove mapped label'
-            infoMappingLabel='Specify mapping between labels'
+            deleteMappingLabel={i18n.t('qualityReviewModels:models.runner.removeMappedLabel')}
+            infoMappingLabel={i18n.t('qualityReviewModels:models.runner.specifyLabelMapping')}
             containerClassName='cvat-runner-label-mapper'
             rowClassName='cvat-runner-label-mapping-row'
             getObjectName={(object: LabelInterface) => object.name}
@@ -194,8 +195,8 @@ function LabelsMapperComponent(props: Props): JSX.Element {
                                 ) as [AttributeInterface, AttributeInterface][]}
                                 rowClassName='cvat-runner-attribute-mapping-row'
                                 containerClassName='cvat-runner-attribute-mapper'
-                                deleteMappingLabel='Remove mapped attribute'
-                                infoMappingLabel='Specify mapping between label attributes'
+                                deleteMappingLabel={i18n.t('qualityReviewModels:models.runner.removeMappedAttribute')}
+                                infoMappingLabel={i18n.t('qualityReviewModels:models.runner.specifyAttributeMapping')}
                                 getObjectName={(object: AttributeInterface) => object.name}
                                 getObjectColor={() => taskLabel.color}
                                 filterObjects={(
@@ -233,8 +234,8 @@ function LabelsMapperComponent(props: Props): JSX.Element {
                                 )}
                                 rowClassName='cvat-runner-label-mapping-row'
                                 containerClassName='cvat-runner-label-mapper'
-                                deleteMappingLabel='Remove mapped label'
-                                infoMappingLabel='Specify mapping between skeleton sublabels'
+                                deleteMappingLabel={i18n.t('qualityReviewModels:models.runner.removeMappedLabel')}
+                                infoMappingLabel={i18n.t('qualityReviewModels:models.runner.specifySublabelMapping')}
                                 getObjectName={(object: LabelInterface) => object.name}
                                 getObjectColor={(object: LabelInterface) => object.color}
                                 filterObjects={(
@@ -261,8 +262,8 @@ function LabelsMapperComponent(props: Props): JSX.Element {
                                                     ) as [AttributeInterface, AttributeInterface][]}
                                                     rowClassName='cvat-runner-attribute-mapping-row'
                                                     containerClassName='cvat-runner-attribute-mapper'
-                                                    deleteMappingLabel='Remove mapped attribute'
-                                                    infoMappingLabel='Specify mapping between sublabel attributes'
+                                                    deleteMappingLabel={i18n.t('qualityReviewModels:models.runner.removeMappedAttribute')}
+                                                    infoMappingLabel={i18n.t('qualityReviewModels:models.runner.specifySublabelAttributeMapping')}
                                                     getObjectName={(object: AttributeInterface) => object.name}
                                                     getObjectColor={() => taskSublabel.color}
                                                     filterObjects={(

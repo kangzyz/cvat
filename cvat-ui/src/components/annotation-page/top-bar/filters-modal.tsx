@@ -157,7 +157,7 @@ function FiltersModalComponent(): JSX.Element {
             ...AntdConfig,
             fields: {
                 label: {
-                    label: 'Label',
+                    label: '标签',
                     type: 'select',
                     valueSources: ['value'] as 'value'[],
                     fieldSettings: {
@@ -168,79 +168,79 @@ function FiltersModalComponent(): JSX.Element {
                     },
                 },
                 type: {
-                    label: 'Type',
+                    label: '类型',
                     type: 'select',
                     fieldSettings: {
                         listValues: [
-                            { value: 'shape', title: 'Shape' },
-                            { value: 'track', title: 'Track' },
-                            { value: 'tag', title: 'Tag' },
+                            { value: 'shape', title: '形状' },
+                            { value: 'track', title: '轨迹' },
+                            { value: 'tag', title: '标记' },
                         ],
                     },
                 },
                 shape: {
-                    label: 'Shape',
+                    label: '形状',
                     type: 'select',
                     fieldSettings: {
                         listValues: [
-                            { value: 'rectangle', title: 'Rectangle' },
-                            { value: 'points', title: 'Points' },
-                            { value: 'polyline', title: 'Polyline' },
-                            { value: 'polygon', title: 'Polygon' },
-                            { value: 'cuboid', title: 'Cuboid' },
-                            { value: 'ellipse', title: 'Ellipse' },
-                            { value: 'skeleton', title: 'Skeleton' },
-                            { value: 'mask', title: 'Mask' },
+                            { value: 'rectangle', title: '矩形' },
+                            { value: 'points', title: '点' },
+                            { value: 'polyline', title: '折线' },
+                            { value: 'polygon', title: '多边形' },
+                            { value: 'cuboid', title: '长方体' },
+                            { value: 'ellipse', title: '椭圆' },
+                            { value: 'skeleton', title: '骨架' },
+                            { value: 'mask', title: '蒙版' },
                         ],
                     },
                 },
                 occluded: {
-                    label: 'Occluded',
+                    label: '遮挡',
                     type: 'boolean',
                 },
                 width: {
-                    label: 'Width',
+                    label: '宽度',
                     type: 'number',
                     fieldSettings: { min: 0 },
                 },
                 height: {
-                    label: 'Height',
+                    label: '高度',
                     type: 'number',
                     fieldSettings: { min: 0 },
                 },
                 rotation: {
-                    label: 'Rotation',
+                    label: '旋转',
                     type: 'number',
                     fieldSettings: { min: 0 },
                 },
                 objectID: {
-                    label: 'ObjectID',
+                    label: '对象 ID',
                     type: 'number',
                     hideForCompare: true,
                     fieldSettings: { min: 0 },
                 },
                 serverID: {
-                    label: 'ServerID',
+                    label: '服务器 ID',
                     type: 'number',
                     hideForCompare: true,
                     fieldSettings: { min: 0 },
                 },
                 score: {
-                    label: 'Score',
+                    label: '分数',
                     type: 'number',
                     fieldSettings: { min: 0, max: 1 },
                 },
                 votes: {
-                    label: 'Votes',
+                    label: '投票',
                     type: 'number',
                     fieldSettings: { min: 0 },
                 },
                 zOrder: {
-                    label: 'Z order',
+                    label: 'Z 顺序',
                     type: 'number',
                 },
                 attr: {
-                    label: 'Attributes',
+                    label: '属性',
                     type: '!struct',
                     subfields: getAttributesSubfields(labels),
                     fieldSettings: {
@@ -261,7 +261,7 @@ function FiltersModalComponent(): JSX.Element {
             ...AntdConfig,
             fields: {
                 label: {
-                    label: 'Label',
+                    label: '标签',
                     type: 'select',
                     operators: ['select_equals', 'select_any_in'],
                     valueSources: ['value'] as 'value'[],
@@ -270,12 +270,12 @@ function FiltersModalComponent(): JSX.Element {
                     },
                 },
                 occluded: {
-                    label: 'Occluded',
+                    label: '遮挡',
                     type: 'boolean',
                 },
                 ...(Object.keys(keypointAttributesSubfields).length ? {
                     attr: {
-                        label: 'Attributes',
+                        label: '属性',
                         type: '!struct',
                         subfields: keypointAttributesSubfields,
                         fieldSettings: {
@@ -447,15 +447,13 @@ function FiltersModalComponent(): JSX.Element {
                     onClick={() => applyFilters([])}
                     className='cvat-filters-modal-clear-button'
                 >
-                    Clear filters
-                </Button>,
+                    清除筛选</Button>,
                 <Button
                     key='cancel'
                     onClick={() => dispatch(showFilters(false))}
                     className='cvat-filters-modal-cancel-button'
                 >
-                    Cancel
-                </Button>,
+                    取消</Button>,
                 <Button
                     key='submit'
                     type='primary'
@@ -463,8 +461,7 @@ function FiltersModalComponent(): JSX.Element {
                     onClick={confirmModal}
                     className='cvat-filters-modal-submit-button'
                 >
-                    Submit
-                </Button>,
+                    提交</Button>,
             ]}
         >
             <div
@@ -481,15 +478,14 @@ function FiltersModalComponent(): JSX.Element {
                     content={menu}
                 >
                     <Button type='text' className='cvat-filters-modal-recently-used-button'>
-                        Recently used
-                        {' '}
+                        最近使用{' '}
                         <DownOutlined />
                     </Button>
                 </Popover>
             </div>
             {!!config.fields && (
                 <>
-                    <Typography.Text strong>Objects</Typography.Text>
+                    <Typography.Text strong>对象</Typography.Text>
                     <Query
                         {...config}
                         value={immutableTree as ImmutableTree}
@@ -500,7 +496,7 @@ function FiltersModalComponent(): JSX.Element {
             )}
             {!!keypointConfig.fields && (
                 <>
-                    <Typography.Text strong>Elements</Typography.Text>
+                    <Typography.Text strong>元素</Typography.Text>
                     <Query
                         {...keypointConfig}
                         value={keypointImmutableTree as ImmutableTree}

@@ -9,6 +9,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import Tag from 'antd/lib/tag';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 import { Issue } from 'cvat-core-wrapper';
 import CVATTooltip from 'components/common/cvat-tooltip';
@@ -26,6 +27,7 @@ interface Props {
 }
 
 export default function HiddenIssueLabel(props: Props): ReactPortal {
+    const { t } = useTranslation('qualityReviewModels');
     const {
         issue, top, left, angle, scale, resolved, onClick, highlight, blur,
     } = props;
@@ -63,7 +65,7 @@ export default function HiddenIssueLabel(props: Props): ReactPortal {
 
     const elementID = `cvat-hidden-issue-label-${id}`;
     return ReactDOM.createPortal(
-        <CVATTooltip title={comments[0]?.message || 'No comments found'}>
+        <CVATTooltip title={comments[0]?.message || t('review.noComments')}>
             <Tag
                 ref={ref}
                 id={elementID}

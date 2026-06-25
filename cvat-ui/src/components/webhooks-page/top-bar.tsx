@@ -59,7 +59,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                                 }}
                                 defaultValue={query.search ?? ''}
                                 className='cvat-webhooks-page-search-bar'
-                                placeholder='Search ...'
+                                placeholder='搜索...'
                             />
                             <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                         </div>

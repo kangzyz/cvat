@@ -71,7 +71,7 @@ function LayerHeader(props: LayerHeaderProps): JSX.Element {
                         onClick={(): void => selectLayer(zOrder)}
                     />
                 </CVATTooltip>
-                <CVATTooltip title='Drag layer'>
+                <CVATTooltip title='拖动图层'>
                     <Button
                         {...attributes}
                         {...listeners}

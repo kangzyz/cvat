@@ -19,8 +19,8 @@ import { SaveIcon } from 'icons';
 
 const componentShortcuts = {
     SAVE_JOB: {
-        name: 'Save the job',
-        description: 'Submit unsaved changes of annotations to the server',
+        name: '保存作业',
+        description: '将未保存的标注更改提交到服务器',
         sequences: ['ctrl+s'],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
@@ -48,7 +48,7 @@ function SaveAnnotationsButton() {
     return (
         <>
             <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
-            <CVATTooltip overlay={`Save current changes ${normKeyMap.SAVE_JOB}`}>
+            <CVATTooltip overlay={`保存当前更改 ${normKeyMap.SAVE_JOB}`}>
                 <Button
                     type='link'
                     onClick={isSaving ? undefined : () => dispatch(saveAnnotationsAsync())}

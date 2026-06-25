@@ -5,6 +5,7 @@
 import React, {
     MouseEvent, useEffect, useState, useRef, useCallback,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import Breadcrumb from 'antd/lib/breadcrumb';
 import Button from 'antd/lib/button';
 import Pagination from 'antd/lib/pagination';
@@ -120,6 +121,7 @@ function RemoteBrowser(props: Props): JSX.Element {
     const {
         resource, manifestPath, defaultPrefix, onSelectFiles,
     } = props;
+    const { t } = useTranslation('forms');
 
     const pathFromDefPrefix = prefixToPath(defaultPrefix);
 
@@ -203,7 +205,7 @@ function RemoteBrowser(props: Props): JSX.Element {
             } catch (error: any) {
                 if (isRelevant()) {
                     notification.error({
-                        message: 'Storage content fetching failed',
+                        message: t('notifications.fetchStorageContentFailed'),
                         description: error.toString(),
                     });
                 }
@@ -296,7 +298,7 @@ function RemoteBrowser(props: Props): JSX.Element {
 
     const columns = [
         {
-            title: 'Name',
+            title: t('fileManager.nameColumn'),
             dataIndex: 'name',
             key: 'name',
             render: (name: string, node: Node) => {
@@ -330,11 +332,12 @@ function RemoteBrowser(props: Props): JSX.Element {
             <>
                 <Empty />
                 <Paragraph className='cvat-remote-browser-empty'>
-                    Please, be sure you had
+                    {t('help.mountShareBeforeBuild')}
+                    {' '}
                     <Text strong>
-                        <a href={SHARE_MOUNT_GUIDE_URL}> mounted </a>
+                        <a href={SHARE_MOUNT_GUIDE_URL}> {t('fileManager.mounted')} </a>
                     </Text>
-                    share before you built CVAT and the shared storage contains files
+                    {t('help.mountShareAfterBuild')}
                 </Paragraph>
             </>
         );
@@ -364,12 +367,12 @@ function RemoteBrowser(props: Props): JSX.Element {
                     <Input
                         addonBefore={<SearchOutlined />}
                         suffix={resource !== 'share' && !!resource.prefix && (
-                            <CVATTooltip title={`Default prefix "${resource.prefix}" is used`}>
+                            <CVATTooltip title={t('help.defaultPrefixUsed', { prefix: resource.prefix })}>
                                 <InfoCircleOutlined style={{ opacity: 0.5 }} />
                             </CVATTooltip>
                         )}
                         disabled={isFetching}
-                        placeholder='Search by prefix'
+                        placeholder={t('placeholders.searchByPrefix')}
                         value={curSearchString}
                         onBlur={() => resetDataSource()}
                         onPressEnter={() => resetDataSource()}
@@ -379,7 +382,7 @@ function RemoteBrowser(props: Props): JSX.Element {
                     />
                 </Col>
                 <Col>
-                    <CVATTooltip title='Refresh'>
+                    <CVATTooltip title={t('help.refresh')}>
                         <Button
                             disabled={isFetching}
                             onClick={() => {
@@ -403,7 +406,7 @@ function RemoteBrowser(props: Props): JSX.Element {
                             message={(
                                 <>
                                     <Text>
-                                        There is no intersection between the specified prefix and the default one
+                                        {t('fileManager.noPrefixIntersection')}
                                     </Text>
                                     <Text strong>{` "${defaultPrefix}". `}</Text>
                                 </>

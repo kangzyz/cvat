@@ -176,9 +176,9 @@ function MemberActionsMenu(props: Readonly<MemberActionsMenuProps>): JSX.Element
                     } else if (action.key === 'remove_member') {
                         Modal.confirm({
                             className: 'cvat-modal-organization-member-remove',
-                            title: `You are removing "${username}" from this organization`,
-                            content: 'The person will not have access to the organization data anymore. Continue?',
-                            okText: 'Yes, remove',
+                            title: `你正在将“${username}”从此组织中移除`,
+                            content: '该用户将无法再访问组织数据。是否继续？',
+                            okText: '是，移除',
                             okButtonProps: {
                                 danger: true,
                             },

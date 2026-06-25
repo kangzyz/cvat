@@ -127,7 +127,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 detail: {
                     domain,
                     exception: exception instanceof Error ?
-                        exception : new Error(`Unknown exception: "${exception}"`),
+                        exception : new Error(`未知异常：“${exception}”`),
                 },
             }),
         );
@@ -550,14 +550,13 @@ export class CanvasViewImpl implements CanvasView, Listener {
             if (selfIntersectingIndices.length > 0) {
                 const excludedIds = selfIntersectingIndices.map((idx) => objects[idx].clientID).join(', ');
                 this.onWarning(
-                    `${selfIntersectingIndices.length} self-intersecting polygon${selfIntersectingIndices.length > 1 ? 's' : ''} excluded from merge ` +
-                    `(IDs: ${excludedIds}).`,
-                    'Join operation',
+                    `已从合并中排除 ${selfIntersectingIndices.length} 个自相交多边形（ID：${excludedIds}）。`,
+                    '合并操作',
                 );
             }
 
             if (validObjects.length < 2) {
-                throw new Error('Cannot join: not enough valid polygons (need at least 2 non-self-intersecting polygons)');
+                throw new Error('无法合并：有效多边形不足（至少需要 2 个非自相交多边形）');
             }
 
             // Convert CVAT polygon format to martinez format
@@ -586,12 +585,12 @@ export class CanvasViewImpl implements CanvasView, Listener {
             for (let i = 1; i < polygons.length; i += 1) {
                 result = martinez.union(result, polygons[i]);
                 if (!result) {
-                    throw new Error('Union operation failed - polygons may be invalid');
+                    throw new Error('合并操作失败，多边形可能无效');
                 }
             }
 
             if (!result || result.length === 0) {
-                throw new Error('Union operation resulted in empty polygon');
+                throw new Error('合并操作生成了空多边形');
             }
 
             validateUnionResult(result);
@@ -601,8 +600,8 @@ export class CanvasViewImpl implements CanvasView, Listener {
             // Show warning if merge resulted in multiple disjoint polygons
             if (processedResults.length > 1) {
                 this.onWarning(
-                    `Merge resulted in ${processedResults.length} separate polygons.`,
-                    'Join operation',
+                    `合并结果包含 ${processedResults.length} 个分离的多边形。`,
+                    '合并操作',
                 );
             }
 
@@ -1269,7 +1268,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             }
 
             const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-            title.textContent = 'Hold Shift to snap angle';
+            title.textContent = '按住 Shift 吸附角度';
             rotationPoint.appendChild(title);
         }
 
@@ -2104,9 +2103,9 @@ export class CanvasViewImpl implements CanvasView, Listener {
                     canvasContext.textAlign = 'center';
                     canvasContext.lineWidth = fontSize / 20;
                     canvasContext.strokeStyle = 'white';
-                    canvasContext.strokeText('IMAGE REMOVED', width / 2, height / 2);
+                    canvasContext.strokeText('图像已移除', width / 2, height / 2);
                     canvasContext.fillStyle = 'black';
-                    canvasContext.fillText('IMAGE REMOVED', width / 2, height / 2);
+                    canvasContext.fillText('图像已移除', width / 2, height / 2);
                 } else if (this.background.classList.contains('cvat_canvas_removed_image')) {
                     this.background.classList.remove('cvat_canvas_removed_image');
                 }
@@ -2316,7 +2315,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
                 this.onMessage([{
                     type: 'text',
                     icon: 'info',
-                    content: 'Click polygons or masks you would like to join together. To unselect click selected shape one more time',
+                    content: '点击要合并的多边形或蒙版。若要取消选择，请再次点击已选形状',
                 }], 'join');
 
                 this.groupHandler.group(data, {
@@ -2382,7 +2381,7 @@ export class CanvasViewImpl implements CanvasView, Listener {
             this.canvas.style.cursor = '';
             this.dispatchCanceledEvent();
         } else if (reason === UpdateReasons.DATA_FAILED) {
-            this.onError(model.exception, 'data fetching');
+            this.onError(model.exception, '数据获取');
         } else if (reason === UpdateReasons.DESTROY) {
             this.canvas.dispatchEvent(
                 new CustomEvent('canvas.destroy', {

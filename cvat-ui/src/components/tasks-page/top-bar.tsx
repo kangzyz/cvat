@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 
@@ -51,9 +52,23 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
         importing, query, onApplyFilter, onApplySorting, onApplySearch,
         selectedCount, onSelectAll,
     } = props;
+    const { t } = useTranslation('resources');
     const [visibility, setVisibility] = useState(defaultVisibility);
     const history = useHistory();
     const prevImporting = usePrevious(importing);
+    const sortingFieldLabels = {
+        ID: t('fields.id'),
+        Owner: t('fields.owner'),
+        Status: t('fields.status'),
+        Assignee: t('fields.assignee'),
+        'Updated date': t('fields.updatedDate'),
+        Subset: t('fields.subset'),
+        Mode: t('fields.mode'),
+        Dimension: t('fields.dimension'),
+        'Project ID': t('fields.projectId'),
+        Name: t('fields.name'),
+        'Project name': t('fields.projectName'),
+    };
 
     useEffect(() => {
         if (prevImporting && !importing) {
@@ -73,7 +88,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                             }}
                             defaultValue={query.search ?? ''}
                             className='cvat-tasks-page-search-bar'
-                            placeholder='Search ...'
+                            placeholder={t('search.placeholder')}
                         />
                         <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                     </div>
@@ -84,6 +99,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                                 setVisibility({ ...defaultVisibility, sorting: visible })
                             )}
                             defaultFields={query.sort?.split(',') || ['-ID']}
+                            sortingFieldLabels={sortingFieldLabels}
                             sortingFields={['ID', 'Owner', 'Status', 'Assignee', 'Updated date', 'Subset',
                                 'Mode', 'Dimension', 'Project ID', 'Name', 'Project name']}
                             onApplySorting={onApplySorting}
@@ -120,7 +136,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                                     onClick={(): void => history.push('/tasks/create')}
                                     icon={<PlusOutlined />}
                                 >
-                                    Create a new task
+                                    {t('actions.createNewTask')}
                                 </Button>
                                 <Button
                                     className='cvat-create-audio-task-button'
@@ -128,7 +144,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                                     onClick={(): void => history.push('/tasks/create?type=audio')}
                                     icon={<SoundOutlined />}
                                 >
-                                    Create a new audio task
+                                    {t('actions.createNewAudioTask')}
                                 </Button>
                                 <Button
                                     className='cvat-create-multi-tasks-button'
@@ -136,7 +152,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                                     onClick={(): void => history.push('/tasks/create?many=true')}
                                     icon={<span className='anticon'><MultiPlusIcon /></span>}
                                 >
-                                    Create multi tasks
+                                    {t('actions.createMultiTasks')}
                                 </Button>
                                 <Button
                                     className='cvat-import-task-button'
@@ -145,7 +161,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                                     icon={importing ? <LoadingOutlined /> : <UploadOutlined />}
                                     onClick={() => dispatch(importActions.openImportBackupModal('task'))}
                                 >
-                                    Create from backup
+                                    {t('actions.createFromBackup')}
                                 </Button>
                             </CvatDropdownMenuPaper>
                         )}

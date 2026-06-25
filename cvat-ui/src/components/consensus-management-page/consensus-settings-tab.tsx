@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Text from 'antd/lib/typography/Text';
 import Form from 'antd/lib/form';
 import notification from 'antd/lib/notification';
@@ -23,6 +24,7 @@ function ConsensusSettingsTab(props: Readonly<Props>): JSX.Element | null {
         settings,
         setSettings,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
 
     const [form] = Form.useForm();
     const onSave = useCallback(async () => {
@@ -31,7 +33,7 @@ function ConsensusSettingsTab(props: Readonly<Props>): JSX.Element | null {
             setSettings(values);
         } catch (error) {
             notification.error({
-                message: 'Could not save consensus settings',
+                message: t('consensus.couldNotSaveSettings'),
                 description: formFieldsError(error).map((text: string): JSX.Element => <div>{text}</div>),
                 className: 'cvat-notification-save-consensus-settings-failed',
             });
@@ -56,7 +58,7 @@ function ConsensusSettingsTab(props: Readonly<Props>): JSX.Element | null {
                     settings={settings}
                     onSave={onSave}
                 />
-            ) : <Text>No consensus settings found</Text> }
+            ) : <Text>{t('consensus.noSettings')}</Text> }
         </div>
     );
 }

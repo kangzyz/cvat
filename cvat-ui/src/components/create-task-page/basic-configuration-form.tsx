@@ -9,6 +9,7 @@ import Text from 'antd/lib/typography/Text';
 import Tooltip from 'antd/lib/tooltip';
 import Form, { FormInstance } from 'antd/lib/form';
 import { QuestionCircleOutlined } from '@ant-design/icons';
+import i18n from 'i18n';
 
 export interface BaseConfiguration {
     name: string;
@@ -55,7 +56,7 @@ export default class BasicConfigurationForm extends React.PureComponent<Props> {
             return this.formRef.current.validateFields();
         }
 
-        return Promise.reject(new Error('Form ref is empty'));
+        return Promise.reject(new Error(i18n.t('forms:validation.formRefEmpty')));
     }
 
     public resetFields(): void {
@@ -79,11 +80,11 @@ export default class BasicConfigurationForm extends React.PureComponent<Props> {
                     className={many ? 'cvat-task-name-field-has-tooltip' : ''}
                     hasFeedback
                     name='name'
-                    label={<span>Name</span>}
+                    label={<span>{i18n.t('forms:fields.name')}</span>}
                     rules={[
                         {
                             required: true,
-                            message: 'Task name cannot be empty',
+                            message: i18n.t('forms:validation.taskNameRequired'),
                         },
                     ]}
                     initialValue={this.initialName}
@@ -97,32 +98,33 @@ export default class BasicConfigurationForm extends React.PureComponent<Props> {
                     <Text type='secondary'>
                         <Tooltip title={() => (
                             <>
-                                You can use in the template:
+                                {i18n.t('forms:help.templateIntro')}
                                 <ul>
                                     <li>
-                                        some_text - any text
+                                        {i18n.t('forms:help.templateAnyText')}
                                     </li>
                                     <li>
                                         {'{{'}
-                                        index
+                                        {'index'}
                                         {'}}'}
-                                        &nbsp;- index file in set
+                                        &nbsp;{i18n.t('forms:help.templateIndex')}
                                     </li>
                                     <li>
                                         {'{{'}
                                         file_name
                                         {'}}'}
-                                        &nbsp;- name of file
+                                        &nbsp;{i18n.t('forms:help.templateFileName')}
                                     </li>
                                 </ul>
-                                Example:&nbsp;
+                                {i18n.t('forms:help.templateExample')}
+                                &nbsp;
                                 <i>
-                                    {exampleMultiTaskName || 'Task name 1 - video_1.mp4'}
+                                    {exampleMultiTaskName || i18n.t('forms:help.templateExampleName')}
                                 </i>
                             </>
                         )}
                         >
-                            When forming the name, a template is used.
+                            {i18n.t('forms:help.taskNameTemplateUsed')}
                             {' '}
                             <QuestionCircleOutlined />
                         </Tooltip>

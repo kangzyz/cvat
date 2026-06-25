@@ -5,6 +5,7 @@
 import React from 'react';
 import { SoundOutlined } from '@ant-design/icons';
 
+import i18n from 'i18n';
 import AudioSliderControl from './audio-slider-control';
 
 export interface Props {
@@ -18,7 +19,7 @@ function VolumeControl(props: Props): JSX.Element {
     return (
         <AudioSliderControl
             icon={<SoundOutlined />}
-            tooltip='Volume'
+            tooltip={i18n.t('audioPlugins:audio.controls.volume')}
             value={volume}
             min={0}
             max={1}

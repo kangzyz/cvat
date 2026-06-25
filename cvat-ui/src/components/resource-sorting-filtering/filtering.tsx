@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Builder, Config, AntdConfig, ImmutableTree, Query, Utils as QbUtils,
 } from '@react-awesome-query-builder/antd';
@@ -137,6 +138,7 @@ export default function ResourceFilterHOC(
             disabled,
         } = props;
 
+        const { t } = useTranslation('common');
         const user = useSelector((state: CombinedState) => state.auth.user);
         const [isMounted, setIsMounted] = useState<boolean>(false);
         const [recentFilters, setRecentFilters] = useState<Record<string, string>>({});
@@ -271,7 +273,7 @@ export default function ResourceFilterHOC(
                                 type='default'
                                 onClick={() => onPredefinedVisibleChange(!predefinedVisible)}
                             >
-                                Quick filters
+                                {t('filters.quickFilters')}
                                 { appliedFilter.predefined ?
                                     <FilterFilled /> :
                                     <FilterOutlined />}
@@ -332,7 +334,7 @@ export default function ResourceFilterHOC(
                                             () => onRecentVisibleChange(!recentVisible)
                                         }
                                     >
-                                        Recent
+                                        {t('filters.recent')}
                                         <DownOutlined />
                                     </Button>
                                 </Popover>
@@ -360,7 +362,7 @@ export default function ResourceFilterHOC(
                                         });
                                     }}
                                 >
-                                    Reset
+                                    {t('actions.reset')}
                                 </Button>
                                 <Button
                                     className='cvat-apply-filters-button'
@@ -379,7 +381,7 @@ export default function ResourceFilterHOC(
                                         });
                                     }}
                                 >
-                                    Apply
+                                    {t('actions.apply')}
                                 </Button>
                             </Space>
                         </div>
@@ -391,7 +393,7 @@ export default function ResourceFilterHOC(
                         type='default'
                         onClick={() => onBuilderVisibleChange(!builderVisible)}
                     >
-                        Filter
+                        {t('filters.filter')}
                         { appliedFilter.built || appliedFilter.recent ?
                             <FilterFilled /> :
                             <FilterOutlined />}
@@ -404,7 +406,7 @@ export default function ResourceFilterHOC(
                     type='link'
                     onClick={() => { setAppliedFilter({ ...defaultAppliedFilter }); }}
                 >
-                    Clear filters
+                    {t('filters.clearFilters')}
                 </Button>
             </div>
         );

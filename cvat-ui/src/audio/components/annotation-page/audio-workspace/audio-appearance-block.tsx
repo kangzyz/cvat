@@ -10,6 +10,7 @@ import Radio, { RadioChangeEvent } from 'antd/lib/radio';
 import Slider from 'antd/lib/slider';
 import Collapse from 'antd/lib/collapse';
 
+import i18n from 'i18n';
 import { ColorBy, CombinedState } from 'reducers';
 import { collapseAppearance as collapseAppearanceAction } from 'actions/annotation-actions';
 import {
@@ -24,8 +25,8 @@ import { subKeyMap } from 'utils/component-subkeymap';
 
 const componentShortcuts = {
     SWITCH_COLOR_BY_APPEARANCE_AUDIO: {
-        name: 'Switch objects appearance setting "Color by" (audio)',
-        description: 'Audio region color mode may be by label or instance',
+        name: i18n.t('audioPlugins:audio.appearance.switchColorByName'),
+        description: i18n.t('audioPlugins:audio.appearance.colorModeDescription'),
         sequences: [],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
@@ -86,6 +87,11 @@ function mapDispatchToProps(dispatch: Dispatch<AnyAction>): DispatchToProps {
 type Props = StateToProps & DispatchToProps;
 
 const colorByOptions = [ColorBy.LABEL, ColorBy.INSTANCE];
+const colorByLabels: Record<ColorBy, string> = {
+    [ColorBy.LABEL]: i18n.t('audioPlugins:colorBy.Label'),
+    [ColorBy.INSTANCE]: i18n.t('audioPlugins:colorBy.Instance'),
+    [ColorBy.GROUP]: i18n.t('audioPlugins:colorBy.Group'),
+};
 
 const nextColorBy: Record<ColorBy, ColorBy> = {
     [ColorBy.LABEL]: ColorBy.INSTANCE,
@@ -123,24 +129,24 @@ function AudioAppearanceBlock(props: Props): JSX.Element {
             items={[{
                 label: (
                     <Text strong className='cvat-objects-appearance-collapse-header'>
-                        Appearance
+                        {i18n.t('audioPlugins:audio.appearance.title')}
                     </Text>
                 ),
                 key: 'appearance',
                 children: (
                     <div className='cvat-objects-appearance-content cvat-appearance-block'>
                         <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
-                        <Text type='secondary'>Color by</Text>
+                        <Text type='secondary'>{i18n.t('audioPlugins:audio.appearance.colorBy')}</Text>
                         <Radio.Group
                             className='cvat-appearance-color-by-radio-group'
                             value={effectiveColorBy}
                             onChange={(event: RadioChangeEvent) => changeShapesColorBy(event.target.value)}
                         >
                             {colorByOptions.map((val) => (
-                                <Radio.Button value={val} key={val}>{val}</Radio.Button>
+                                <Radio.Button value={val} key={val}>{colorByLabels[val]}</Radio.Button>
                             ))}
                         </Radio.Group>
-                        <Text type='secondary'>Opacity</Text>
+                        <Text type='secondary'>{i18n.t('audioPlugins:audio.appearance.opacity')}</Text>
                         <Slider
                             className='cvat-appearance-opacity-slider'
                             onChange={changeShapesOpacity}
@@ -148,7 +154,7 @@ function AudioAppearanceBlock(props: Props): JSX.Element {
                             min={0}
                             max={100}
                         />
-                        <Text type='secondary'>Selected opacity</Text>
+                        <Text type='secondary'>{i18n.t('audioPlugins:audio.appearance.selectedOpacity')}</Text>
                         <Slider
                             className='cvat-appearance-selected-opacity-slider'
                             onChange={changeSelectedShapesOpacity}

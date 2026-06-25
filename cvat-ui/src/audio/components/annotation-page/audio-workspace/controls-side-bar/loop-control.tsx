@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import { RetweetOutlined } from '@ant-design/icons';
 
 import { CombinedState } from 'reducers';
+import i18n from 'i18n';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import GlobalHotKeys from 'utils/mousetrap-react';
 import { ShortcutScope } from 'utils/enums';
@@ -20,8 +21,8 @@ export interface Props {
 
 const componentShortcuts = {
     TOGGLE_AUDIO_LOOP: {
-        name: 'Toggle interval loop playback',
-        description: 'Toggle loop playback for the active audio interval',
+        name: i18n.t('audioPlugins:audio.controls.toggleLoopName'),
+        description: i18n.t('audioPlugins:audio.controls.toggleLoopDescription'),
         sequences: ['r'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
@@ -50,7 +51,12 @@ function LoopControl(props: Props): JSX.Element {
                 keyMap={subKeyMap(componentShortcuts, keyMap)}
                 handlers={handlers}
             />
-            <CVATTooltip title={`Loop interval playback${loop ? ' (on)' : ''} (R)`} placement='right'>
+            <CVATTooltip
+                title={i18n.t('audioPlugins:audio.controls.loopPlayback', {
+                    state: loop ? i18n.t('audioPlugins:audio.controls.loopOn') : '',
+                })}
+                placement='right'
+            >
                 <RetweetOutlined
                     className={
                         loop ?

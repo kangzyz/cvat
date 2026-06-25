@@ -527,11 +527,11 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public selectRegion(enable: boolean): void {
         if (enable && this.data.mode !== Mode.IDLE) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (!enable && this.data.mode !== Mode.SELECT_REGION) {
-            throw Error(`Canvas is not in the region selecting mode. Action: ${this.data.mode}`);
+            throw Error(`画布不在区域选择模式。当前操作：${this.data.mode}`);
         }
 
         this.data.mode = enable ? Mode.SELECT_REGION : Mode.IDLE;
@@ -540,11 +540,11 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public dragCanvas(enable: boolean): void {
         if (enable && this.data.mode !== Mode.IDLE) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (!enable && this.data.mode !== Mode.DRAG_CANVAS) {
-            throw Error(`Canvas is not in the drag mode. Action: ${this.data.mode}`);
+            throw Error(`画布不在拖拽模式。当前操作：${this.data.mode}`);
         }
 
         this.data.mode = enable ? Mode.DRAG_CANVAS : Mode.IDLE;
@@ -553,11 +553,11 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public zoomCanvas(enable: boolean): void {
         if (enable && this.data.mode !== Mode.IDLE) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (!enable && this.data.mode !== Mode.ZOOM_CANVAS) {
-            throw Error(`Canvas is not in the zoom mode. Action: ${this.data.mode}`);
+            throw Error(`画布不在缩放模式。当前操作：${this.data.mode}`);
         }
 
         this.data.mode = enable ? Mode.ZOOM_CANVAS : Mode.IDLE;
@@ -569,7 +569,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
     }): void {
         if (this.data.imageID !== frameData.number) {
             if ([Mode.EDIT, Mode.DRAG, Mode.RESIZE].includes(this.data.mode)) {
-                throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+                throw Error(`画布正忙。当前操作：${this.data.mode}`);
             }
         }
         if (frameData.number === this.data.imageID &&
@@ -651,7 +651,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
                     if (exception instanceof Error) {
                         this.data.exception = exception;
                     } else {
-                        this.data.exception = new Error('Unknown error occurred when fetching image data');
+                        this.data.exception = new Error('获取图像数据时发生未知错误');
                     }
                     this.notify(UpdateReasons.DATA_FAILED);
                 }
@@ -669,7 +669,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
         }
 
         if (this.data.mode !== Mode.IDLE && clientID !== null) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (typeof clientID === 'number') {
@@ -767,27 +767,27 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
             'rectangle', 'polygon', 'polyline', 'points', 'ellipse', 'cuboid', 'skeleton', 'mask',
         ];
         if (![Mode.IDLE, Mode.DRAW].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (drawData.enabled) {
             if (drawData.shapeType === 'skeleton' && !drawData.skeletonSVG) {
-                throw new Error('Skeleton template must be specified when drawing a skeleton');
+                throw new Error('绘制骨架时必须指定骨架模板');
             }
 
             if (!drawData.shapeType && !drawData.initialState) {
-                throw new Error('A shape type is not specified');
+                throw new Error('未指定形状类型');
             }
 
             if (drawData.shapeType && !supportedShapes.includes(drawData.shapeType)) {
-                throw new Error(`Drawing method for type "${drawData.shapeType}" is not implemented`);
+                throw new Error(`类型“${drawData.shapeType}”的绘制方法尚未实现`);
             }
 
             if (typeof drawData.numberOfPoints !== 'undefined') {
                 if (drawData.shapeType === 'polygon' && drawData.numberOfPoints < 3) {
-                    throw new Error('A polygon consists of at least 3 points');
+                    throw new Error('多边形至少由 3 个点组成');
                 } else if (drawData.shapeType === 'polyline' && drawData.numberOfPoints < 2) {
-                    throw new Error('A polyline consists of at least 2 points');
+                    throw new Error('折线至少由 2 个点组成');
                 }
             }
         }
@@ -829,17 +829,17 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public edit(editData: MasksEditData | PolyEditData): void {
         if (![Mode.IDLE, Mode.EDIT].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (editData.enabled && !editData.state) {
-            throw Error('State must be specified when call edit() editing process');
+            throw Error('调用 edit() 编辑流程时必须指定状态');
         }
 
         if (this.data.editData.enabled && editData.enabled &&
             editData.state.clientID !== this.data.editData.state.clientID
         ) {
-            throw Error('State cannot be updated during editing, need to finish current editing first');
+            throw Error('编辑过程中不能更新状态，需要先完成当前编辑');
         }
 
         if (editData.enabled) {
@@ -856,7 +856,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public interact(interactionData: InteractionData): void {
         if (![Mode.IDLE, Mode.INTERACT].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         this.data.interactionData = interactionData;
@@ -865,7 +865,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public split(splitData: SplitData): void {
         if (![Mode.IDLE, Mode.SPLIT].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if ((this.data.splitData.enabled && splitData.enabled) || (
@@ -880,7 +880,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public group(groupData: GroupData): void {
         if (![Mode.IDLE, Mode.GROUP].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if ((this.data.groupData.enabled && groupData.enabled) || (
@@ -895,7 +895,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public join(joinData: JoinData): void {
         if (![Mode.IDLE, Mode.JOIN].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if ((this.data.joinData.enabled && joinData.enabled) || (
@@ -910,7 +910,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public slice(sliceData: SliceData): void {
         if (![Mode.IDLE, Mode.SLICE].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if ((this.data.sliceData.enabled && sliceData.enabled) || (
@@ -920,7 +920,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
         }
 
         if (sliceData.enabled && !sliceData.getContour) {
-            throw Error('Contours computing method was not provided');
+            throw Error('未提供轮廓计算方法');
         }
 
         this.data.sliceData = { ...sliceData };
@@ -929,7 +929,7 @@ export class CanvasModelImpl extends MasterImpl implements CanvasModel {
 
     public merge(mergeData: MergeData): void {
         if (![Mode.IDLE, Mode.MERGE].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if ((this.data.mergeData.enabled && mergeData.enabled) || (

@@ -1,0 +1,119 @@
+{
+    "about": {
+        "whatsNew": "最新变化",
+        "license": "MIT 许可证",
+        "discord": "在 Discord 上找到我们",
+        "serverVersion": "服务器版本：",
+        "uiVersion": "UI 版本：",
+        "repositoryTooltip": "点击打开代码仓库",
+        "guideTooltip": "点击打开指南"
+    },
+    "navigation": {
+        "projects": "项目",
+        "tasks": "任务",
+        "jobs": "作业",
+        "cloudStorages": "云存储",
+        "requests": "请求",
+        "models": "模型",
+        "analytics": "分析"
+    },
+    "shortcuts": {
+        "showShortcutsName": "显示快捷键",
+        "showShortcutsDescription": "打开或隐藏可用快捷键列表",
+        "showSettingsName": "显示设置",
+        "showSettingsDescription": "打开或隐藏设置对话框",
+        "restoreDefaultsConfirm": "确定要恢复默认设置吗？",
+        "searchPlaceholder": "在此搜索快捷键...",
+        "restoreDefaults": "恢复默认值",
+        "modifierHint": "快捷键可以由任意修饰键组合（alt、ctrl 或 shift）加末尾一个非修饰键组成。某些按键组合可能被浏览器保留，无法在 CVAT 中覆盖。",
+        "conflictTitle": "检测到快捷键冲突",
+        "conflictIntro": "新增按键序列与以下快捷键冲突：",
+        "scopePrefix": "所在范围",
+        "unsetConflictsConfirm": "是否取消这些冲突快捷键？",
+        "invalidCombinationTitle": "无效按键组合",
+        "invalidCombinationDescription": "一个组合中只能使用一个非修饰键",
+        "registerPlaceholder": "注册快捷键..."
+    },
+    "settings": {
+        "adminPage": "管理页面",
+        "profile": "个人资料",
+        "organization": "组织",
+        "organizationSettings": "设置",
+        "invitations": "邀请",
+        "create": "创建",
+        "switchOrganization": "切换组织",
+        "personalWorkspace": "个人工作区",
+        "settings": "设置",
+        "settingsShortcutTitle": "按 {{shortcut}} 切换",
+        "about": "关于",
+        "logout": "退出登录",
+        "loadFailed": "无法从本地存储加载设置",
+        "close": "关闭",
+        "tabs": {
+            "player": "播放器",
+            "workspace": "工作区",
+            "shortcuts": "快捷键"
+        }
+    },
+    "player": {
+        "step": "播放器步长",
+        "stepDescriptionBefore": "选择",
+        "stepDescriptionAfter": "时跳过的帧数",
+        "or": "或",
+        "speed": "播放速度",
+        "speedOptions": {
+            "fastest": "最快",
+            "fast": "快速",
+            "usual": "普通",
+            "slow": "慢速",
+            "slower": "较慢",
+            "slowest": "最慢"
+        },
+        "selectCanvasBackgroundColor": "选择画布背景色",
+        "resetZoom": "重置缩放",
+        "resetZoomDescription": "切换帧后适配图像",
+        "rotateAllImages": "旋转所有图像",
+        "rotateAllImagesDescription": "同时旋转所有图像",
+        "smoothImage": "平滑图像",
+        "smoothImageDescription": "放大图像时进行平滑处理",
+        "showDeletedFrames": "显示已删除帧",
+        "showDeletedFramesDescription": "你将能够导航到已删除帧并恢复它们"
+    },
+    "workspace": {
+        "enableAutoSave": "启用自动保存",
+        "autoSaveEvery": "每",
+        "minutes": "分钟自动保存",
+        "showAllInterpolationTracks": "显示所有插值轨迹",
+        "showHiddenInterpolatedObjects": "在侧边面板中显示隐藏的插值对象",
+        "alwaysShowObjectDetails": "始终显示对象详情",
+        "alwaysShowObjectDetailsDescription": "不仅在对象被激活时才在画布上显示对象文本",
+        "textContent": "文本内容",
+        "textContentOptions": {
+            "id": "ID",
+            "label": "标签",
+            "attributes": "属性",
+            "source": "来源",
+            "descriptions": "描述",
+            "dimensions": "尺寸",
+            "layer": "图层"
+        },
+        "textPosition": "文本位置",
+        "textFontSize": "文本字号",
+        "textPositionOptions": {
+            "auto": "自动",
+            "center": "居中"
+        },
+        "adaptiveZoom": "自适应缩放算法",
+        "adaptiveZoomDescription": "启用更平滑的缩放方式，兼容触控板和捏合手势",
+        "intelligentPolygonCropping": "智能多边形裁剪",
+        "intelligentPolygonCroppingDescription": "编辑时尝试自动裁剪多边形",
+        "showTagsOnFrame": "在帧上显示标记",
+        "showTagsOnFrameDescription": "在工作区角落显示帧标记",
+        "focusedObjectPadding": "聚焦对象边距",
+        "focusedObjectPaddingDescription": "对象适配视图时，在其周围额外添加的像素空间",
+        "controlPointsSize": "控制点大小",
+        "defaultPolygonSimplificationThreshold": "默认多边形简化阈值",
+        "defaultPolygonSimplificationDescription": "值越高，保留的多边形细节越多。用于无服务器交互器、OpenCV 剪刀和多边形简化"
+    }
+}
+

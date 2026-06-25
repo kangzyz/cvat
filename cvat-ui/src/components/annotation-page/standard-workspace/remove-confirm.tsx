@@ -67,8 +67,8 @@ export default function RemoveConfirmComponent(): JSX.Element | null {
     return (
         <Modal
             okType='primary'
-            okText='Yes'
-            cancelText='Cancel'
+            okText='是'
+            cancelText='取消'
             title={title}
             open={visible}
             cancelButtonProps={{

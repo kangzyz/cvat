@@ -5,6 +5,7 @@
 
 import './styles.scss';
 import React, { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { shallowEqual } from 'utils/redux';
@@ -33,6 +34,7 @@ function setUpModelsList(models: MLModel[], newPage: number, pageSize: number): 
 function ModelsPageComponent(): JSX.Element {
     const history = useHistory();
     const dispatch = useDispatch();
+    const { t } = useTranslation('qualityReviewModels');
     const {
         fetching,
         query,
@@ -75,8 +77,8 @@ function ModelsPageComponent(): JSX.Element {
         dispatch(getModelsAsync(updatedQuery));
         if (pageOutOfBounds) {
             notification.error({
-                message: 'Could not fetch models',
-                description: 'Invalid page',
+                message: t('models.couldNotFetch'),
+                description: t('models.invalidPage'),
             });
         }
     }, []);

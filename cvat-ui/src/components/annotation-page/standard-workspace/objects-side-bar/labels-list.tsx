@@ -26,8 +26,8 @@ const makeKey = (index: number) => `SWITCH_LABEL_${index}`;
 
 for (const index of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) {
     componentShortcuts[makeKey(index)] = {
-        name: 'Switch label',
-        description: 'Change label of a selected object or default label of the next created object if no one object is activated',
+        name: '切换标签',
+        description: '更改选中对象的标签；如果没有活动对象，则更改下一个新建对象的默认标签',
         sequences: [`ctrl+${index}`],
         nonActive: true,
         scope: ShortcutScope.OBJECTS_SIDEBAR,
@@ -62,8 +62,7 @@ function LabelsListComponent(): JSX.Element {
                     ...updatedComponentShortcuts[key],
                     nonActive: false,
                     name: `Switch label to ${labelName}`,
-                    description: `Changes the label to ${labelName} for the activated
-                        object or for the next drawn object if no objects are activated`,
+                    description: `将活动对象的标签更改为 ${labelName}；如果没有活动对象，则用于下一个绘制对象`,
                 };
             }
         }
@@ -109,7 +108,7 @@ function LabelsListComponent(): JSX.Element {
                 }
 
                 message.destroy();
-                message.success(`Default label has been changed to "${label.name}"`);
+                message.success(`默认标签已更改为“${label.name}”`);
             }
         }
     };
@@ -126,7 +125,7 @@ function LabelsListComponent(): JSX.Element {
         <div className='cvat-objects-sidebar-labels-list'>
             <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
             <div className='cvat-objects-sidebar-labels-list-header'>
-                <Text>{`Items: ${labels.length}`}</Text>
+                <Text>{`条目：${labels.length}`}</Text>
             </div>
             {labelIDs.map(
                 (labelID: number): JSX.Element => (

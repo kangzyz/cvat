@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router';
 import { Row, Col } from 'antd/lib/grid';
 import { LeftOutlined, MoreOutlined } from '@ant-design/icons';
@@ -20,6 +21,7 @@ interface DetailsComponentProps {
 
 export default function ProjectTopBar(props: DetailsComponentProps): JSX.Element {
     const { projectInstance, onUpdateProject } = props;
+    const { t } = useTranslation('resources');
 
     const history = useHistory();
 
@@ -33,7 +35,7 @@ export default function ProjectTopBar(props: DetailsComponentProps): JSX.Element
                     size='large'
                 >
                     <LeftOutlined />
-                    Back to projects
+                    {t('actions.backToProjects')}
                 </Button>
             </Col>
             <Col className='cvat-project-top-bar-actions'>
@@ -42,7 +44,7 @@ export default function ProjectTopBar(props: DetailsComponentProps): JSX.Element
                     onUpdateProject={onUpdateProject}
                     triggerElement={(
                         <Button size='middle' className='cvat-project-page-actions-button'>
-                            <Text className='cvat-text-color'>Actions</Text>
+                            <Text className='cvat-text-color'>{t('actions.actions')}</Text>
                             <MoreOutlined className='cvat-menu-icon' />
                         </Button>
                     )}

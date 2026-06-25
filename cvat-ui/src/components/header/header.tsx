@@ -7,6 +7,7 @@ import './styles.scss';
 import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import { MenuProps } from 'antd/lib/menu';
 import {
@@ -43,6 +44,7 @@ import { useIsMounted, usePlugins } from 'utils/hooks';
 import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
 import { ShortcutScope } from 'utils/enums';
 import { subKeyMap } from 'utils/component-subkeymap';
+import i18n from 'i18n';
 import SettingsModal from './settings-modal/settings-modal';
 
 interface StateToProps {
@@ -73,14 +75,14 @@ interface DispatchToProps {
 
 const componentShortcuts = {
     SWITCH_SHORTCUTS: {
-        name: 'Show shortcuts',
-        description: 'Open/hide the list of available shortcuts',
+        name: i18n.t('header:shortcuts.showShortcutsName'),
+        description: i18n.t('header:shortcuts.showShortcutsDescription'),
         sequences: ['f1'],
         scope: ShortcutScope.GENERAL,
     },
     SWITCH_SETTINGS: {
-        name: 'Show settings',
-        description: 'Open/hide settings dialog',
+        name: i18n.t('header:shortcuts.showSettingsName'),
+        description: i18n.t('header:shortcuts.showSettingsDescription'),
         sequences: ['f2'],
         scope: ShortcutScope.GENERAL,
     },
@@ -178,6 +180,7 @@ function HeaderComponent(props: Props): JSX.Element {
         CHANGELOG_URL, LICENSE_URL, GITHUB_URL, GUIDE_URL, DISCORD_URL,
     } = config;
 
+    const { t } = useTranslation('header');
     const isMounted = useIsMounted();
 
     useEffect(() => {
@@ -209,21 +212,21 @@ function HeaderComponent(props: Props): JSX.Element {
     aboutLinks.push([(
         <Col key='changelog'>
             <a href={CHANGELOG_URL} target='_blank' rel='noopener noreferrer'>
-                What&apos;s new?
+                {t('about.whatsNew')}
             </a>
         </Col>
     ), 0]);
     aboutLinks.push([(
         <Col key='license'>
             <a href={LICENSE_URL} target='_blank' rel='noopener noreferrer'>
-                MIT License
+                {t('about.license')}
             </a>
         </Col>
     ), 10]);
     aboutLinks.push([(
         <Col key='discord'>
             <a href={DISCORD_URL} target='_blank' rel='noopener noreferrer'>
-                Find us on Discord
+                {t('about.discord')}
             </a>
         </Col>
     ), 20]);
@@ -239,11 +242,11 @@ function HeaderComponent(props: Props): JSX.Element {
                 <div>
                     <p>{`${about.server.description}`}</p>
                     <p>
-                        <Text strong>Server version:</Text>
+                        <Text strong>{t('about.serverVersion')}</Text>
                         <Text type='secondary'>{` ${about.server.version}`}</Text>
                     </p>
                     <p>
-                        <Text strong>UI version:</Text>
+                        <Text strong>{t('about.uiVersion')}</Text>
                         <Text type='secondary'>{` ${about.packageVersion.ui}`}</Text>
                     </p>
                     <Row justify='space-around'>
@@ -298,7 +301,7 @@ function HeaderComponent(props: Props): JSX.Element {
             onClick: (): void => {
                 window.open('/admin', '_blank');
             },
-            label: 'Admin page',
+            label: t('settings.adminPage'),
         }, 0]);
     }
 
@@ -308,7 +311,7 @@ function HeaderComponent(props: Props): JSX.Element {
         onClick: (): void => {
             history.push('/profile');
         },
-        label: 'Profile',
+        label: t('settings.profile'),
     }, 10]);
 
     const viewType: 'menu' | 'list' = (organizationsList?.length || 0) > 5 ? 'list' : 'menu';
@@ -316,31 +319,31 @@ function HeaderComponent(props: Props): JSX.Element {
     menuItems.push([{
         key: 'organization',
         icon: organizationFetching || organizationsListFetching ? <LoadingOutlined /> : <TeamOutlined />,
-        label: 'Organization',
+        label: t('settings.organization'),
         disabled: organizationFetching || organizationsListFetching,
         children: [
             ...(currentOrganization ? [{
                 key: 'open_organization',
                 icon: <SettingOutlined />,
-                label: 'Settings',
+                label: t('settings.organizationSettings'),
                 className: 'cvat-header-menu-open-organization',
                 onClick: () => history.push('/organization'),
             }] : []), {
                 key: 'invitations',
                 icon: <MailOutlined />,
-                label: 'Invitations',
+                label: t('settings.invitations'),
                 className: 'cvat-header-menu-organization-invitations-item',
                 onClick: () => history.push('/invitations'),
             }, {
                 key: 'create_organization',
                 icon: <PlusOutlined />,
-                label: 'Create',
+                label: t('settings.create'),
                 className: 'cvat-header-menu-create-organization',
                 onClick: () => history.push('/organizations/create'),
             },
             ...(!!organizationsList && viewType === 'list' ? [{
                 key: 'switch_organization',
-                label: 'Switch organization',
+                label: t('settings.switchOrganization'),
                 onClick: () => {
                     openSelectOrganizationModal(setNewOrganization);
                 },
@@ -349,7 +352,7 @@ function HeaderComponent(props: Props): JSX.Element {
                 type: 'divider' as const,
             }, {
                 key: '$personal',
-                label: 'Personal workspace',
+                label: t('settings.personalWorkspace'),
                 className: !currentOrganization ? 'cvat-header-menu-active-organization-item' : 'cvat-header-menu-organization-item',
                 onClick: resetOrganization,
             }, ...organizationsList.map((organization: Organization) => ({
@@ -365,22 +368,22 @@ function HeaderComponent(props: Props): JSX.Element {
         key: 'settings',
         icon: <SettingOutlined />,
         onClick: () => switchSettingsModalVisible(true),
-        title: `Press ${switchSettingsShortcut} to switch`,
-        label: 'Settings',
+        title: t('settings.settingsShortcutTitle', { shortcut: switchSettingsShortcut }),
+        label: t('settings.settings'),
     }, 30]);
 
     menuItems.push([{
         key: 'about',
         icon: <InfoCircleOutlined />,
         onClick: () => showAboutModal(),
-        label: 'About',
+        label: t('settings.about'),
     }, 40]);
 
     menuItems.push([{
         key: 'logout',
         icon: logoutFetching ? <LoadingOutlined /> : <LogoutOutlined />,
         onClick: () => history.push('/auth/logout'),
-        label: 'Logout',
+        label: t('settings.logout'),
         disabled: logoutFetching,
     }, 50]);
 
@@ -414,7 +417,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         history.push('/projects');
                     }}
                 >
-                    Projects
+                    {t('navigation.projects')}
                 </Button>
                 <Button
                     className={getButtonClassName('tasks')}
@@ -426,7 +429,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         history.push('/tasks');
                     }}
                 >
-                    Tasks
+                    {t('navigation.tasks')}
                 </Button>
                 <Button
                     className={getButtonClassName('jobs')}
@@ -438,7 +441,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         history.push('/jobs');
                     }}
                 >
-                    Jobs
+                    {t('navigation.jobs')}
                 </Button>
                 <Button
                     className={getButtonClassName('cloudstorages')}
@@ -450,7 +453,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         history.push('/cloudstorages');
                     }}
                 >
-                    Cloud Storages
+                    {t('navigation.cloudStorages')}
                 </Button>
                 <Button
                     className={getButtonClassName('requests')}
@@ -462,7 +465,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         history.push('/requests');
                     }}
                 >
-                    Requests
+                    {t('navigation.requests')}
                 </Button>
                 <Button
                     className={getButtonClassName('models')}
@@ -474,7 +477,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         history.push('/models');
                     }}
                 >
-                    Models
+                    {t('navigation.models')}
                 </Button>
                 {isAnalyticsPluginActive && user.hasAnalyticsAccess ? (
                     <Button
@@ -486,12 +489,12 @@ function HeaderComponent(props: Props): JSX.Element {
                             window.open('/analytics', '_blank');
                         }}
                     >
-                        Analytics
+                        {t('navigation.analytics')}
                     </Button>
                 ) : null}
             </div>
             <div className='cvat-right-header'>
-                <CVATTooltip overlay='Click to open repository'>
+                <CVATTooltip overlay={t('about.repositoryTooltip')}>
                     <Button
                         icon={<GithubOutlined />}
                         size='large'
@@ -504,7 +507,7 @@ function HeaderComponent(props: Props): JSX.Element {
                         }}
                     />
                 </CVATTooltip>
-                <CVATTooltip overlay='Click to open guide'>
+                <CVATTooltip overlay={t('about.guideTooltip')}>
                     <Button
                         icon={<QuestionCircleOutlined />}
                         size='large'

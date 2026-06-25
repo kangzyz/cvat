@@ -7,6 +7,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { connect, Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
+import ConfigProvider from 'antd/lib/config-provider';
+import zhCN from 'antd/locale/zh_CN';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -16,6 +18,7 @@ import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 import duration from 'dayjs/plugin/duration';
+import 'dayjs/locale/zh-cn';
 
 import { getAboutAsync } from 'actions/about-actions';
 import { authenticatedAsync } from 'actions/auth-actions';
@@ -35,6 +38,7 @@ import { getInvitationsAsync } from 'actions/invitations-actions';
 import { getRequestsAsync } from 'actions/requests-async-actions';
 import { getServerAPISchemaAsync } from 'actions/server-actions';
 import { navigationActions } from 'actions/navigation-actions';
+import { DAYJS_LANGUAGE, DEFAULT_LANGUAGE } from 'i18n';
 import { CombinedState, NotificationsState, PluginsState } from './reducers';
 import './utils/dayjs-wrapper';
 
@@ -50,6 +54,8 @@ dayjs.extend(localeData);
 dayjs.extend(weekOfYear);
 dayjs.extend(weekYear);
 dayjs.extend(duration);
+dayjs.locale(DAYJS_LANGUAGE);
+document.documentElement.lang = DEFAULT_LANGUAGE;
 
 interface StateToProps {
     pluginsInitialized: boolean;
@@ -152,11 +158,13 @@ const ReduxAppWrapper = connect(mapStateToProps, mapDispatchToProps)(CVATApplica
 const root = createRoot(document.getElementById('root') as HTMLDivElement);
 root.render((
     <Provider store={cvatStore}>
-        <BrowserRouter>
-            <PluginsEntrypoint />
-            <ReduxAppWrapper />
-        </BrowserRouter>
-        <LayoutGrid />
+        <ConfigProvider locale={zhCN}>
+            <BrowserRouter>
+                <PluginsEntrypoint />
+                <ReduxAppWrapper />
+            </BrowserRouter>
+            <LayoutGrid />
+        </ConfigProvider>
     </Provider>
 ));
 

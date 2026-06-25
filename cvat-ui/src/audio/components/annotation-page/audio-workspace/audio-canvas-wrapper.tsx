@@ -11,6 +11,7 @@ import WavesurferPlayer from '@wavesurfer/react';
 
 import { ActiveControl, CombinedState } from 'reducers';
 import { Attribute } from 'cvat-core-wrapper';
+import i18n from 'i18n';
 import { shallowEqual } from 'utils/redux';
 import GlobalHotKeys from 'utils/mousetrap-react';
 import { ShortcutScope } from 'utils/enums';
@@ -37,14 +38,14 @@ const ZOOM_DELTA_LIMIT = 8;
 
 const componentShortcuts = {
     NEXT_OBJECT: {
-        name: 'Next object',
-        description: 'Go to the next audio interval and center it on the waveform',
+        name: i18n.t('audioPlugins:audio.canvas.nextObject'),
+        description: i18n.t('audioPlugins:audio.canvas.nextObjectDescription'),
         sequences: ['tab'],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
     PREVIOUS_OBJECT: {
-        name: 'Previous object',
-        description: 'Go to the previous audio interval and center it on the waveform',
+        name: i18n.t('audioPlugins:audio.canvas.previousObject'),
+        description: i18n.t('audioPlugins:audio.canvas.previousObjectDescription'),
         sequences: ['shift+tab'],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
@@ -360,7 +361,7 @@ function AudioCanvasWrapper(): JSX.Element {
             <div className='cvat-audio-canvas-wrapper' ref={wrapperRef}>
                 <div className='cvat-audio-placeholder'>
                     <p className='cvat-audio-placeholder-text'>
-                        {`Failed to load audio: ${audioError}`}
+                        {i18n.t('audioPlugins:audio.canvas.failedToLoad', { error: audioError })}
                     </p>
                 </div>
             </div>
@@ -372,7 +373,7 @@ function AudioCanvasWrapper(): JSX.Element {
             <div className='cvat-audio-canvas-wrapper' ref={wrapperRef}>
                 <div className='cvat-audio-placeholder'>
                     <p className='cvat-audio-placeholder-text'>
-                        No audio data available for this job.
+                        {i18n.t('audioPlugins:audio.canvas.noAudioData')}
                     </p>
                 </div>
             </div>

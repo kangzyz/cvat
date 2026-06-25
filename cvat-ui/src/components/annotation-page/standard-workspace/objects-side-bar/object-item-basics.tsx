@@ -27,6 +27,12 @@ interface LayerPickerProps {
     onVisibleChange(visible: boolean): void;
 }
 
+const objectTypeDisplayNames: Record<string, string> = {
+    [ObjectType.SHAPE]: '形状',
+    [ObjectType.TRACK]: '轨迹',
+    [ObjectType.TAG]: '标记',
+};
+
 function LayerPicker(props: LayerPickerProps): JSX.Element {
     const {
         children, value, visible, onChange, onVisibleChange,
@@ -66,17 +72,16 @@ function LayerPicker(props: LayerPickerProps): JSX.Element {
                         type='primary'
                         onClick={submitLayer}
                     >
-                        OK
-                    </Button>
+                        确定</Button>
                 </div>
             )}
             title={(
                 <Row justify='space-between' align='middle'>
                     <Col span={14}>
-                        <Text strong>Move to layer</Text>
+                        <Text strong>移动到图层</Text>
                     </Col>
                     <Col span={4}>
-                        <CVATTooltip title='Close'>
+                        <CVATTooltip title='关闭'>
                             <Button
                                 className='cvat-object-item-menu-to-layer-close-button'
                                 type='link'
@@ -284,18 +289,18 @@ function ItemTopComponent(props: Props): JSX.Element {
         <Row align='middle'>
             <Col span={10}>
                 <Text style={{ fontSize: 12 }}>{clientID}</Text>
-                {isGroundTruth ? <Text style={{ fontSize: 12 }}>&nbsp;GT</Text> : null}
+                {isGroundTruth ? <Text style={{ fontSize: 12 }}> 真值</Text> : null}
                 <br />
                 <Text
                     type='secondary'
                     style={{ fontSize: 10 }}
                     className='cvat-objects-sidebar-state-item-object-type-text'
                 >
-                    {type}
+                    {objectTypeDisplayNames[type] || type}
                 </Text>
             </Col>
             <Col span={12}>
-                <CVATTooltip title='Change current label'>
+                <CVATTooltip title='更改当前标签'>
                     <LabelSelector
                         disabled={locked || shapeType === ShapeType.SKELETON}
                         size='small'

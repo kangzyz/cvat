@@ -32,7 +32,7 @@ function PasswordChangeCard(): JSX.Element {
 
     return (
         <Card
-            title='Password'
+            title='密码'
             className='cvat-security-password-card'
             style={{ marginBottom: 16 }}
         >
@@ -42,13 +42,11 @@ function PasswordChangeCard(): JSX.Element {
                 <Row justify='space-between' align='middle'>
                     <Col>
                         <Typography.Text type='secondary'>
-                            Keep your account secure with a strong, unique password
-                        </Typography.Text>
+                            使用强且唯一的密码保护你的账户</Typography.Text>
                     </Col>
                     <Col>
                         <Button className='cvat-security-password-change-button' onClick={onShowPasswordForm} type='primary'>
-                            Change password
-                        </Button>
+                            修改密码</Button>
                     </Col>
                 </Row>
             )}

@@ -84,15 +84,15 @@ function ApiTokensCard(): JSX.Element {
 
     const onRevokeToken = useCallback((token: ApiToken): void => {
         Modal.confirm({
-            title: 'Revoke API Token',
-            content: `Are you sure you want to revoke the token "${token.name}"? This action cannot be undone.`,
-            okText: 'Revoke',
+            title: '撤销 API 令牌',
+            content: `确定要撤销令牌“${token.name}”吗？此操作无法撤销。`,
+            okText: '撤销',
             okButtonProps: {
                 type: 'primary',
                 danger: true,
                 className: 'cvat-api-token-revoke-button',
             },
-            cancelText: 'Cancel',
+            cancelText: '取消',
             onOk: () => {
                 dispatch(revokeApiTokenAsync(token, () => {
                     dispatch(getApiTokensAsync());
@@ -129,7 +129,7 @@ function ApiTokensCard(): JSX.Element {
 
     const apiTokenColumns: ColumnType<RowData>[] = [
         {
-            title: 'Name',
+            title: '名称',
             dataIndex: 'name',
             key: 'name',
             width: 250,
@@ -137,7 +137,7 @@ function ApiTokensCard(): JSX.Element {
             className: 'cvat-api-token-name',
         },
         {
-            title: 'Permissions',
+            title: '权限',
             dataIndex: 'readOnly',
             key: 'readOnly',
             align: 'center' as const,
@@ -158,7 +158,7 @@ function ApiTokensCard(): JSX.Element {
             className: 'cvat-api-token-permissions',
         },
         {
-            title: 'Created',
+            title: '创建',
             dataIndex: 'createdDate',
             key: 'createdDate',
             sorter: (a: RowData, b: RowData) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
@@ -166,7 +166,7 @@ function ApiTokensCard(): JSX.Element {
             className: 'cvat-api-token-created-date',
         },
         {
-            title: 'Expires',
+            title: '到期时间',
             dataIndex: 'expiryDate',
             key: 'expiryDate',
             sorter: (a: RowData, b: RowData) => {
@@ -176,12 +176,12 @@ function ApiTokensCard(): JSX.Element {
                 return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
             },
             render: (date: string | null) => (
-                date ? new Date(date).toLocaleDateString() : <Text underline>Never</Text>
+                date ? new Date(date).toLocaleDateString() : <Text underline>永不</Text>
             ),
             className: 'cvat-api-token-expire-date',
         },
         {
-            title: 'Last Used',
+            title: '最后使用',
             dataIndex: 'lastUsedDate',
             key: 'lastUsedDate',
             sorter: (a: RowData, b: RowData) => {
@@ -194,7 +194,7 @@ function ApiTokensCard(): JSX.Element {
             className: 'cvat-api-token-last-used',
         },
         {
-            title: 'Actions',
+            title: '操作',
             key: 'actions',
             align: 'center' as const,
             width: 60,
@@ -204,13 +204,13 @@ function ApiTokensCard(): JSX.Element {
                         items: [
                             {
                                 key: 'edit',
-                                label: 'Edit',
+                                label: '编辑',
                                 onClick: () => onEditToken(row.token),
                             },
                             { type: 'divider' },
                             {
                                 key: 'revoke',
-                                label: 'Revoke',
+                                label: '撤销',
                                 onClick: () => onRevokeToken(row.token),
                             },
                         ],
@@ -230,28 +230,20 @@ function ApiTokensCard(): JSX.Element {
                 title={(
                     <Row className='cvat-security-api-tokens-card-title' justify='space-between'>
                         <Col>
-                            <Title level={5}>Personal Access Tokens (PATs)</Title>
+                            <Title level={5}>个人访问令牌（PAT）</Title>
                             <CVATTooltip
                                 title={(
                                     <Row className='cvat-api-tokens-tooltip-inner'>
                                         <Row>
                                             <Col>
                                                 <Text>
-                                                    Personal Access Tokens (PATs) are text strings that
-                                                    can be used for authentication instead of a username/email
-                                                    and password. They allow interaction with the CVAT server
-                                                    API via various clients, including custom scripts, the CVAT
-                                                    Python SDK, and the CVAT CLI.
-                                                </Text>
+                                                    个人访问令牌（PAT）是可用于身份验证的文本字符串，可替代用户名/邮箱和密码。它们允许通过各种客户端与 CVAT 服务器 API 交互，包括自定义脚本、CVAT Python SDK 和 CVAT CLI。</Text>
                                             </Col>
                                         </Row>
                                         <Row>
                                             <Col>
                                                 <Text>
-                                                    For additional security, each token can have an expiration
-                                                    date and restricted permissions. Users can create or revoke
-                                                    tokens at any time.
-                                                </Text>
+                                                    为提升安全性，每个令牌都可以设置到期日期和受限权限。用户可以随时创建或撤销令牌。</Text>
                                             </Col>
                                         </Row>
                                     </Row>
@@ -283,7 +275,7 @@ function ApiTokensCard(): JSX.Element {
                     />
                 ) : (
                     <CVATTable
-                        tableTitle={<Title level={5}>Existing Tokens</Title>}
+                        tableTitle={<Title level={5}>现有令牌</Title>}
                         className='cvat-api-tokens-table'
                         csvExport={{ filename: 'access_tokens.csv' }}
                         columns={apiTokenColumns}

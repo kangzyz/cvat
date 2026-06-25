@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Button from 'antd/lib/button';
 import Text from 'antd/lib/typography/Text';
 import { LeftOutlined } from '@ant-design/icons';
@@ -10,12 +11,13 @@ import { useGoBack } from 'utils/hooks';
 
 function GoBackButton(): JSX.Element {
     const goBack = useGoBack();
+    const { t } = useTranslation('common');
     return (
         <>
             <Button style={{ marginRight: 8 }} onClick={goBack} className='cvat-back-btn'>
                 <LeftOutlined />
             </Button>
-            <Text style={{ userSelect: 'none' }} strong>Back</Text>
+            <Text style={{ userSelect: 'none' }} strong>{t('actions.back')}</Text>
         </>
     );
 }

@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 
 import AudioRegionsList from 'audio/components/annotation-page/audio-workspace/audio-regions-list';
 import { intervalID } from 'audio/components/annotation-page/audio-workspace/utils/audio-interval';
+import i18n from 'i18n';
 import { ActiveControl, CombinedState } from 'reducers';
 import {
     audioActions,
@@ -23,32 +24,32 @@ import { AudioIntervalState, Label } from 'cvat-core-wrapper';
 
 const componentShortcuts = {
     AUDIO_SWITCH_ALL_LOCK: {
-        name: 'Lock/unlock all intervals',
-        description: 'Change locked state for all audio intervals in the side bar',
+        name: i18n.t('audioPlugins:audio.sidebarShortcuts.lockAllName'),
+        description: i18n.t('audioPlugins:audio.sidebarShortcuts.lockAllDescription'),
         sequences: ['t l'],
         scope: ShortcutScope.OBJECTS_SIDEBAR,
     },
     AUDIO_SWITCH_LOCK: {
-        name: 'Lock/unlock an interval',
-        description: 'Change locked state for the active audio interval',
+        name: i18n.t('audioPlugins:audio.sidebarShortcuts.lockOneName'),
+        description: i18n.t('audioPlugins:audio.sidebarShortcuts.lockOneDescription'),
         sequences: ['l'],
         scope: ShortcutScope.OBJECTS_SIDEBAR,
     },
     AUDIO_SWITCH_ALL_HIDDEN: {
-        name: 'Hide/show all intervals',
-        description: 'Change hidden state for all audio intervals in the side bar',
+        name: i18n.t('audioPlugins:audio.sidebarShortcuts.hiddenAllName'),
+        description: i18n.t('audioPlugins:audio.sidebarShortcuts.hiddenAllDescription'),
         sequences: ['t h'],
         scope: ShortcutScope.OBJECTS_SIDEBAR,
     },
     AUDIO_SWITCH_HIDDEN: {
-        name: 'Hide/show an interval',
-        description: 'Change hidden state for the active audio interval',
+        name: i18n.t('audioPlugins:audio.sidebarShortcuts.hiddenOneName'),
+        description: i18n.t('audioPlugins:audio.sidebarShortcuts.hiddenOneDescription'),
         sequences: ['h'],
         scope: ShortcutScope.OBJECTS_SIDEBAR,
     },
     AUDIO_DELETE_REGION: {
-        name: 'Delete interval',
-        description: 'Delete the active audio interval. Use shift to force delete of locked intervals',
+        name: i18n.t('audioPlugins:audio.sidebarShortcuts.deleteName'),
+        description: i18n.t('audioPlugins:audio.sidebarShortcuts.deleteDescription'),
         sequences: ['del', 'shift+del'],
         scope: ShortcutScope.OBJECTS_SIDEBAR,
     },

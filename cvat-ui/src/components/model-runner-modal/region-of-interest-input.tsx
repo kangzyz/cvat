@@ -5,6 +5,7 @@
 import React, {
     useEffect, useState, useCallback, useRef,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import InputNumber from 'antd/lib/input-number';
 import Button from 'antd/lib/button';
@@ -61,6 +62,7 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
     const {
         frameWidth, frameHeight, canvasInstance, onSubmit,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
 
     const frameSizeRef = useRef<{ width: number; height: number }>({
         width: frameWidth ?? Infinity,
@@ -122,10 +124,10 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
             command: 'draw_box',
             settings: {
                 crosshair: true,
-                hint: 'Draw a region of interest',
+                hint: t('models.runner.drawRoi'),
             },
         });
-    }, [canvasInstance]);
+    }, [canvasInstance, t]);
 
     useEffect(() => {
         if (frameWidth !== frameSizeRef.current!.width || frameHeight !== frameSizeRef.current!.height) {
@@ -156,7 +158,7 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
                 const drawnInput = getInputFromRegionOfInterest(clamped);
                 if (!isValidRegionOfInterestInput(drawnInput)) {
                     notification.error({
-                        message: 'Region of interest must have positive width and height',
+                        message: t('models.runner.roiPositiveSize'),
                     });
                 } else {
                     updateInput(clamped);
@@ -204,8 +206,8 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
     return (
         <div className='cvat-automatic-annotation-region-of-interest-container'>
             <div>
-                <Text>Region of interest</Text>
-                <CVATTooltip title='Defines area of the image where the model will be applied'>
+                <Text>{t('models.runner.roi')}</Text>
+                <CVATTooltip title={t('models.runner.roiHelp')}>
                     <QuestionCircleOutlined className='cvat-info-circle-icon' />
                 </CVATTooltip>
             </div>
@@ -237,7 +239,7 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
                 <Col>
                     <InputNumber
                         name='width'
-                        placeholder='width'
+                        placeholder={t('models.runner.width')}
                         precision={0}
                         value={input.width}
                         className={isWidthInvalid ? 'cvat-errored-region-of-interest-value' : defaultClassList}
@@ -249,7 +251,7 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
                 <Col>
                     <InputNumber
                         name='height'
-                        placeholder='height'
+                        placeholder={t('models.runner.height')}
                         precision={0}
                         value={input.height}
                         className={isHeightInvalid ? 'cvat-errored-region-of-interest-value' : defaultClassList}
@@ -260,13 +262,13 @@ function RegionOfInterestInputComponent(props: Props): JSX.Element {
                 </Col>
                 {canvasInstance && (
                     <Col>
-                        <CVATTooltip title='Draw a region of interest'>
+                        <CVATTooltip title={t('models.runner.drawRoi')}>
                             <Button icon={<Icon component={RectangleIcon} />} onClick={startDrawing} />
                         </CVATTooltip>
                     </Col>
                 )}
                 <Col>
-                    <Button type='link' onClick={() => updateInput(null)}>Clear</Button>
+                    <Button type='link' onClick={() => updateInput(null)}>{t('common.clear')}</Button>
                 </Col>
             </Row>
         </div>

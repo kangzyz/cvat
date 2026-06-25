@@ -15,6 +15,7 @@ import Collapse from 'antd/lib/collapse';
 import Button from 'antd/lib/button';
 import Input from 'antd/lib/input';
 import notification from 'antd/lib/notification';
+import i18n from 'i18n';
 import { createProjectAsync } from 'actions/projects-actions';
 import { Storage, StorageData, StorageLocation } from 'cvat-core-wrapper';
 import patterns from 'utils/validation-patterns';
@@ -59,11 +60,11 @@ function NameConfigurationForm(
             <Form.Item
                 name='name'
                 hasFeedback
-                label='Name'
+                label={i18n.t('forms:fields.name')}
                 rules={[
                     {
                         required: true,
-                        message: 'Please, specify a name',
+                        message: i18n.t('forms:validation.nameRequired'),
                     },
                 ]}
             >
@@ -85,14 +86,14 @@ function AdvancedConfigurationForm(props: AdvancedConfigurationProps): JSX.Eleme
         <Form layout='vertical' ref={formRef} initialValues={initialValues}>
             <Form.Item
                 name='bug_tracker'
-                label='Issue tracker'
-                extra='Attach issue tracker where the project is described'
+                label={i18n.t('forms:fields.issueTracker')}
+                extra={i18n.t('forms:help.issueTrackerProject')}
                 hasFeedback
                 rules={[
                     {
                         validator: (_, value, callback): void => {
                             if (value && !patterns.validateURL.pattern.test(value)) {
-                                callback('Issue tracker must be URL');
+                                callback(i18n.t('forms:validation.issueTrackerMustBeUrl'));
                             } else {
                                 callback();
                             }
@@ -106,7 +107,7 @@ function AdvancedConfigurationForm(props: AdvancedConfigurationProps): JSX.Eleme
                 <Col span={11}>
                     <SourceStorageField
                         instanceId={null}
-                        storageDescription='Specify source storage for import resources like annotation, backups'
+                        storageDescription={i18n.t('forms:help.sourceStorage')}
                         locationValue={sourceStorageLocation}
                         onChangeLocationValue={onChangeSourceStorageLocation}
                     />
@@ -114,7 +115,7 @@ function AdvancedConfigurationForm(props: AdvancedConfigurationProps): JSX.Eleme
                 <Col span={11} offset={1}>
                     <TargetStorageField
                         instanceId={null}
-                        storageDescription='Specify target storage for export resources like annotation, backups'
+                        storageDescription={i18n.t('forms:help.targetStorage')}
                         locationValue={targetStorageLocation}
                         onChangeLocationValue={onChangeTargetStorageLocation}
                     />
@@ -187,7 +188,7 @@ export default function CreateProjectContent(): JSX.Element {
         if (res) {
             resetForm();
             notification.info({
-                message: 'The project has been created',
+                message: i18n.t('forms:notifications.projectCreated'),
                 className: 'cvat-notification-create-project-success',
             });
             focusForm();
@@ -204,7 +205,7 @@ export default function CreateProjectContent(): JSX.Element {
                 <NameConfigurationForm formRef={nameFormRef} inputRef={nameInputRef} />
             </Col>
             <Col span={24}>
-                <Text className='cvat-text-color'>Labels:</Text>
+                <Text className='cvat-text-color'>{i18n.t('forms:sections.labels')}:</Text>
                 <LabelsEditor
                     labels={projectLabels}
                     onSubmit={(newLabels): void => {
@@ -217,7 +218,7 @@ export default function CreateProjectContent(): JSX.Element {
                     className='cvat-advanced-configuration-wrapper'
                     items={[{
                         key: '1',
-                        label: <Text className='cvat-title'>Advanced configuration</Text>,
+                        label: <Text className='cvat-title'>{i18n.t('forms:sections.advancedConfiguration')}</Text>,
                         children: (
                             <AdvancedConfigurationForm
                                 formRef={advancedFormRef}
@@ -238,12 +239,12 @@ export default function CreateProjectContent(): JSX.Element {
                 <Row justify='end' gutter={8}>
                     <Col>
                         <Button className='cvat-submit-open-project-button' type='primary' onClick={onSubmitAndOpen}>
-                            Submit & Open
+                            {i18n.t('forms:actions.submitOpen')}
                         </Button>
                     </Col>
                     <Col>
                         <Button className='cvat-submit-continue-project-button' type='primary' onClick={onSubmitAndContinue}>
-                            Submit & Continue
+                            {i18n.t('forms:actions.submitContinue')}
                         </Button>
                     </Col>
                 </Row>

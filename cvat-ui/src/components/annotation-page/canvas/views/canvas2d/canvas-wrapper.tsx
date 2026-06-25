@@ -279,26 +279,26 @@ function mapStateToProps(state: CombinedState): StateToProps {
 
 const componentShortcuts = {
     SWITCH_AUTOMATIC_BORDERING: {
-        name: 'Toggle snap to contour',
-        description: 'Toggle automatic snap to contour for polygons and polylines during drawing/editing',
+        name: '切换吸附到轮廓',
+        description: '绘制/编辑多边形和折线时切换自动吸附到轮廓',
         sequences: [],
         scope: ShortcutScope.STANDARD_WORKSPACE,
     },
     SWITCH_SNAP_TO_POINT: {
-        name: 'Toggle snap to point',
-        description: 'Toggle automatic snapping to nearby points',
+        name: '切换吸附到点',
+        description: '切换自动吸附到附近点',
         sequences: [],
         scope: ShortcutScope.STANDARD_WORKSPACE,
     },
     NEXT_OBJECT: {
-        name: 'Next object',
-        description: 'Go to the next object and center it on the canvas',
+        name: '下一个对象',
+        description: '转到下一个对象并在画布中居中显示',
         sequences: ['tab'],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
     PREVIOUS_OBJECT: {
-        name: 'Previous object',
-        description: 'Go to the previous object and center it on the canvas',
+        name: '上一个对象',
+        description: '转到上一个对象并在画布中居中显示',
         sequences: ['shift+tab'],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
@@ -1054,7 +1054,7 @@ class CanvasWrapperComponent extends React.PureComponent<Props> {
                                 } catch (error: any) {
                                     notification.error({
                                         description: error.toString(),
-                                        message: 'Image processing error occurred',
+                                        message: '图像处理时发生错误',
                                         className: 'cvat-notification-notice-image-processing-error',
                                     });
                                 }
@@ -1251,11 +1251,11 @@ class CanvasWrapperComponent extends React.PureComponent<Props> {
                     <UpOutlined className='cvat-canvas-image-setups-trigger' />
                 </Popover>
 
-                <CVATTooltip title='Open layer stack'>
+                <CVATTooltip title='打开图层堆栈'>
                     <button
                         className='cvat-canvas-layer-stack-trigger'
                         type='button'
-                        aria-label={`Open layer stack. Current layer ${curZLayer}`}
+                        aria-label={`打开图层堆栈。当前图层 ${curZLayer}`}
                         onClick={(): void => onOpenLayerStack(sidebarCollapsed)}
                     >
                         <Icon component={LayerStackIcon} />

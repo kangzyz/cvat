@@ -8,6 +8,7 @@ import Button from 'antd/lib/button';
 import Tooltip from 'antd/lib/tooltip';
 import { DownloadOutlined } from '@ant-design/icons';
 import notification from 'antd/lib/notification';
+import i18n from 'i18n';
 
 import { CombinedState } from 'reducers';
 import IncrementalCSVWriter, { CSVColumn, downloadCSV } from 'utils/csv-writer';
@@ -75,17 +76,22 @@ function createCSVExportButton<T, Q>(
                 filename,
                 resourceName: config.resourceName,
                 onSuccess: (totalCount: number, exportedFilename: string) => {
+                    const resourceName = i18n.t(`resources:csv.resourceNames.${config.resourceName}`, {
+                        defaultValue: config.resourceName,
+                    });
                     notification.success({
-                        message: 'Export completed',
-                        description: (
-                            `Successfully exported ${totalCount} ${config.resourceName} to ${exportedFilename}`
-                        ),
+                        message: i18n.t('resources:csv.exportCompleted'),
+                        description: i18n.t('resources:csv.exportSuccess', {
+                            totalCount,
+                            resourceName,
+                            filename: exportedFilename,
+                        }),
                     });
                 },
                 onError: (error: Error) => {
                     notification.error({
-                        message: 'CSV export failed',
-                        description: error.message || 'An unknown error occurred during export',
+                        message: i18n.t('resources:csv.exportFailed'),
+                        description: error.message || i18n.t('resources:csv.unknownError'),
                     });
                 },
             }));

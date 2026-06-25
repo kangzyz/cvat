@@ -38,9 +38,9 @@ function InvitationItem(props: Props): JSX.Element {
             >
                 {owner}
             </Text>
-            <Text>&nbsp;has invited you to join the&nbsp;</Text>
+            <Text>邀请你加入</Text>
             <Text strong>{slug}</Text>
-            <Text>&nbsp;organization&nbsp;</Text>
+            <Text>组织</Text>
         </>
     );
 
@@ -66,8 +66,7 @@ function InvitationItem(props: Props): JSX.Element {
                                     onAccept(key);
                                 }}
                             >
-                                Accept
-                            </Button>
+                                接受</Button>
                             {
                                 expired ? (
                                     <Button
@@ -79,8 +78,7 @@ function InvitationItem(props: Props): JSX.Element {
                                             });
                                         }}
                                     >
-                                        Remove
-                                    </Button>
+                                        移除</Button>
                                 ) : (
                                     <Button
                                         type='primary'
@@ -90,10 +88,9 @@ function InvitationItem(props: Props): JSX.Element {
                                                 title: (
                                                     <>
                                                         <Text>
-                                                            Would you like to decline the invitation to the&nbsp;
-                                                        </Text>
+                                                            是否拒绝加入</Text>
                                                         <Text strong>{slug}</Text>
-                                                        <Text>&nbsp;organization&nbsp;</Text>
+                                                        <Text>组织</Text>
                                                     </>
                                                 ),
                                                 className: 'cvat-invitation-decline-modal',
@@ -102,13 +99,12 @@ function InvitationItem(props: Props): JSX.Element {
                                                         setDeclined(true);
                                                     });
                                                 },
-                                                okText: 'Decline',
+                                                okText: '拒绝',
                                                 okButtonProps: { danger: true },
                                             });
                                         }}
                                     >
-                                        Decline
-                                    </Button>
+                                        拒绝</Button>
                                 )
                             }
                         </Col>

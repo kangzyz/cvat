@@ -231,7 +231,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
     public setup(frameData: any, objectStates: ObjectState[]): void {
         if (this.data.imageID !== frameData.number) {
             if ([Mode.EDIT].includes(this.data.mode)) {
-                throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+                throw Error(`画布正忙。当前操作：${this.data.mode}`);
             }
         }
 
@@ -272,7 +272,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
                     if (exception instanceof Error) {
                         this.data.exception = exception;
                     } else {
-                        this.data.exception = new Error('Unknown error occurred when fetching image data');
+                        this.data.exception = new Error('获取图像数据时发生未知错误');
                     }
                     this.notify(UpdateReasons.DATA_FAILED);
                 }
@@ -299,7 +299,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
 
     public draw(drawData: DrawData): void {
         if (drawData.enabled && this.data.drawData.enabled && !drawData.initialState) {
-            throw new Error('Drawing has been already started');
+            throw new Error('绘制已经开始');
         }
         if ([Mode.DRAW, Mode.EDIT].includes(this.data.mode) && !drawData.initialState) {
             return;
@@ -333,11 +333,11 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
 
     public dragCanvas(enable: boolean): void {
         if (enable && this.data.mode !== Mode.IDLE) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (!enable && this.data.mode !== Mode.DRAG_CANVAS) {
-            throw Error(`Canvas is not in the drag mode. Action: ${this.data.mode}`);
+            throw Error(`画布不在拖拽模式。当前操作：${this.data.mode}`);
         }
 
         this.data.mode = enable ? Mode.DRAG_CANVAS : Mode.IDLE;
@@ -349,7 +349,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
             return;
         }
         if (this.data.mode !== Mode.IDLE && clientID !== null) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
         if (typeof clientID === 'number') {
             const [state] = this.data.objects.filter((_state: any): boolean => _state.clientID === clientID);
@@ -366,7 +366,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
 
     public group(groupData: GroupData): void {
         if (![Mode.IDLE, Mode.GROUP].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         if (this.data.groupData.enabled && groupData.enabled) {
@@ -383,7 +383,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
 
     public split(splitData: SplitData): void {
         if (![Mode.IDLE, Mode.SPLIT].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         this.data.mode = splitData.enabled ? Mode.SPLIT : Mode.IDLE;
@@ -393,7 +393,7 @@ export class Canvas3dModelImpl extends MasterImpl implements Canvas3dModel {
 
     public merge(mergeData: MergeData): void {
         if (![Mode.IDLE, Mode.MERGE].includes(this.data.mode)) {
-            throw Error(`Canvas is busy. Action: ${this.data.mode}`);
+            throw Error(`画布正忙。当前操作：${this.data.mode}`);
         }
 
         this.data.mode = mergeData.enabled ? Mode.MERGE : Mode.IDLE;

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import {
     OrderedListOutlined, SortAscendingOutlined, SortDescendingOutlined,
@@ -16,6 +17,7 @@ import CVATTooltip from 'components/common/cvat-tooltip';
 
 interface Props {
     sortingFields: string[];
+    sortingFieldLabels?: Record<string, string>;
     defaultFields: string[];
     visible: boolean;
     disabled?: boolean;
@@ -30,13 +32,15 @@ interface SortableItemProps {
     valueIndex: number;
     anchorIndex: number;
     appliedSorting: Record<string, string>;
+    sortingFieldLabels: Record<string, string>;
     setAppliedSorting: (arg: Record<string, string>) => void;
 }
 
 const SortableItem = SortableElement<SortableItemProps>(
     ({
-        value, appliedSorting, setAppliedSorting, valueIndex, anchorIndex,
+        value, appliedSorting, sortingFieldLabels, setAppliedSorting, valueIndex, anchorIndex,
     }: SortableItemProps): JSX.Element => {
+        const { t } = useTranslation('common');
         const isActiveField = value in appliedSorting;
         const isAscendingField = isActiveField && !appliedSorting[value]?.startsWith('-');
         const isDescendingField = isActiveField && !isAscendingField;
@@ -56,9 +60,12 @@ const SortableItem = SortableElement<SortableItemProps>(
 
         return (
             <div className='cvat-sorting-field'>
-                <Radio.Button disabled={valueIndex > anchorIndex}>{value}</Radio.Button>
+                <Radio.Button disabled={valueIndex > anchorIndex}>{sortingFieldLabels[value] || value}</Radio.Button>
                 <div>
-                    <CVATTooltip overlay={appliedSorting[value]?.startsWith('-') ? 'Descending sort' : 'Ascending sort'}>
+                    <CVATTooltip overlay={
+                        appliedSorting[value]?.startsWith('-') ? t('sorting.descending') : t('sorting.ascending')
+                    }
+                    >
                         <Button className='cvat-switch-sort-order-button' type='text' disabled={!isActiveField} onClick={onClick}>
                             {
                                 isDescendingField ? (
@@ -78,16 +85,20 @@ const SortableItem = SortableElement<SortableItemProps>(
 interface SortableListProps {
     items: string[];
     appliedSorting: Record<string, string>;
+    sortingFieldLabels: Record<string, string>;
     setAppliedSorting: (arg: Record<string, string>) => void;
 }
 
 const SortableList = SortableContainer<SortableListProps>(
-    ({ items, appliedSorting, setAppliedSorting } : SortableListProps) => (
+    ({
+        items, appliedSorting, sortingFieldLabels, setAppliedSorting,
+    } : SortableListProps) => (
         <div className='cvat-resource-page-sorting-list'>
             { items.map((value: string, index: number) => (
                 <SortableItem
                     key={`item-${value}`}
                     appliedSorting={appliedSorting}
+                    sortingFieldLabels={sortingFieldLabels}
                     setAppliedSorting={setAppliedSorting}
                     index={index}
                     value={value}
@@ -101,9 +112,10 @@ const SortableList = SortableContainer<SortableListProps>(
 
 function SortingModalComponent(props: Props): JSX.Element {
     const {
-        sortingFields: sortingFieldsProp,
+        sortingFields: sortingFieldsProp, sortingFieldLabels = {},
         defaultFields, visible, onApplySorting, onVisibleChange, disabled,
     } = props;
+    const { t } = useTranslation('common');
     const [appliedSorting, setAppliedSorting] = useState<Record<string, string>>(
         defaultFields.reduce((acc: Record<string, string>, field: string) => {
             const [isAscending, absField] = field.startsWith('-') ?
@@ -195,6 +207,7 @@ function SortingModalComponent(props: Props): JSX.Element {
                     helperClass='cvat-sorting-dragged-item'
                     items={sortingFields}
                     appliedSorting={appliedSorting}
+                    sortingFieldLabels={sortingFieldLabels}
                     setAppliedSorting={setAppliedSorting}
                 />
             )}
@@ -205,7 +218,7 @@ function SortingModalComponent(props: Props): JSX.Element {
                 type='default'
                 onClick={() => onVisibleChange(!visible)}
             >
-                Sort by
+                {t('sorting.sortBy')}
                 <OrderedListOutlined />
             </Button>
         </Popover>

@@ -32,13 +32,13 @@ interface WebhookStatus {
 function setUpWebhookStatus(status: number): WebhookStatus {
     if (status?.toString().startsWith('2')) {
         return {
-            message: `Last delivery was successful. Response: ${status}`,
+            message: `上次投递成功。响应：${status}`,
             className: 'cvat-webhook-status-available',
         };
     }
     if (status?.toString().startsWith('5')) {
         return {
-            message: `Last delivery was not successful. Response: ${status}`,
+            message: `上次投递失败。响应：${status}`,
             className: 'cvat-webhook-status-failed',
         };
     }
@@ -132,7 +132,7 @@ function WebhookItem(props: Readonly<WebhookItemProps>): JSX.Element | null {
                     rows: 3,
                 }}
                 >
-                    <Text type='secondary' className='cvat-webhook-info-text'>URL:</Text>
+                    <Text type='secondary' className='cvat-webhook-info-text'>URL：</Text>
                     {targetURL}
                 </Paragraph>
             </Col>
@@ -142,7 +142,7 @@ function WebhookItem(props: Readonly<WebhookItemProps>): JSX.Element | null {
                     rows: 3,
                 }}
                 >
-                    <Text type='secondary' className='cvat-webhook-info-text'>Events:</Text>
+                    <Text type='secondary' className='cvat-webhook-info-text'>事件：</Text>
                     {eventsList}
                 </Paragraph>
             </Col>
@@ -158,8 +158,7 @@ function WebhookItem(props: Readonly<WebhookItemProps>): JSX.Element | null {
                             ghost
                             onClick={onPing}
                         >
-                            Ping
-                        </Button>
+                            Ping</Button>
                     </Col>
                 </Row>
                 <Row justify='end'>
@@ -168,7 +167,7 @@ function WebhookItem(props: Readonly<WebhookItemProps>): JSX.Element | null {
                             className='cvat-webhooks-page-actions-button cvat-actions-menu-button'
                             onClick={handleContextMenuClick}
                         >
-                            <Text className='cvat-text-color'>Actions</Text>
+                            <Text className='cvat-text-color'>操作</Text>
                             <MoreOutlined className='cvat-menu-icon' />
                         </div>
                     </Col>

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import Icon from '@ant-design/icons';
+import i18n from 'i18n';
 
 import { ActiveControl, CombinedState } from 'reducers';
 import { Canvas } from 'cvat-canvas-wrapper';
@@ -25,8 +26,8 @@ interface Props {
 
 const componentShortcuts = {
     OPEN_REVIEW_ISSUE: {
-        name: 'Open an issue',
-        description: 'Create a new issues in the review workspace',
+        name: i18n.t('qualityReviewModels:review.openIssue'),
+        description: i18n.t('qualityReviewModels:review.openIssueDescription'),
         sequences: ['n'],
         scope: ShortcutScope.REVIEW_WORKSPACE_CONTROLS,
     },
@@ -68,7 +69,7 @@ function CreateIssueControl(props: Props): JSX.Element {
                     keyMap={subKeyMap(componentShortcuts, keyMap)}
                     handlers={handlers}
                 />
-                <CVATTooltip title='Open an issue' placement='right'>
+                <CVATTooltip title={i18n.t('qualityReviewModels:review.openIssue')} placement='right'>
                     <Icon
                         component={RectangleIcon}
                         className={

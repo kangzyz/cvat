@@ -56,7 +56,7 @@ export default function IssuesListComponent(): JSX.Element {
     }), shallowEqual);
 
     if (workspace === Workspace.AUDIO) {
-        throw new Error('Not supported in audio workspace');
+        throw new Error('音频工作区不支持此操作');
     }
 
     let frames = issues
@@ -101,22 +101,22 @@ export default function IssuesListComponent(): JSX.Element {
             <div className='cvat-objects-sidebar-issues-list-header'>
                 <Row justify='space-between' align='middle'>
                     <Col span={24}>
-                        <Text>{`Items: ${frameIssues.length}`}</Text>
+                        <Text>{`条目：${frameIssues.length}`}</Text>
                     </Col>
                     <Col span={24}>
                         <Row className='cvat-objects-sidebar-issues-toolbar' justify='space-around' align='middle'>
                             <Col>
-                                <CVATTooltip title='Find the previous frame with issues'>
+                                <CVATTooltip title='查找上一帧有问题的帧'>
                                     <LeftOutlined className='cvat-issues-sidebar-previous-frame' {...dynamicLeftProps} />
                                 </CVATTooltip>
                             </Col>
                             <Col>
-                                <CVATTooltip title='Find the next frame with issues'>
+                                <CVATTooltip title='查找下一帧有问题的帧'>
                                     <RightOutlined className='cvat-issues-sidebar-next-frame' {...dynamicRightProps} />
                                 </CVATTooltip>
                             </Col>
                             <Col>
-                                <CVATTooltip title='Show/hide all issues'>
+                                <CVATTooltip title='显示/隐藏所有问题'>
                                     {issuesHidden ? (
                                         <EyeInvisibleFilled
                                             className='cvat-issues-sidebar-hidden-issues'
@@ -131,7 +131,7 @@ export default function IssuesListComponent(): JSX.Element {
                                 </CVATTooltip>
                             </Col>
                             <Col>
-                                <CVATTooltip title='Show/hide resolved issues'>
+                                <CVATTooltip title='显示/隐藏已解决问题'>
                                     { issuesResolvedHidden ? (
                                         <CheckCircleFilled
                                             className='cvat-issues-sidebar-hidden-resolved-status'
@@ -153,7 +153,7 @@ export default function IssuesListComponent(): JSX.Element {
                             {
                                 workspace === Workspace.REVIEW ? (
                                     <Col>
-                                        <CVATTooltip title='Show Ground truth annotations and conflicts'>
+                                        <CVATTooltip title='显示真值标注和冲突'>
                                             <Icon
                                                 className={
                                                     `cvat-objects-sidebar-show-ground-truth ${showGroundTruth ? 'cvat-objects-sidebar-show-ground-truth-active' : ''}`

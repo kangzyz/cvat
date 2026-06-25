@@ -17,6 +17,7 @@ import Button from 'antd/lib/button';
 import Modal from 'antd/lib/modal';
 import { CombinedState } from 'reducers';
 import { Label } from 'cvat-core-wrapper';
+import i18n from 'i18n';
 import { changeAnnotationsFilters, fetchAnnotationsAsync, showFilters } from 'actions/annotation-actions';
 
 const { FieldDropdown } = AntdWidgets;
@@ -86,7 +87,7 @@ function AudioFiltersModalComponent(): JSX.Element {
     useEffect(() => {
         const fields: Record<string, any> = {
             label: {
-                label: 'Label',
+                label: i18n.t('audioPlugins:audio.filters.label'),
                 type: 'select',
                 valueSources: ['value'] as ('value')[],
                 fieldSettings: {
@@ -97,13 +98,13 @@ function AudioFiltersModalComponent(): JSX.Element {
                 },
             },
             serverID: {
-                label: 'ServerID',
+                label: i18n.t('audioPlugins:audio.filters.serverId'),
                 type: 'number',
                 hideForCompare: true,
                 fieldSettings: { min: 0 },
             },
             attr: {
-                label: 'Attributes',
+                label: i18n.t('audioPlugins:audio.filters.attributes'),
                 type: '!struct',
                 subfields: getAttributesSubfields(labels),
                 fieldSettings: {
@@ -111,30 +112,30 @@ function AudioFiltersModalComponent(): JSX.Element {
                 },
             },
             duration: {
-                label: 'Duration (ms)',
+                label: i18n.t('audioPlugins:audio.filters.durationMs'),
                 type: 'number',
                 fieldSettings: { min: 0 },
             },
             start: {
-                label: 'Start (ms)',
+                label: i18n.t('audioPlugins:audio.filters.startMs'),
                 type: 'number',
                 fieldSettings: { min: 0 },
             },
             end: {
-                label: 'End (ms)',
+                label: i18n.t('audioPlugins:audio.filters.endMs'),
                 type: 'number',
                 fieldSettings: { min: 0 },
             },
             source: {
-                label: 'Source',
+                label: i18n.t('audioPlugins:audio.filters.source'),
                 type: 'select',
                 fieldSettings: {
                     listValues: [
-                        { value: 'manual', title: 'manual' },
-                        { value: 'auto', title: 'auto' },
-                        { value: 'consensus', title: 'consensus' },
-                        { value: 'semi-auto', title: 'semi-auto' },
-                        { value: 'file', title: 'file' },
+                        { value: 'manual', title: i18n.t('audioPlugins:audio.filters.manual') },
+                        { value: 'auto', title: i18n.t('audioPlugins:audio.filters.auto') },
+                        { value: 'consensus', title: i18n.t('audioPlugins:audio.filters.consensus') },
+                        { value: 'semi-auto', title: i18n.t('audioPlugins:audio.filters.semiAuto') },
+                        { value: 'file', title: i18n.t('audioPlugins:audio.filters.file') },
                     ],
                 },
             },
@@ -256,14 +257,14 @@ function AudioFiltersModalComponent(): JSX.Element {
                     onClick={() => applyFilters([])}
                     className='cvat-filters-modal-clear-button'
                 >
-                    Clear filters
+                    {i18n.t('audioPlugins:audio.filters.clearFilters')}
                 </Button>,
                 <Button
                     key='cancel'
                     onClick={() => dispatch(showFilters(false))}
                     className='cvat-filters-modal-cancel-button'
                 >
-                    Cancel
+                    {i18n.t('audioPlugins:common.cancel')}
                 </Button>,
                 <Button
                     key='submit'
@@ -272,7 +273,7 @@ function AudioFiltersModalComponent(): JSX.Element {
                     onClick={confirmModal}
                     className='cvat-filters-modal-submit-button'
                 >
-                    Submit
+                    {i18n.t('audioPlugins:common.submit')}
                 </Button>,
             ]}
         >
@@ -293,7 +294,7 @@ function AudioFiltersModalComponent(): JSX.Element {
                         type='text'
                         className='cvat-filters-modal-recently-used-button'
                     >
-                        Recently used
+                        {i18n.t('audioPlugins:audio.filters.recentlyUsed')}
                         {' '}
                         <DownOutlined />
                     </Button>

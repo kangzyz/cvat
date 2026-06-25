@@ -35,20 +35,26 @@ import { subKeyMap } from 'utils/component-subkeymap';
 
 const componentShortcuts = {
     SWITCH_COLOR_BY_APPEARANCE: {
-        name: 'Switch objects appearance setting "Color by"',
-        description: 'Objects color mode may be by object, label, or group',
+        name: '切换对象外观设置“按颜色区分”',
+        description: '对象颜色模式可按对象、标签或分组区分',
         sequences: [],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
     TOGGLE_SHOW_BITMAP_APPEARANCE: {
-        name: 'Switch objects appearance setting "Show bitmap"',
-        description: 'Show or hide the bitmap layer on the canvas',
+        name: '切换对象外观设置“显示位图”',
+        description: '在画布上显示或隐藏位图图层',
         sequences: [],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
 };
 
 registerComponentShortcuts(componentShortcuts);
+
+const colorByLabels: Record<ColorBy, string> = {
+    [ColorBy.INSTANCE]: '实例',
+    [ColorBy.GROUP]: '分组',
+    [ColorBy.LABEL]: '标签',
+};
 
 interface StateToProps {
     appearanceCollapsed: boolean;
@@ -191,24 +197,23 @@ function AppearanceBlock(props: Props): JSX.Element {
             items={[{
                 label: (
                     <Text strong className='cvat-objects-appearance-collapse-header'>
-                        Appearance
-                    </Text>
+                        外观</Text>
                 ),
                 key: 'appearance',
                 children: (
                     <div className='cvat-objects-appearance-content cvat-appearance-block'>
                         <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
-                        <Text type='secondary'>Color by</Text>
+                        <Text type='secondary'>按颜色区分</Text>
                         <Radio.Group
                             className='cvat-appearance-color-by-radio-group'
                             value={colorBy}
                             onChange={(event: RadioChangeEvent) => changeShapesColorBy(event.target.value)}
                         >
                             {Object.keys(nextColorBy).map((val) => (
-                                <Radio.Button value={val} key={val}>{val}</Radio.Button>
+                                <Radio.Button value={val} key={val}>{colorByLabels[val as ColorBy]}</Radio.Button>
                             ))}
                         </Radio.Group>
-                        <Text type='secondary'>Opacity</Text>
+                        <Text type='secondary'>不透明度</Text>
                         <Slider
                             className='cvat-appearance-opacity-slider'
                             onChange={changeShapesOpacity}
@@ -216,7 +221,7 @@ function AppearanceBlock(props: Props): JSX.Element {
                             min={0}
                             max={100}
                         />
-                        <Text type='secondary'>Selected opacity</Text>
+                        <Text type='secondary'>选中项不透明度</Text>
                         <Slider
                             className='cvat-appearance-selected-opacity-slider'
                             onChange={changeSelectedShapesOpacity}
@@ -231,8 +236,7 @@ function AppearanceBlock(props: Props): JSX.Element {
                             }}
                             checked={outlined}
                         >
-                            Outlined borders
-                            <ColorPicker
+                            描边边框<ColorPicker
                                 onChange={(color) => changeShapesOutlinedBorders(outlined, color)}
                                 value={outlineColor}
                                 placement='top'
@@ -255,8 +259,7 @@ function AppearanceBlock(props: Props): JSX.Element {
                                         });
                                     }}
                                 >
-                                    Cuboid orientation
-                                </Checkbox>
+                                    长方体方向</Checkbox>
                             </div>
                         )}
                         {is2D && (
@@ -267,8 +270,7 @@ function AppearanceBlock(props: Props): JSX.Element {
                                 }}
                                 checked={showBitmap}
                             >
-                                Show bitmap
-                            </Checkbox>
+                                显示位图</Checkbox>
                         )}
                         {is2D && (
                             <Checkbox
@@ -276,8 +278,7 @@ function AppearanceBlock(props: Props): JSX.Element {
                                 onChange={changeShowProjections}
                                 checked={showProjections}
                             >
-                                Show projections
-                            </Checkbox>
+                                显示投影</Checkbox>
                         )}
                     </div>
                 ),

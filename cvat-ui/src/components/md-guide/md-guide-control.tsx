@@ -29,8 +29,7 @@ function MdGuideControl(props: Props): JSX.Element {
                         history.push(`/${instanceType}s/${id}/guide`);
                     }}
                 >
-                    Edit
-                </Button>
+                    编辑</Button>
             </Col>
         </Row>
     );

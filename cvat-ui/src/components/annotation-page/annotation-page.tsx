@@ -85,11 +85,10 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
                 const notificationKey = `cvat-notification-continue-job-${job.id}`;
                 notification.info({
                     key: notificationKey,
-                    message: `You finished working on frame ${latestFrame}`,
+                    message: `你已完成第 ${latestFrame} 帧的工作`,
                     description: (
                         <span>
-                            Press
-                            <Button
+                            按<Button
                                 className='cvat-notification-continue-job-button'
                                 type='link'
                                 onClick={() => {
@@ -97,10 +96,8 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
                                     notification.destroy(notificationKey);
                                 }}
                             >
-                                here
-                            </Button>
-                            if you would like to continue
-                        </span>
+                                这里</Button>
+                            以继续</span>
                     ),
                     placement: 'topRight',
                     className: 'cvat-notification-continue-job',
@@ -110,17 +107,16 @@ export default function AnnotationPageComponent(props: Props): JSX.Element {
             EventRecorder.logger = job.logger;
 
             if (!job.labels.length) {
+                const resourceType = job.projectId ? '项目' : '任务';
+                const resourceID = job.projectId || job.taskId;
                 notification.warning({
-                    message: 'No labels',
+                    message: '没有标签',
                     description: (
                         <span>
-                            {`${job.projectId ? 'Project' : 'Task'} ${
-                                job.projectId || job.taskId
-                            } does not contain any labels. `}
-                            <a href={`/${job.projectId ? 'projects' : 'tasks'}/${job.projectId || job.taskId}/`}>
-                                Add
-                            </a>
-                            {' the first one for editing annotation.'}
+                            {`${resourceType} ${resourceID} 未包含任何标签。`}
+                            <a href={`/${job.projectId ? 'projects' : 'tasks'}/${resourceID}/`}>
+                                添加</a>
+                            {'第一个标签以开始编辑标注。'}
                         </span>
                     ),
                     placement: 'topRight',

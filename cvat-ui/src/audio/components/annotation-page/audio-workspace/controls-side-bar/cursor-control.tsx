@@ -4,15 +4,16 @@
 
 import React from 'react';
 import Icon from '@ant-design/icons';
+import { useSelector } from 'react-redux';
 
 import { CursorIcon } from 'icons';
 import { ActiveControl, CombinedState } from 'reducers';
+import i18n from 'i18n';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import GlobalHotKeys from 'utils/mousetrap-react';
 import { ShortcutScope } from 'utils/enums';
 import { registerComponentShortcuts } from 'actions/shortcuts-actions';
 import { subKeyMap } from 'utils/component-subkeymap';
-import { useSelector } from 'react-redux';
 
 export interface Props {
     cursorShortkey: string;
@@ -22,8 +23,8 @@ export interface Props {
 
 const componentShortcuts = {
     CANCEL_AUDIO: {
-        name: 'Cancel',
-        description: 'Cancel any active audio control mode',
+        name: i18n.t('audioPlugins:audio.controls.cancelName'),
+        description: i18n.t('audioPlugins:audio.controls.cancelDescription'),
         sequences: ['esc'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
@@ -54,7 +55,7 @@ function AudioCursorControl(props: Props): JSX.Element {
                 keyMap={subKeyMap(componentShortcuts, keyMap)}
                 handlers={handlers}
             />
-            <CVATTooltip title={`Cursor ${cursorShortkey}`} placement='right'>
+            <CVATTooltip title={i18n.t('audioPlugins:audio.controls.cursor', { shortcut: cursorShortkey })} placement='right'>
                 <Icon
                     component={CursorIcon}
                     className={

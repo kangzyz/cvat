@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Result from 'antd/lib/result';
 import Button from 'antd/lib/button';
 import { useHistory } from 'react-router-dom';
@@ -21,52 +22,56 @@ function useReturnButton(fallbackPath: string): () => void {
 
 export const JobNotFoundComponent = React.memo((): JSX.Element => {
     const handleReturn = useReturnButton('/jobs');
+    const { t } = useTranslation('common');
     return (
         <Result
             className='cvat-not-found'
             status='404'
-            title='Sorry, but this job was not found'
-            subTitle='Please, be sure information you tried to get exist and you have access'
-            extra={<Button type='primary' onClick={handleReturn}>Return to Previous Page</Button>}
+            title={t('notFound.jobTitle')}
+            subTitle={t('notFound.commonSubtitle')}
+            extra={<Button type='primary' onClick={handleReturn}>{t('notFound.returnPreviousPage')}</Button>}
         />
     );
 });
 
 export const TaskNotFoundComponent = React.memo((): JSX.Element => {
     const handleReturn = useReturnButton('/tasks');
+    const { t } = useTranslation('common');
     return (
         <Result
             className='cvat-not-found'
             status='404'
-            title='There was something wrong during getting the task'
-            subTitle='Please, be sure information you tried to get exist and you have access'
-            extra={<Button type='primary' onClick={handleReturn}>Return to Previous Page</Button>}
+            title={t('notFound.taskTitle')}
+            subTitle={t('notFound.commonSubtitle')}
+            extra={<Button type='primary' onClick={handleReturn}>{t('notFound.returnPreviousPage')}</Button>}
         />
     );
 });
 
 export const ProjectNotFoundComponent = React.memo((): JSX.Element => {
     const handleReturn = useReturnButton('/projects');
+    const { t } = useTranslation('common');
     return (
         <Result
             className='cvat-not-found'
             status='404'
-            title='There was something wrong during getting the project'
-            subTitle='Please, be sure, that information you tried to get exist and you are eligible to access it'
-            extra={<Button type='primary' onClick={handleReturn}>Return to Previous Page</Button>}
+            title={t('notFound.projectTitle')}
+            subTitle={t('notFound.projectSubtitle')}
+            extra={<Button type='primary' onClick={handleReturn}>{t('notFound.returnPreviousPage')}</Button>}
         />
     );
 });
 
 export const CloudStorageNotFoundComponent = React.memo((): JSX.Element => {
     const handleReturn = useReturnButton('/cloudstorages');
+    const { t } = useTranslation('common');
     return (
         <Result
             className='cvat-not-found'
             status='404'
-            title='Sorry, but the requested cloud storage was not found'
-            subTitle='Please, be sure id you requested exists and you have appropriate permissions'
-            extra={<Button type='primary' onClick={handleReturn}>Return to Previous Page</Button>}
+            title={t('notFound.cloudStorageTitle')}
+            subTitle={t('notFound.cloudStorageSubtitle')}
+            extra={<Button type='primary' onClick={handleReturn}>{t('notFound.returnPreviousPage')}</Button>}
         />
     );
 });

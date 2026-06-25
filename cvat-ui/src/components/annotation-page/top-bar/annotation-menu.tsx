@@ -69,7 +69,7 @@ function AnnotationMenuComponent(props: Props): JSX.Element {
             message.open({
                 duration: 1,
                 type: 'success',
-                content: 'You tagged the job as completed',
+                content: '你已将该作业标记为已完成',
                 className: 'cvat-annotation-job-finished-success',
             });
         }));
@@ -85,16 +85,16 @@ function AnnotationMenuComponent(props: Props): JSX.Element {
 
     const changeState = useCallback((state: JobState) => {
         dispatch(updateJobAsync(jobInstance, { state })).then(() => {
-            message.info('Job state updated', 2);
+            message.info('作业状态已更新', 2);
         });
     }, [jobInstance]);
 
     const changeJobState = useCallback((state: JobState) => () => {
         Modal.confirm({
-            title: 'Would you like to update current job state?',
-            content: `Job state will be switched to "${state}"`,
-            okText: 'Continue',
-            cancelText: 'Cancel',
+            title: '是否更新当前作业状态？',
+            content: `作业状态将切换为“${state}”`,
+            okText: '继续',
+            cancelText: '取消',
             className: 'cvat-modal-content-change-job-state',
             onOk: () => changeState(state),
         });
@@ -109,25 +109,25 @@ function AnnotationMenuComponent(props: Props): JSX.Element {
 
     menuItems.push([{
         key: Actions.LOAD_JOB_ANNO,
-        label: 'Upload annotations',
+        label: '上传标注',
         onClick: uploadAnnotations,
     }, 10]);
 
     menuItems.push([{
         key: Actions.EXPORT_JOB_DATASET,
-        label: 'Export job dataset',
+        label: '导出作业数据集',
         onClick: exportDataset,
     }, 20]);
 
     menuItems.push([{
         key: Actions.REMOVE_ANNOTATIONS,
-        label: 'Remove annotations',
+        label: '移除标注',
         onClick: () => setRemoveAnnotationsConfirmOpen(true),
     }, 30]);
 
     menuItems.push([{
         key: Actions.RUN_ACTIONS,
-        label: 'Run actions',
+        label: '运行操作',
         onClick: () => {
             openAnnotationsActionModal();
         },
@@ -135,14 +135,14 @@ function AnnotationMenuComponent(props: Props): JSX.Element {
 
     menuItems.push([{
         key: Actions.OPEN_TASK,
-        label: 'Open the task',
+        label: '打开任务',
         onClick: openTask,
     }, 50]);
 
     menuItems.push([{
         key: 'job-state-submenu',
         popupClassName: 'cvat-annotation-menu-job-state-submenu',
-        label: 'Change job state',
+        label: '更改作业状态',
         children: [{
             key: `state:${JobState.NEW}`,
             label: JobState.NEW,
@@ -168,13 +168,13 @@ function AnnotationMenuComponent(props: Props): JSX.Element {
 
     menuItems.push([{
         key: Actions.FINISH_JOB,
-        label: 'Finish the job',
+        label: '完成作业',
         onClick: () => {
             Modal.confirm({
-                title: 'Would you like to finish the job?',
-                content: 'It will save annotations and set the job state to "completed"',
-                okText: 'Continue',
-                cancelText: 'Cancel',
+                title: '是否完成该作业？',
+                content: '这会保存标注并将作业状态设置为“已完成”',
+                okText: '继续',
+                cancelText: '取消',
                 className: 'cvat-modal-content-finish-job',
                 onOk: finishJob,
             });
@@ -212,8 +212,7 @@ function AnnotationMenuComponent(props: Props): JSX.Element {
             >
                 <Button type='link' className='cvat-annotation-header-menu-button cvat-annotation-header-button'>
                     <Icon component={MainMenuIcon} />
-                    Menu
-                </Button>
+                    菜单</Button>
             </Dropdown>
         </>
     );

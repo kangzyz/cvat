@@ -32,8 +32,7 @@ function CreateWebhookPage(): JSX.Element {
                         size='large'
                     >
                         <LeftOutlined />
-                        Back to webhooks
-                    </Button>
+                        返回 Webhook</Button>
                 </Col>
             </Row>
             <Row justify='center' align='top' className='cvat-create-webhook-form-wrapper'>

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import Card from 'antd/lib/card';
@@ -35,6 +36,7 @@ function JobCardComponent(props: Readonly<Props>): JSX.Element {
     const {
         job, selected, onClick, onApplyFilter,
     } = props;
+    const { t } = useTranslation('resources');
 
     const deletes = useSelector((state: CombinedState) => state.jobs.activities.deletes);
     const deleted = job.id in deletes ? deletes[job.id] === true : false;
@@ -62,13 +64,26 @@ function JobCardComponent(props: Readonly<Props>): JSX.Element {
 
     let tag = null;
     if (job.type === JobType.GROUND_TRUTH) {
-        tag = 'Ground truth';
+        tag = t('jobType.groundTruth');
     } else if (job.replicasCount > 0) {
-        tag = 'Parent';
+        tag = t('jobType.parent');
     } else if (job.parentJobId !== null) {
-        tag = 'Replica';
+        tag = t('jobType.replica');
     }
 
+    const stageTranslations: Record<string, string> = {
+        annotation: t('jobStage.annotation'),
+        validation: t('jobStage.validation'),
+        acceptance: t('jobStage.acceptance'),
+    };
+    const stateTranslations: Record<string, string> = {
+        new: t('jobState.new'),
+        'in progress': t('jobState.inProgress'),
+        rejected: t('jobState.rejected'),
+        completed: t('jobState.completed'),
+    };
+    const translatedStage = stageTranslations[job.stage] || job.stage;
+    const translatedState = stateTranslations[job.state] || job.state;
     const cardClassName = `cvat-job-page-list-item${selected ? ' cvat-item-selected' : ''}`;
 
     /* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
@@ -88,7 +103,7 @@ function JobCardComponent(props: Readonly<Props>): JSX.Element {
                         previewClassName='cvat-jobs-page-job-item-card-preview'
                     />
                     <div className='cvat-job-page-list-item-id'>
-                        ID:
+                        {t('jobItem.id')}
                         {` ${job.id}`}
                     </div>
                     {tag && <div className='cvat-job-page-list-item-type'>{tag}</div>}
@@ -100,12 +115,12 @@ function JobCardComponent(props: Readonly<Props>): JSX.Element {
             onContextMenuCapture={handleContextMenuCapture}
         >
             <Descriptions column={1} size='small'>
-                <Descriptions.Item label='Stage and state'>{`${job.stage} ${job.state}`}</Descriptions.Item>
-                <Descriptions.Item label='Frames'>{job.stopFrame - job.startFrame + 1}</Descriptions.Item>
+                <Descriptions.Item label={t('jobItem.stageAndState')}>{`${translatedStage} ${translatedState}`}</Descriptions.Item>
+                <Descriptions.Item label={t('jobItem.frames')}>{job.stopFrame - job.startFrame + 1}</Descriptions.Item>
                 {job.assignee ? (
-                    <Descriptions.Item label='Assignee'>{job.assignee.username}</Descriptions.Item>
+                    <Descriptions.Item label={t('fields.assignee')}>{job.assignee.username}</Descriptions.Item>
                 ) : (
-                    <Descriptions.Item label='Assignee'> </Descriptions.Item>
+                    <Descriptions.Item label={t('fields.assignee')}> </Descriptions.Item>
                 )}
             </Descriptions>
             <div

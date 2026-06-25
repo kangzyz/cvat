@@ -140,12 +140,12 @@ export class SliceHandlerImpl implements SliceHandler {
         this.onMessage([{
             type: 'text',
             icon: 'info',
-            content: 'Set initial point on the shape contour',
+            content: '在形状轮廓上设置起点',
         }, {
             type: 'list',
             content: [
-                'Slicing line must not intersect itself',
-                'Slicing line must not intersect contour more than twice',
+                '切分线不能与自身相交',
+                '切分线与轮廓相交不能超过两次',
             ],
             className: 'cvat-canvas-notification-list-warning',
         }], 'slice');
@@ -222,12 +222,12 @@ export class SliceHandlerImpl implements SliceHandler {
                 this.onMessage([{
                     type: 'text',
                     icon: 'info',
-                    content: 'Set more points within the shape contour, if necessary. Intersect contour at another point to slice',
+                    content: '如有需要，请在形状轮廓内设置更多点。切分时需要在另一点与轮廓相交',
                 }, {
                     type: 'list',
                     content: [
-                        'Hold <Shift> to enable slip mode',
-                        'Do <Right Click> to cancel the latest point',
+                        '按住 <Shift> 启用滑移模式',
+                        '点击 <右键> 取消最近的点',
                     ],
                     className: 'cvat-canvas-notification-list-shortcuts',
                 }], 'slice');
@@ -526,7 +526,7 @@ export class SliceHandlerImpl implements SliceHandler {
 
                 this.onMessage([{
                     type: 'text',
-                    content: 'Getting shape contour',
+                    content: '正在获取形状轮廓',
                     icon: 'loading',
                 }], 'force');
 
@@ -560,7 +560,7 @@ export class SliceHandlerImpl implements SliceHandler {
 
             this.onMessage([{
                 type: 'text',
-                content: 'Click a mask or polygon shape you would like to slice',
+                content: '点击要切分的蒙版或多边形形状',
                 icon: 'info',
             }], 'slice');
 

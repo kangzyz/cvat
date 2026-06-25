@@ -132,17 +132,17 @@ export default function CloudStorageItemComponent(props: Readonly<Props>): JSX.E
                 description={(
                     <>
                         <Paragraph>
-                            <Text type='secondary'>Provider: </Text>
+                            <Text type='secondary'>提供商：</Text>
                             <Text>{providerType}</Text>
                         </Paragraph>
                         <Paragraph>
-                            <Text type='secondary'>Created </Text>
+                            <Text type='secondary'>创建</Text>
                             {owner ? <Text type='secondary'>{`by ${owner.username}`}</Text> : null}
-                            <Text type='secondary'> on </Text>
+                            <Text type='secondary'> 于</Text>
                             <Text type='secondary'>{dayjs(createdDate).format('MMMM Do YYYY')}</Text>
                         </Paragraph>
                         <Paragraph>
-                            <Text type='secondary'>Last updated </Text>
+                            <Text type='secondary'>最后更新</Text>
                             <Text type='secondary'>{dayjs(updatedDate).fromNow()}</Text>
                         </Paragraph>
                         <Status cloudStorage={cloudStorage} />

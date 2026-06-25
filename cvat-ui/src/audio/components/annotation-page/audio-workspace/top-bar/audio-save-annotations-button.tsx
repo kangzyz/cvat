@@ -9,6 +9,7 @@ import Icon from '@ant-design/icons';
 import Button from 'antd/lib/button';
 
 import { CombinedState } from 'reducers';
+import i18n from 'i18n';
 import { registerComponentShortcuts } from 'actions/shortcuts-actions';
 import CVATTooltip from 'components/common/cvat-tooltip';
 import GlobalHotKeys from 'utils/mousetrap-react';
@@ -19,8 +20,8 @@ import { SaveIcon } from 'icons';
 
 const componentShortcuts = {
     SAVE_JOB: {
-        name: 'Save the job',
-        description: 'Submit unsaved changes of annotations to the server',
+        name: i18n.t('audioPlugins:audio.topBar.saveJobName'),
+        description: i18n.t('audioPlugins:audio.topBar.saveJobDescription'),
         sequences: ['ctrl+s'],
         scope: ShortcutScope.ANNOTATION_PAGE,
     },
@@ -53,7 +54,7 @@ function AudioSaveAnnotationsButton(): JSX.Element {
     return (
         <>
             <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
-            <CVATTooltip overlay={`Save current changes ${normKeyMap.SAVE_JOB ?? ''}`}>
+            <CVATTooltip overlay={i18n.t('audioPlugins:audio.topBar.saveTooltip', { shortcut: normKeyMap.SAVE_JOB ?? '' })}>
                 <Button
                     type='link'
                     onClick={trySave}
@@ -61,7 +62,7 @@ function AudioSaveAnnotationsButton(): JSX.Element {
                         'cvat-annotation-header-save-button cvat-annotation-header-button'}
                 >
                     <Icon component={SaveIcon} />
-                    {isSaving ? 'Saving...' : 'Save'}
+                    {isSaving ? i18n.t('audioPlugins:common.saving') : i18n.t('audioPlugins:common.save')}
                 </Button>
             </CVATTooltip>
         </>

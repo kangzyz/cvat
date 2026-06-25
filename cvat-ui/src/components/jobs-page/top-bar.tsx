@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Col, Row } from 'antd/lib/grid';
 import Input from 'antd/lib/input';
 
@@ -36,7 +37,19 @@ function TopBarComponent(props: Readonly<Props>): JSX.Element {
     const {
         query, onApplyFilter, onApplySorting, onApplySearch, selectedCount, onSelectAll,
     } = props;
+    const { t } = useTranslation('resources');
     const [visibility, setVisibility] = useState(defaultVisibility);
+    const sortingFieldLabels = {
+        ID: t('fields.id'),
+        Assignee: t('fields.assignee'),
+        'Updated date': t('fields.updatedDate'),
+        Stage: t('fields.stage'),
+        State: t('fields.state'),
+        'Task ID': t('fields.taskId'),
+        'Project ID': t('fields.projectId'),
+        'Task name': t('fields.taskName'),
+        'Project name': t('fields.projectName'),
+    };
 
     return (
         <Row className='cvat-jobs-page-top-bar cvat-resource-top-bar-wrapper' justify='center' align='middle'>
@@ -50,7 +63,7 @@ function TopBarComponent(props: Readonly<Props>): JSX.Element {
                             }}
                             defaultValue={query.search ?? ''}
                             className='cvat-jobs-page-search-bar'
-                            placeholder='Search ...'
+                            placeholder={t('search.placeholder')}
                         />
                         <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                     </div>
@@ -61,6 +74,7 @@ function TopBarComponent(props: Readonly<Props>): JSX.Element {
                                 setVisibility({ ...defaultVisibility, sorting: visible })
                             )}
                             defaultFields={query.sort?.split(',') || ['-ID']}
+                            sortingFieldLabels={sortingFieldLabels}
                             sortingFields={['ID', 'Assignee', 'Updated date', 'Stage', 'State', 'Task ID', 'Project ID', 'Task name', 'Project name']}
                             onApplySorting={onApplySorting}
                         />

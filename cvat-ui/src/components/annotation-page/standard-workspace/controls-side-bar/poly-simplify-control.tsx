@@ -58,7 +58,7 @@ function PolySimplifyControl(props: Props): React.ReactPortal | null {
 
     const ensureInitialized = useCallback(async (): Promise<void> => {
         if (!openCVWrapper.isInitialized) {
-            const hide = message.loading('Initializing contour utilities..', 0);
+            const hide = message.loading('正在初始化轮廓工具...', 0);
             try {
                 await openCVWrapper.initialize(() => {
                     hide();
@@ -166,8 +166,8 @@ function PolySimplifyControl(props: Props): React.ReactPortal | null {
                     onClick={handleCancel}
                 />
             </Col>
-            <CVATTooltip title='Lower values create simpler shapes with fewer points. Higher values preserve more detail and points.'>
-                <Text type='secondary'>threshold</Text>
+            <CVATTooltip title='数值越低，形状越简单、点数越少；数值越高，保留的细节和点越多。'>
+                <Text type='secondary'>阈值</Text>
             </CVATTooltip>
         </Row>,
         target,

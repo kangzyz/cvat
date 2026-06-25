@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import Input from 'antd/lib/input';
 import {
@@ -36,6 +37,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
     const {
         query, onApplyFilter, onApplySorting, onApplySearch, disabled, selectedCount, onSelectAll,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
     const [visibility, setVisibility] = useState(defaultVisibility);
     const plugins = usePlugins((state: CombinedState) => state.plugins.components.modelsPage.topBar.items, props);
     const controls = [];
@@ -60,7 +62,7 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                             }}
                             defaultValue={query.search || ''}
                             className='cvat-models-page-search-bar'
-                            placeholder='Search ...'
+                            placeholder={t('models.searchPlaceholder')}
                         />
                         <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                     </div>
@@ -73,6 +75,14 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                             )}
                             defaultFields={query.sort?.split(',') || ['-ID']}
                             sortingFields={['ID', 'Target URL', 'Owner', 'Description', 'Type', 'Updated date']}
+                            sortingFieldLabels={{
+                                ID: t('models.filter.id'),
+                                'Target URL': t('models.filter.targetUrl'),
+                                Owner: t('models.filter.owner'),
+                                Description: t('models.filter.description'),
+                                Type: t('models.filter.type'),
+                                'Updated date': t('models.filter.lastUpdated'),
+                            }}
                             onApplySorting={onApplySorting}
                         />
                         <FilteringComponent

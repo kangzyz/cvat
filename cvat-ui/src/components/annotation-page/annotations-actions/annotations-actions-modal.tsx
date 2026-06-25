@@ -360,12 +360,12 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                 destroyOnClose
                 afterClose={onClose}
                 className='cvat-action-runner-content'
-                okText='Close'
+                okText='关闭'
                 cancelButtonProps={{ style: { display: 'none' } }}
                 onOk={() => dispatch(reducerActions.setVisible(false))}
             >
                 <Alert
-                    message='Annotation actions are not available for audio jobs'
+                    message='音频作业不支持标注操作'
                     type='info'
                     showIcon
                 />
@@ -388,20 +388,19 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                     <Alert
                         message={(
                             targetObjectState ? (
-                                <Text> Selected action will be applied to the current object </Text>
+                                <Text> 所选操作将应用于当前对象</Text>
                             ) : (
                                 <div>
-                                    <Text>Actions allow executing certain algorithms on </Text>
+                                    <Text>操作可对</Text>
                                     <Text strong>
                                         <a
                                             target='_blank'
                                             rel='noopener noreferrer'
                                             href={config.FILTERS_GUIDE_URL}
                                         >
-                                            filtered
-                                        </a>
+                                            已筛选</a>
                                     </Text>
-                                    <Text> annotations. </Text>
+                                    <Text>标注。</Text>
                                 </div>
                             )
                         )}
@@ -413,7 +412,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                 <Col span={24} className='cvat-action-runner-list'>
                     <Row>
                         <Col span={24}>
-                            <Text strong className='cvat-text-color'>Select action</Text>
+                            <Text strong className='cvat-text-color'>选择操作</Text>
                             <hr />
                         </Col>
                         <Col span={24}>
@@ -448,11 +447,11 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                         <Col span={24} className='cvat-action-runner-frames'>
                             <Row>
                                 <Col span={24}>
-                                    <Text strong>Specify frames to apply the action </Text>
+                                    <Text strong>指定应用操作的帧</Text>
                                     <hr />
                                 </Col>
                                 <Col span={24}>
-                                    <Text> Starting from frame </Text>
+                                    <Text> 从帧开始</Text>
                                     <InputNumber
                                         value={frameFrom}
                                         min={jobInstance.startFrame}
@@ -470,7 +469,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                                             }
                                         }}
                                     />
-                                    <Text> up to frame </Text>
+                                    <Text> 到帧结束</Text>
                                     <InputNumber
                                         value={frameTo}
                                         min={frameFrom}
@@ -496,7 +495,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                                 <Col span={24} className='cvat-action-runner-frames-predefined'>
                                     <Row>
                                         <Col span={24}>
-                                            <Text strong>Or choose one of predefined options </Text>
+                                            <Text strong>或选择一个预设选项</Text>
                                             <hr />
                                         </Col>
                                         <Col span={24}>
@@ -507,16 +506,14 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                                                     dispatch(reducerActions.updateFrameTo(current));
                                                 }}
                                             >
-                                                Current frame
-                                            </Button>
+                                                当前帧</Button>
                                             <Button
                                                 onClick={() => {
                                                     dispatch(reducerActions.updateFrameFrom(jobInstance.startFrame));
                                                     dispatch(reducerActions.updateFrameTo(jobInstance.stopFrame));
                                                 }}
                                             >
-                                                All frames
-                                            </Button>
+                                                所有帧</Button>
                                             <Button
                                                 onClick={() => {
                                                     const current = storage.getState().annotation.player.frame.number;
@@ -524,8 +521,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                                                     dispatch(reducerActions.updateFrameTo(jobInstance.stopFrame));
                                                 }}
                                             >
-                                                From current
-                                            </Button>
+                                                从当前帧开始</Button>
                                             <Button
                                                 onClick={() => {
                                                     const current = storage.getState().annotation.player.frame.number;
@@ -533,8 +529,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                                                     dispatch(reducerActions.updateFrameTo(current));
                                                 }}
                                             >
-                                                Up to current
-                                            </Button>
+                                                截至当前帧</Button>
                                         </Col>
                                     </Row>
                                 </Col>
@@ -547,7 +542,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                     <Col span={24} className='cvat-action-runner-action-parameters'>
                         <Row>
                             <Col span={24}>
-                                <Text strong>Setup action parameters </Text>
+                                <Text strong>设置操作参数</Text>
                                 <hr />
                             </Col>
                             {Object.entries(activeAction.parameters)
@@ -697,8 +692,7 @@ function AnnotationsActionsModalContent(props: Props): JSX.Element {
                             }
                         }}
                     >
-                        Run
-                    </Button>
+                        运行</Button>
                 </Col>
             </Row>
         </Modal>

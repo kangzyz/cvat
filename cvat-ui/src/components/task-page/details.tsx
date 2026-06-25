@@ -6,6 +6,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import dayjs from 'dayjs';
+import i18n from 'i18n';
 
 import { Row, Col } from 'antd/lib/grid';
 import Text from 'antd/lib/typography/Text';
@@ -150,14 +151,18 @@ class DetailsComponent extends React.PureComponent<Props, State> {
                         {owner && (
                             <div>
                                 <Text type='secondary'>
-                                    {`Task #${taskInstance.id} Created by ${owner} on ${created}`}
+                                    {i18n.t('resources:details.taskCreated', {
+                                        id: taskInstance.id,
+                                        owner,
+                                        date: created,
+                                    })}
                                 </Text>
                             </div>
                         )}
                         {consensusEnabled && <CVATTag type={TagType.CONSENSUS} />}
                     </Col>
                     <Col>
-                        <Text type='secondary'>Assigned to</Text>
+                        <Text type='secondary'>{i18n.t('resources:details.assignedTo')}</Text>
                         {assigneeSelect}
                     </Col>
                 </Row>
@@ -199,7 +204,7 @@ class DetailsComponent extends React.PureComponent<Props, State> {
         return (
             <Row>
                 <Col span={24}>
-                    <Text className='cvat-text-color'>Subset:</Text>
+                    <Text className='cvat-text-color'>{i18n.t('resources:details.subset')}</Text>
                 </Col>
                 <Col span={24}>
                     <ProjectSubsetField

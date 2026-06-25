@@ -5,6 +5,7 @@
 import { RuleObject } from 'antd/lib/form';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { RuleType } from 'rc-field-form/lib/interface';
+import i18n from 'i18n';
 
 import patterns from './validation-patterns';
 
@@ -28,7 +29,7 @@ const validationRules = {
     firstName: [
         {
             required: true,
-            message: 'Please specify a first name',
+            message: i18n.t('common:validation.firstNameRequired'),
             pattern: patterns.validateName.pattern,
         },
     ],
@@ -36,7 +37,7 @@ const validationRules = {
     lastName: [
         {
             required: true,
-            message: 'Please specify a last name',
+            message: i18n.t('common:validation.lastNameRequired'),
             pattern: patterns.validateName.pattern,
         },
     ],
@@ -44,18 +45,18 @@ const validationRules = {
     email: [
         {
             type: 'email' as RuleType,
-            message: 'The input is not valid E-mail!',
+            message: i18n.t('common:validation.invalidEmail'),
         },
         {
             required: true,
-            message: 'Please specify an email address',
+            message: i18n.t('common:validation.emailRequired'),
         },
     ],
 
     userName: [
         {
             required: true,
-            message: 'Please specify a username',
+            message: i18n.t('common:validation.usernameRequired'),
         },
         {
             validator: validateUsername,

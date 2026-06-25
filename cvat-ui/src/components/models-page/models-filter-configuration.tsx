@@ -4,23 +4,24 @@
 
 import { Config } from '@react-awesome-query-builder/antd';
 import asyncFetchUsers from 'components/resource-sorting-filtering/request-users';
+import i18n from 'i18n';
 
 export const config: Partial<Config> = {
     fields: {
         description: {
-            label: 'Description',
+            label: i18n.t('qualityReviewModels:models.filter.description'),
             type: 'text',
             valueSources: ['value'],
             operators: ['like'],
         },
         target_url: {
-            label: 'Target URL',
+            label: i18n.t('qualityReviewModels:models.filter.targetUrl'),
             type: 'text',
             valueSources: ['value'],
             operators: ['like'],
         },
         owner: {
-            label: 'Owner',
+            label: i18n.t('qualityReviewModels:models.filter.owner'),
             type: 'select',
             valueSources: ['value'],
             operators: ['select_equals'],
@@ -31,23 +32,23 @@ export const config: Partial<Config> = {
             },
         },
         updated_date: {
-            label: 'Last updated',
+            label: i18n.t('qualityReviewModels:models.filter.lastUpdated'),
             type: 'datetime',
             operators: ['between', 'greater', 'greater_or_equal', 'less', 'less_or_equal'],
         },
         type: {
-            label: 'Type',
+            label: i18n.t('qualityReviewModels:models.filter.type'),
             type: 'select',
             valueSources: ['value'],
             fieldSettings: {
                 listValues: [
-                    { value: 'organization', title: 'Organization' },
-                    { value: 'project', title: 'Project' },
+                    { value: 'organization', title: i18n.t('qualityReviewModels:models.filter.organization') },
+                    { value: 'project', title: i18n.t('qualityReviewModels:models.filter.project') },
                 ],
             },
         },
         id: {
-            label: 'ID',
+            label: i18n.t('qualityReviewModels:models.filter.id'),
             type: 'number',
             operators: ['equal', 'between', 'greater', 'greater_or_equal', 'less', 'less_or_equal'],
             fieldSettings: { min: 0 },

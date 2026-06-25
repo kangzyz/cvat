@@ -5,6 +5,7 @@
 
 import './styles.scss';
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHistory, useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { shallowEqual } from 'utils/redux';
@@ -32,6 +33,7 @@ const core = getCore();
 
 function TaskPageComponent(): JSX.Element {
     const history = useHistory();
+    const { t } = useTranslation('resources');
     const id = +useParams<{ id: string }>().id;
     const dispatch = useDispatch();
     const [taskInstance, setTaskInstance] = useState<Task | null>(null);
@@ -74,7 +76,7 @@ function TaskPageComponent(): JSX.Element {
             }
         } catch (error: any) {
             notification.error({
-                message: 'Could not receive the requested task from the server',
+                message: t('details.couldNotReceiveTask'),
                 description: error.toString(),
             });
         }

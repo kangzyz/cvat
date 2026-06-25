@@ -67,7 +67,7 @@ function RightGroup(props: Props): JSX.Element {
             }
         }).catch((error: unknown) => {
             notification.error({
-                message: 'Could not receive annotation guide',
+                message: '无法接收标注指南',
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         });
@@ -85,7 +85,7 @@ function RightGroup(props: Props): JSX.Element {
                 try {
                     seenGuides = JSON.parse(localStorage.getItem('seenGuides') || '[]');
                     if (!Array.isArray(seenGuides) || seenGuides.some((el) => !Number.isInteger(el))) {
-                        throw new Error('Wrong structure stored in local storage');
+                        throw new Error('本地存储中的结构不正确');
                     }
                 } catch (_error: unknown) {
                     seenGuides = [];
@@ -121,8 +121,7 @@ function RightGroup(props: Props): JSX.Element {
                 }}
             >
                 <Icon component={FullscreenIcon} />
-                Fullscreen
-            </Button>
+                全屏</Button>
             { jobInstance.guideId !== null && (
                 <Button
                     type='link'
@@ -130,8 +129,7 @@ function RightGroup(props: Props): JSX.Element {
                     onClick={openGuide}
                 >
                     <Icon component={GuideIcon} />
-                    Guide
-                </Button>
+                    指南</Button>
             )}
             <Button
                 type='link'
@@ -139,8 +137,7 @@ function RightGroup(props: Props): JSX.Element {
                 onClick={showStatistics}
             >
                 <InfoCircleOutlined />
-                Info
-            </Button>
+                信息</Button>
             <Button
                 type='link'
                 className={`cvat-annotation-header-filters-button cvat-annotation-header-button ${filters ?
@@ -149,8 +146,7 @@ function RightGroup(props: Props): JSX.Element {
                 onClick={showFilters}
             >
                 <Icon component={FilterIcon} />
-                Filters
-            </Button>
+                筛选</Button>
             <div>
                 <Select
                     popupClassName='cvat-workspace-selector-dropdown'

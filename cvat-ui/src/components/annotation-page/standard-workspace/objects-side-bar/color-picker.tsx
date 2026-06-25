@@ -77,8 +77,7 @@ function ColorPicker(props: Props, ref: React.Ref<any>): JSX.Element {
                                         changeVisible(false);
                                     }}
                                 >
-                                    Reset
-                                </Button>
+                                    重置</Button>
                             )}
                         </Col>
                         <Col span={9}>
@@ -88,8 +87,7 @@ function ColorPicker(props: Props, ref: React.Ref<any>): JSX.Element {
                                     changeVisible(false);
                                 }}
                             >
-                                Cancel
-                            </Button>
+                                取消</Button>
                         </Col>
                         <Col span={6}>
                             <Button
@@ -100,8 +98,7 @@ function ColorPicker(props: Props, ref: React.Ref<any>): JSX.Element {
                                     changeVisible(false);
                                 }}
                             >
-                                Ok
-                            </Button>
+                                确定</Button>
                         </Col>
                     </Row>
                 </>
@@ -109,10 +106,10 @@ function ColorPicker(props: Props, ref: React.Ref<any>): JSX.Element {
             title={(
                 <Row justify='space-between' align='middle'>
                     <Col span={12}>
-                        <Text strong>Select color</Text>
+                        <Text strong>选择颜色</Text>
                     </Col>
                     <Col span={4}>
-                        <CVATTooltip title='Close'>
+                        <CVATTooltip title='关闭'>
                             <Button
                                 className='cvat-color-picker-close-button'
                                 type='link'

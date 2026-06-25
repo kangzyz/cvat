@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import Table, { TableProps } from 'antd/lib/table';
 import Input from 'antd/lib/input';
@@ -75,6 +76,7 @@ function CVATTable(props: Props): JSX.Element {
         ...rest
     } = props;
 
+    const { t } = useTranslation('common');
     const [FilteringComponent, setFilteringComponent] = useState<ReturnType<typeof ResourceFilterHOC> | null>(null);
     const [filterValue, setFilterValue] = useState<string | null>(null);
     const [searchPhrase, setSearchPhrase] = useState<string | null>(null);
@@ -177,12 +179,13 @@ function CVATTable(props: Props): JSX.Element {
                     <Space align='center'>
                         {Array.isArray(searchDataIndex) && !!searchDataIndex.length && (
                             <CVATTooltip
-                                title={`Search across fields: ${searchDataIndex
-                                    .map((dataIndex) => stringifyDataIndex(dataIndex)).join(', ')}`}
+                                title={t('filters.searchAcrossFields', {
+                                    fields: searchDataIndex.map((dataIndex) => stringifyDataIndex(dataIndex)).join(', '),
+                                })}
                             >
                                 <Input.Search
                                     className='cvat-table-search-bar'
-                                    placeholder='Search ..'
+                                    placeholder={t('filters.searchPlaceholder')}
                                     onSearch={setSearchPhrase}
                                     enterButton
                                 />

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { JobsQuery } from 'reducers';
+import i18n from 'i18n';
 import { CSVColumn } from 'utils/csv-writer';
 import { getCore, Job } from 'cvat-core-wrapper';
 import createCSVExportButton from '../export-csv-button-hoc';
@@ -10,27 +11,27 @@ import createCSVExportButton from '../export-csv-button-hoc';
 const cvat = getCore();
 
 const columns: CSVColumn<Job>[] = [
-    { header: 'ID', accessor: (job) => job.id },
-    { header: 'Job URL', accessor: (job) => `${window.location.origin}/tasks/${job.taskId}/jobs/${job.id}` },
-    { header: 'Task ID', accessor: (job) => job.taskId },
-    { header: 'Task Name', accessor: (job) => job.taskName ?? '' },
-    { header: 'Task URL', accessor: (job) => `${window.location.origin}/tasks/${job.taskId}` },
-    { header: 'Project ID', accessor: (job) => job.projectId },
-    { header: 'Project Name', accessor: (job) => job.projectName ?? '' },
-    { header: 'Project URL', accessor: (job) => (job.projectId ? `${window.location.origin}/projects/${job.projectId}` : '') },
-    { header: 'Assignee', accessor: (job) => job.assignee?.username ?? '' },
-    { header: 'Stage', accessor: (job) => job.stage },
-    { header: 'State', accessor: (job) => job.state },
-    { header: 'Type', accessor: (job) => job.type },
-    { header: 'Start Frame', accessor: (job) => job.startFrame },
-    { header: 'Stop Frame', accessor: (job) => job.stopFrame },
-    { header: 'Frame Count', accessor: (job) => job.stopFrame - job.startFrame + 1 },
+    { header: i18n.t('resources:csv.headers.id'), accessor: (job) => job.id },
+    { header: i18n.t('resources:csv.headers.jobUrl'), accessor: (job) => `${window.location.origin}/tasks/${job.taskId}/jobs/${job.id}` },
+    { header: i18n.t('resources:csv.headers.taskId'), accessor: (job) => job.taskId },
+    { header: i18n.t('resources:csv.headers.taskName'), accessor: (job) => job.taskName ?? '' },
+    { header: i18n.t('resources:csv.headers.taskUrl'), accessor: (job) => `${window.location.origin}/tasks/${job.taskId}` },
+    { header: i18n.t('resources:csv.headers.projectId'), accessor: (job) => job.projectId },
+    { header: i18n.t('resources:csv.headers.projectName'), accessor: (job) => job.projectName ?? '' },
+    { header: i18n.t('resources:csv.headers.projectUrl'), accessor: (job) => (job.projectId ? `${window.location.origin}/projects/${job.projectId}` : '') },
+    { header: i18n.t('resources:csv.headers.assignee'), accessor: (job) => job.assignee?.username ?? '' },
+    { header: i18n.t('resources:csv.headers.stage'), accessor: (job) => job.stage },
+    { header: i18n.t('resources:csv.headers.state'), accessor: (job) => job.state },
+    { header: i18n.t('resources:csv.headers.type'), accessor: (job) => job.type },
+    { header: i18n.t('resources:csv.headers.startFrame'), accessor: (job) => job.startFrame },
+    { header: i18n.t('resources:csv.headers.stopFrame'), accessor: (job) => job.stopFrame },
+    { header: i18n.t('resources:csv.headers.frameCount'), accessor: (job) => job.stopFrame - job.startFrame + 1 },
     {
-        header: 'Created Date',
+        header: i18n.t('resources:csv.headers.createdDate'),
         accessor: (job) => job.createdDate,
     },
     {
-        header: 'Updated Date',
+        header: i18n.t('resources:csv.headers.updatedDate'),
         accessor: (job) => job.updatedDate,
     },
 ];
@@ -38,7 +39,7 @@ const columns: CSVColumn<Job>[] = [
 const JobsCSVExportButton = createCSVExportButton<Job, JobsQuery>({
     resourceName: 'jobs',
     className: 'cvat-jobs-export-csv-button',
-    tooltipTitle: 'Export jobs to CSV',
+    tooltipTitle: i18n.t('resources:csv.tooltips.jobs'),
     columns,
     uniqueKey: 'id',
     fetchPage: async (query) => {

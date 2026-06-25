@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { Row, Col } from 'antd/lib/grid';
 import Tag from 'antd/lib/tag';
@@ -39,6 +40,7 @@ const useCardHeight = useCardHeightHOC({
 
 function DeployedModelItem(props: Readonly<Props>): JSX.Element {
     const { model, selected, onClick } = props;
+    const { t } = useTranslation('qualityReviewModels');
     const [isModalShown, setIsModalShown] = useState(false);
     const height = useCardHeight();
     const { itemRef, handleContextMenuClick, handleContextMenuCapture } = useContextMenuClick<HTMLDivElement>();
@@ -57,8 +59,8 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
 
     const created = dayjs(model.createdDate).fromNow();
     const modelDescription = !systemModel ?
-        <Text type='secondary'>{`Added ${created}`}</Text> :
-        <Text type='secondary'>System model</Text>;
+        <Text type='secondary'>{t('models.added', { time: created })}</Text> :
+        <Text type='secondary'>{t('models.systemModel')}</Text>;
 
     const topBarItems: [JSX.Element, number][] = [];
 
@@ -111,7 +113,7 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
                         <Row onClick={onOpenModel} className='cvat-models-item-text-description'>
                             {model.owner && (
                                 <>
-                                    <Text type='secondary'>{`Created by ${model.owner}`}</Text>
+                                    <Text type='secondary'>{t('models.createdBy', { owner: model.owner })}</Text>
                                     <br />
                                 </>
                             )}
@@ -139,7 +141,7 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
         <>
             <Modal
                 className='cvat-model-info-modal'
-                title='Model'
+                title={t('models.modalTitle')}
                 open={isModalShown}
                 onCancel={onCloseModel}
                 footer={null}
@@ -164,7 +166,7 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
                     model.labels?.length ? (
                         <>
                             <div className='cvat-model-info-container'>
-                                <Text className='cvat-model-info-modal-labels-title'>Labels:</Text>
+                                <Text className='cvat-model-info-modal-labels-title'>{t('models.labels')}</Text>
                             </div>
                             <div className='cvat-model-info-container cvat-model-info-modal-labels-list'>
                                 {model.labels.map((label) => <Tag key={label.name}>{label.name}</Tag>)}
@@ -177,10 +179,10 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
                     <Col span={15}>
                         <Row>
                             <Col span={8}>
-                                <Text strong>Provider</Text>
+                                <Text strong>{t('models.provider')}</Text>
                             </Col>
                             <Col>
-                                <Text strong>Type</Text>
+                                <Text strong>{t('models.type')}</Text>
                             </Col>
                         </Row>
                         <Row>
@@ -196,7 +198,7 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
                         <Col>
                             <Row>
                                 <Col>
-                                    <Text strong>Owner</Text>
+                                    <Text strong>{t('models.owner')}</Text>
                                 </Col>
                             </Row>
                             <Row>

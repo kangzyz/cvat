@@ -41,13 +41,13 @@ function RemoveAnnotationsConfirm(props: RemoveAnnotationsConfirmProps): JSX.Ele
         <Modal
             destroyOnClose
             open={open}
-            title='Remove Annotations'
+            title='移除标注'
             className='cvat-modal-confirm-remove-annotation'
             okButtonProps={{
                 type: 'primary',
                 danger: true,
             }}
-            okText='Remove'
+            okText='移除'
             onCancel={onClose}
             onOk={() => {
                 onRemove(removeFrom, removeUpTo, removeOnlyKeyframes);
@@ -55,9 +55,9 @@ function RemoveAnnotationsConfirm(props: RemoveAnnotationsConfirmProps): JSX.Ele
             }}
         >
             <div>
-                <Text>You are about to remove all annotations from every frame. </Text>
-                <Text>If you want to remove them from certain frames only, select a range below. </Text>
-                <Text>Changes take effect only when you save the job.</Text>
+                <Text>你即将移除每一帧上的所有标注。</Text>
+                <Text>如果只想移除部分帧上的标注，请在下方选择范围。</Text>
+                <Text>更改仅在保存作业后生效。</Text>
                 <br />
                 <br />
                 <br />
@@ -65,10 +65,10 @@ function RemoveAnnotationsConfirm(props: RemoveAnnotationsConfirmProps): JSX.Ele
                     bordered={false}
                     items={[{
                         key: 1,
-                        label: <Text>Select Range</Text>,
+                        label: <Text>选择范围</Text>,
                         children: (
                             <>
-                                <Text>From: </Text>
+                                <Text>从：</Text>
                                 <InputNumber
                                     min={0}
                                     max={stopFrame}
@@ -76,7 +76,7 @@ function RemoveAnnotationsConfirm(props: RemoveAnnotationsConfirmProps): JSX.Ele
                                         setRemoveFrom(value ?? undefined);
                                     }}
                                 />
-                                <Text>  To: </Text>
+                                <Text>  到：</Text>
                                 <InputNumber
                                     min={0}
                                     max={stopFrame}
@@ -84,7 +84,7 @@ function RemoveAnnotationsConfirm(props: RemoveAnnotationsConfirmProps): JSX.Ele
                                         setRemoveUpTo(value ?? undefined);
                                     }}
                                 />
-                                <CVATTooltip title='Applicable only for annotations in range'>
+                                <CVATTooltip title='仅适用于范围内的标注'>
                                     <br />
                                     <br />
                                     <Checkbox
@@ -93,8 +93,7 @@ function RemoveAnnotationsConfirm(props: RemoveAnnotationsConfirmProps): JSX.Ele
                                             setRemoveOnlyKeyframes(check.target.checked);
                                         }}
                                     >
-                                        Delete only keyframes for tracks
-                                    </Checkbox>
+                                        仅删除轨迹关键帧</Checkbox>
                                 </CVATTooltip>
                             </>
                         ),

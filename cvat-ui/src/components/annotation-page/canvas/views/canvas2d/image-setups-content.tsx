@@ -44,18 +44,18 @@ export default function ImageSetupsContent(): JSX.Element {
 
     return (
         <div className='cvat-canvas-image-setups-content'>
-            <Text>Image grid</Text>
+            <Text>图像网格</Text>
             <hr />
             <Row justify='space-between' align='middle' gutter={8}>
                 <Col span={1} />
                 <Col span={6}>
-                    <Text className='cvat-text-color'> Size </Text>
+                    <Text className='cvat-text-color'> 大小</Text>
                 </Col>
                 <Col span={8}>
-                    <Text className='cvat-text-color'> Color </Text>
+                    <Text className='cvat-text-color'> 颜色</Text>
                 </Col>
                 <Col span={8}>
-                    <Text className='cvat-text-color'> Opacity </Text>
+                    <Text className='cvat-text-color'> 不透明度</Text>
                 </Col>
             </Row>
             <Row justify='space-between' align='middle' gutter={8}>
@@ -93,20 +93,15 @@ export default function ImageSetupsContent(): JSX.Element {
                         }}
                     >
                         <Select.Option key='white' value={GridColor.White}>
-                            White
-                        </Select.Option>
+                            白色</Select.Option>
                         <Select.Option key='black' value={GridColor.Black}>
-                            Black
-                        </Select.Option>
+                            黑色</Select.Option>
                         <Select.Option key='red' value={GridColor.Red}>
-                            Red
-                        </Select.Option>
+                            红色</Select.Option>
                         <Select.Option key='green' value={GridColor.Green}>
-                            Green
-                        </Select.Option>
+                            绿色</Select.Option>
                         <Select.Option key='blue' value={GridColor.Blue}>
-                            Blue
-                        </Select.Option>
+                            蓝色</Select.Option>
                     </Select>
                 </Col>
                 <Col span={8} className='cvat-image-setups-grid-opacity'>
@@ -122,13 +117,13 @@ export default function ImageSetupsContent(): JSX.Element {
                     />
                 </Col>
             </Row>
-            <Text>Color settings</Text>
+            <Text>颜色设置</Text>
             <hr />
             <Row justify='space-around'>
                 <Col span={24}>
                     <Row className='cvat-image-setups-brightness'>
                         <Col span={6}>
-                            <Text className='cvat-text-color'> Brightness </Text>
+                            <Text className='cvat-text-color'> 亮度</Text>
                         </Col>
                         <Col span={12}>
                             <Slider
@@ -143,7 +138,7 @@ export default function ImageSetupsContent(): JSX.Element {
                     </Row>
                     <Row className='cvat-image-setups-contrast'>
                         <Col span={6}>
-                            <Text className='cvat-text-color'> Contrast </Text>
+                            <Text className='cvat-text-color'> 对比度</Text>
                         </Col>
                         <Col span={12}>
                             <Slider
@@ -158,7 +153,7 @@ export default function ImageSetupsContent(): JSX.Element {
                     </Row>
                     <Row className='cvat-image-setups-saturation'>
                         <Col span={6}>
-                            <Text className='cvat-text-color'> Saturation </Text>
+                            <Text className='cvat-text-color'> 饱和度</Text>
                         </Col>
                         <Col span={12}>
                             <Slider
@@ -186,8 +181,7 @@ export default function ImageSetupsContent(): JSX.Element {
                             dispatch(resetImageFilters());
                         }}
                     >
-                        Reset color settings
-                    </Button>
+                        重置颜色设置</Button>
                 </Col>
             </Row>
         </div>

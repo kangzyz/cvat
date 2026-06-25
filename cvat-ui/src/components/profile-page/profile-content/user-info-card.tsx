@@ -67,7 +67,7 @@ function UserInfoCard(): JSX.Element {
     };
 
     return (
-        <Card title='Personal Information' className='cvat-profile-info-card'>
+        <Card title='个人信息' className='cvat-profile-info-card'>
             <Form
                 form={form}
                 layout='vertical'
@@ -77,7 +77,7 @@ function UserInfoCard(): JSX.Element {
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
-                            label='First Name'
+                            label='名'
                             name='firstName'
                             rules={validationRules.firstName}
                         >
@@ -86,7 +86,7 @@ function UserInfoCard(): JSX.Element {
                     </Col>
                     <Col span={12}>
                         <Form.Item
-                            label='Last Name'
+                            label='姓'
                             name='lastName'
                             rules={validationRules.lastName}
                         >
@@ -95,14 +95,14 @@ function UserInfoCard(): JSX.Element {
                     </Col>
                 </Row>
                 <Form.Item
-                    label='Email'
+                    label='邮箱'
                     name='email'
                     rules={validationRules.email}
                 >
                     <Input disabled />
                 </Form.Item>
                 <Form.Item
-                    label='Username'
+                    label='用户名'
                     name='username'
                     rules={validationRules.userName}
                 >
@@ -115,8 +115,7 @@ function UserInfoCard(): JSX.Element {
                             type='primary'
                             htmlType='submit'
                         >
-                            Save changes
-                        </Button>
+                            保存更改</Button>
                     </Row>
                 </Form.Item>
             </Form>

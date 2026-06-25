@@ -5,6 +5,7 @@
 import React, { useState, useCallback } from 'react';
 import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { CombinedState } from 'reducers';
 import Button from 'antd/lib/button';
 import { Key } from 'antd/lib/table/interface';
@@ -43,6 +44,7 @@ function AllocationTable(props: Readonly<Props>): JSX.Element | null {
         task, gtJobId, gtJobMeta, validationLayout,
         onDeleteFrames, onRestoreFrames, pageSizeData,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
 
     const history = useHistory();
     const [selection, setSelection] = useState<{ selectedRowKeys: Key[], selectedRows: RowData[] }>({
@@ -95,7 +97,7 @@ function AllocationTable(props: Readonly<Props>): JSX.Element | null {
 
     const columns = [
         {
-            title: 'Frame',
+            title: t('quality.table.frame'),
             dataIndex: 'frame',
             key: 'frame',
             align: 'center' as const,
@@ -116,7 +118,7 @@ function AllocationTable(props: Readonly<Props>): JSX.Element | null {
             ),
         },
         {
-            title: 'Name',
+            title: t('quality.table.name'),
             dataIndex: 'name',
             key: 'name',
             align: 'center' as const,
@@ -143,12 +145,12 @@ function AllocationTable(props: Readonly<Props>): JSX.Element | null {
             },
         },
         {
-            title: 'Actions',
+            title: t('quality.table.actions'),
             dataIndex: 'active',
             key: 'actions',
             filters: [
-                { text: 'Active', value: true },
-                { text: 'Excluded', value: false },
+                { text: t('quality.table.active'), value: true },
+                { text: t('quality.table.excluded'), value: false },
             ],
             align: 'center' as const,
             sorter: sorter('active'),
@@ -172,7 +174,7 @@ function AllocationTable(props: Readonly<Props>): JSX.Element | null {
 
     return (
         <CVATTable
-            tableTitle='Frames'
+            tableTitle={t('quality.table.frames')}
             searchDataIndex={['name']}
             csvExport={{ filename: `allocation-table-task_${task.id}.csv` }}
             className='cvat-frame-allocation-table'

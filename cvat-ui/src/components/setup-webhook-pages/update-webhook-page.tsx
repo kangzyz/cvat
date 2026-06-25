@@ -35,7 +35,7 @@ function UpdateWebhookPage(): JSX.Element {
                 }
             }).catch((error: unknown) => {
                 notification.error({
-                    message: 'Failed to fetch the webhook',
+                    message: '获取 Webhook 失败',
                     description: error instanceof Error ? error.message : 'Unknown error',
                 });
             });
@@ -50,8 +50,7 @@ function UpdateWebhookPage(): JSX.Element {
                 <Col md={20} lg={16} xl={14} xxl={9}>
                     <Button className='cvat-webhooks-go-back' onClick={() => history.goBack()} type='link' size='large'>
                         <LeftOutlined />
-                        Back to webhooks
-                    </Button>
+                        返回 Webhook</Button>
                 </Col>
             </Row>
             <Row justify='center' align='top' className='cvat-create-webhook-form-wrapper'>

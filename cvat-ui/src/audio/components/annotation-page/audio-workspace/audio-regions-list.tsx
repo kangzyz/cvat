@@ -14,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import { ActiveControl, ColorBy } from 'reducers';
 import { AudioIntervalState, Label } from 'cvat-core-wrapper';
+import i18n from 'i18n';
 import { toClipboard } from 'utils/to-clipboard';
 import { formatTimeShort } from 'audio/utils/format-audio-time';
 import { hexToRgbComponents } from 'audio/utils/hex-color';
@@ -318,7 +319,9 @@ export default function AudioRegionsList(props: Props): JSX.Element {
     );
 
     if (!intervals.length) {
-        const description = filtersActive ? 'No intervals match filters' : 'No intervals created';
+        const description = filtersActive ?
+            i18n.t('audioPlugins:audio.list.noIntervalsMatchFilters') :
+            i18n.t('audioPlugins:audio.list.noIntervalsCreated');
         return (
             <div className='cvat-audio-regions-list-wrapper'>
                 {header}

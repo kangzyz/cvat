@@ -12,6 +12,7 @@ import notification from 'antd/lib/notification';
 
 import { FilterIcon, FullscreenIcon, GuideIcon } from 'icons';
 import config from 'config';
+import i18n from 'i18n';
 import { Job, JobStage, JobState } from 'cvat-core-wrapper';
 import { Workspace } from 'reducers';
 
@@ -62,8 +63,8 @@ function AudioRightGroup(props: Props): JSX.Element {
             }
         }).catch((error: unknown) => {
             notification.error({
-                message: 'Could not receive annotation guide',
-                description: error instanceof Error ? error.message : 'Unknown error',
+                message: i18n.t('audioPlugins:audio.topBar.couldNotReceiveGuide'),
+                description: error instanceof Error ? error.message : i18n.t('audioPlugins:common.unknownError'),
             });
         });
     }, [jobInstance]);
@@ -115,7 +116,7 @@ function AudioRightGroup(props: Props): JSX.Element {
                 }}
             >
                 <Icon component={FullscreenIcon} />
-                Fullscreen
+                {i18n.t('audioPlugins:audio.topBar.fullscreen')}
             </Button>
             { jobInstance.guideId !== null && (
                 <Button
@@ -124,7 +125,7 @@ function AudioRightGroup(props: Props): JSX.Element {
                     onClick={openGuide}
                 >
                     <Icon component={GuideIcon} />
-                    Guide
+                    {i18n.t('audioPlugins:audio.topBar.guide')}
                 </Button>
             )}
             <Button
@@ -133,7 +134,7 @@ function AudioRightGroup(props: Props): JSX.Element {
                 onClick={showStatistics}
             >
                 <InfoCircleOutlined />
-                Info
+                {i18n.t('audioPlugins:audio.topBar.info')}
             </Button>
             <Button
                 type='link'
@@ -143,7 +144,7 @@ function AudioRightGroup(props: Props): JSX.Element {
                 onClick={showFilters}
             >
                 <Icon component={FilterIcon} />
-                Filters
+                {i18n.t('audioPlugins:audio.topBar.filters')}
             </Button>
             <div>
                 <Select
@@ -153,7 +154,7 @@ function AudioRightGroup(props: Props): JSX.Element {
                     value={workspace}
                 >
                     <Select.Option key={Workspace.AUDIO} value={Workspace.AUDIO}>
-                        {Workspace.AUDIO}
+                        {i18n.t('audioPlugins:audio.topBar.workspace')}
                     </Select.Option>
                 </Select>
             </div>

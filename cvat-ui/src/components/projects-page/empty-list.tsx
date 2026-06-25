@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Text from 'antd/lib/typography/Text';
 import { Row, Col } from 'antd/lib/grid';
 import Empty from 'antd/lib/empty';
@@ -15,26 +16,27 @@ interface Props {
 
 export default function EmptyListComponent(props: Props): JSX.Element {
     const { notFound } = props;
+    const { t } = useTranslation('resources');
 
     return (
         <div className='cvat-empty-projects-list'>
             <Empty description={notFound ? (
-                <Text strong>No results matched your search...</Text>
+                <Text strong>{t('empty.noSearchResults')}</Text>
             ) : (
                 <>
                     <Row justify='center' align='middle'>
                         <Col>
-                            <Text strong>No projects created yet...</Text>
+                            <Text strong>{t('empty.noProjectsCreated')}</Text>
                         </Col>
                     </Row>
                     <Row justify='center' align='middle'>
                         <Col>
-                            <Text type='secondary'>To get started with your annotation project</Text>
+                            <Text type='secondary'>{t('empty.getStarted')}</Text>
                         </Col>
                     </Row>
                     <Row justify='center' align='middle'>
                         <Col>
-                            <Link to='/projects/create'>create a new one</Link>
+                            <Link to='/projects/create'>{t('empty.createNewOne')}</Link>
                         </Col>
                     </Row>
                 </>

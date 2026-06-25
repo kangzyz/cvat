@@ -44,7 +44,7 @@ function getTopRightPosition(shape: SVG.Rect | SVG.Circle): { x: number; y: numb
         };
     }
 
-    throw new Error('Unsupported shape type');
+    throw new Error('不支持的形状类型');
 }
 
 function deleteButtonPath(r: number): string {
@@ -236,11 +236,11 @@ export class InteractionHandlerImpl implements InteractionHandler {
         this.onMessage([{
             type: 'text',
             icon: 'info',
-            content: hint ?? 'Draw rectangle prompts',
+            content: hint ?? '绘制矩形提示',
         }, {
             type: 'list',
             content: [
-                'Hold <Mouse Wheel> to drag the image',
+                '按住 <鼠标滚轮> 拖动图像',
             ],
             className: 'cvat-canvas-notification-list-shortcuts',
         }], 'interaction');
@@ -255,20 +255,20 @@ export class InteractionHandlerImpl implements InteractionHandler {
         const textPrompts = [];
         if (pointsType === 'any') {
             textPrompts.push(
-                'Click <Left Button> to add a positive point',
-                'Click <Right Button> to add a negative point',
+                '点击 <左键> 添加正点',
+                '点击 <右键> 添加负点',
             );
         }
 
         this.onMessage([{
             type: 'text',
             icon: 'info',
-            content: hint ?? 'Draw point prompts',
+            content: hint ?? '绘制点提示',
         }, {
             type: 'list',
             content: [
                 ...textPrompts,
-                'Hold <Mouse Wheel> to drag the image',
+                '按住 <鼠标滚轮> 拖动图像',
             ],
             className: 'cvat-canvas-notification-list-shortcuts',
         }], 'interaction');
@@ -353,7 +353,7 @@ export class InteractionHandlerImpl implements InteractionHandler {
                 };
             }
 
-            throw new Error('Unknown shape type');
+            throw new Error('未知形状类型');
         });
 
         this.onInteraction(transformed.concat(extras), finished);

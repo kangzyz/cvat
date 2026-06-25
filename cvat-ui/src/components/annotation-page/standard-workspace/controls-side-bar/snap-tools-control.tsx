@@ -33,13 +33,12 @@ function SnapToolsControlComponent(): JSX.Element {
             <Row justify='start'>
                 <Col>
                     <Text className='cvat-text-color' strong>
-                        Snap Tools
-                    </Text>
+                        吸附工具</Text>
                 </Col>
             </Row>
             <Row justify='start' className='cvat-snap-tools-row'>
                 <Col>
-                    <CVATTooltip title={`Snap to contour ${normalizedKeyMap.SWITCH_AUTOMATIC_BORDERING}`}>
+                    <CVATTooltip title={`吸附到轮廓 ${normalizedKeyMap.SWITCH_AUTOMATIC_BORDERING}`}>
                         <Button
                             className={
                                 automaticBordering ?
@@ -55,7 +54,7 @@ function SnapToolsControlComponent(): JSX.Element {
                     </CVATTooltip>
                 </Col>
                 <Col>
-                    <CVATTooltip title={`Snap to point ${normalizedKeyMap.SWITCH_SNAP_TO_POINT}`}>
+                    <CVATTooltip title={`吸附到点 ${normalizedKeyMap.SWITCH_SNAP_TO_POINT}`}>
                         <Button
                             className={
                                 snapToPoint ?
@@ -80,7 +79,7 @@ function SnapToolsControlComponent(): JSX.Element {
             overlayClassName='cvat-snap-tools-control-popover'
             content={popoverContent}
         >
-            <CVATTooltip title='Snap tools' placement='right'>
+            <CVATTooltip title='吸附工具' placement='right'>
                 <Icon
                     className={`cvat-snap-tools-control ${isAnySnapEnabled ? 'cvat-snap-tools-active' : ''}`}
                     component={SnapToolsIcon}

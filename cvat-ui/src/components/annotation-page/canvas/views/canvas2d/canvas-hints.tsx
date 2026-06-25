@@ -83,8 +83,7 @@ export default class CanvasTipsComponent extends React.PureComponent<{}, State> 
                             className='cvat-canvas-hints-hide-button'
                             type='link'
                         >
-                            Hide
-                        </Button>
+                            隐藏</Button>
                     )}
                 </div>
             );

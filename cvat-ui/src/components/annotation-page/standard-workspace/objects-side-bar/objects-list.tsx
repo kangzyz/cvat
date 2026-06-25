@@ -302,7 +302,7 @@ function ObjectListComponent(props: Props): JSX.Element {
 
         return (
             <div className='cvat-objects-sidebar-z-layer-mark cvat-objects-sidebar-z-layer-mark-dragging'>
-                <Text strong>Layer {zOrder}</Text>
+                <Text strong>图层{zOrder}</Text>
                 <span className='cvat-objects-sidebar-z-layer-visibility-indicator'>
                     {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
                 </span>
@@ -335,8 +335,8 @@ function ObjectListComponent(props: Props): JSX.Element {
                 {statesOrdering === StatesOrdering.LAYER ? (
                     <div className='cvat-objects-sidebar-z-layers-panel'>
                         <div className='cvat-objects-sidebar-z-layers-title'>
-                            <Text strong>Layer stack</Text>
-                            <CVATTooltip title='Compact layers'>
+                            <Text strong>图层堆栈</Text>
+                            <CVATTooltip title='紧凑图层'>
                                 <Button
                                     className='cvat-objects-sidebar-z-layers-compact-button'
                                     type='text'

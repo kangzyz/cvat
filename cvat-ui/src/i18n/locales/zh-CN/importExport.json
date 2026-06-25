@@ -1,0 +1,124 @@
+{
+    "resourceTypes": {
+        "project": "项目",
+        "task": "任务",
+        "job": "作业",
+        "dataset": "数据集",
+        "annotation": "标注",
+        "annotations": "标注",
+        "backup": "备份",
+        "items": "项目"
+    },
+    "storageLocations": {
+        "local": "本地",
+        "cloud": "云"
+    },
+    "fileNamePrefixes": {
+        "dataset": "数据集",
+        "backup": "备份"
+    },
+    "fields": {
+        "exportFormat": "导出格式",
+        "importFormat": "导入格式",
+        "saveImages": "保存图像",
+        "nameTemplate": "名称模板",
+        "customName": "自定义名称",
+        "fileName": "文件名",
+        "convertMasksToPolygons": "将蒙版转换为多边形",
+        "useDefaultSettings": "使用默认设置",
+        "importMode": "导入模式",
+        "lightweightBackup": "尽可能使用轻量备份"
+    },
+    "actions": {
+        "appendAnnotations": "追加标注",
+        "replaceAnnotations": "替换标注",
+        "cancel": "取消"
+    },
+    "options": {
+        "replace": "替换",
+        "append": "追加"
+    },
+    "placeholders": {
+        "selectDatasetFormat": "选择数据集格式",
+        "selectResourceFormat": "选择{{resource}}格式",
+        "customDatasetName": "数据集的自定义名称",
+        "customBackupName": "备份文件的自定义名称",
+        "datasetFileName": "数据集文件名",
+        "backupFileName": "备份文件名"
+    },
+    "validation": {
+        "formatRequired": "请选择格式",
+        "fileRequired": "文件为必填项",
+        "selectFormatFirst": "请先选择格式",
+        "nameRequired": "请指定名称",
+        "onlyZipDataset": "导入数据集仅支持 ZIP 压缩包",
+        "onlyZipBackup": "仅支持 ZIP 压缩包",
+        "invalidFormatExtension": "{{format}} 格式只能使用扩展名为 {{extensions}} 的文件",
+        "noBackupFile": "未指定备份文件"
+    },
+    "modals": {
+        "exportDatasetBulkTitle": "将 {{count}} 个{{instanceType}}导出为数据集",
+        "exportDatasetTitle": "将{{instanceType}}导出为数据集",
+        "exportBackupBulkTitle": "导出 {{count}} 个{{instanceType}}",
+        "exportBackupTitle": "导出{{instanceType}} #{{id}}",
+        "importTitle": "将{{resource}}导入到{{instance}}",
+        "importBackupTitle": "从备份创建{{instanceType}}",
+        "appendAnnotationsTitle": "追加标注？",
+        "replaceAnnotationsTitle": "替换现有标注？"
+    },
+    "help": {
+        "datasetNameTemplate": "生成数据集名称时会使用模板。",
+        "backupNameTemplate": "生成备份名称时会使用模板。",
+        "exportDatasetDefaultStorage": "导出到{{location}}存储{{cloudId}}",
+        "exportBackupDefaultStorage": "将备份导出到{{location}}存储{{cloudId}}",
+        "importDefaultStorage": "从{{location}}存储{{cloudId}}导入",
+        "targetDatasetStorage": "指定导出数据集的目标存储",
+        "targetBackupStorage": "指定导出{{instanceType}}的目标存储",
+        "sourceBackupStorage": "指定包含备份的源存储",
+        "projectLabelsImported": "将从数据集中导入标签",
+        "projectLabelsUsed": "将使用项目中的标签",
+        "masksOnly": "该选项适用于仅使用蒙版的格式",
+        "importModeIntro": "选择如何处理现有标注。",
+        "replaceMode": "替换：导入前移除现有标注。",
+        "appendMode": "追加：保留现有标注并添加导入内容。",
+        "appendAnnotationsContent": "上传的标注会添加到此{{instanceType}}的现有标注中。现有标注不会被删除。",
+        "replaceAnnotationsContent": "这会移除此{{instanceType}}中的当前标注，并改为上传所选文件中的标注。",
+        "lightweightBackup": "如果任务使用云存储中的媒体，可以创建不包含媒体的备份。从轻量备份恢复的任务需要手动连接到云存储。"
+    },
+    "upload": {
+        "dragFile": "点击或拖拽文件到此区域"
+    },
+    "notifications": {
+        "bulkOperationDataset": "正在导出{{instanceType}} #{{id}} 的数据集 [{{current}}/{{total}}]",
+        "bulkOperationBackup": "正在导出{{instanceType}} #{{id}} 的备份 [{{current}}/{{total}}]",
+        "bulkExportStarted": "批量{{resource}}导出已开始",
+        "bulkExportStartedDescription": "批量{{resource}}导出已开始。你可以在[请求页面](/requests)查看进度并下载文件。",
+        "exportStarted": "{{resource}}导出已开始",
+        "exportStartedDescription": "{{resource}}导出已针对{{instanceType}}开始。你可以在[请求页面](/requests)查看进度并下载文件。",
+        "bulkBackupExportStarted": "批量备份导出已开始",
+        "bulkBackupExportStartedDescription": "批量备份导出已开始。你可以在[请求页面](/requests)查看进度。",
+        "backupExportStarted": "备份导出已开始",
+        "backupExportStartedDescription": "备份导出已开始。你可以在[请求页面](/requests)查看进度。",
+        "importStarted": "{{resource}}导入已开始",
+        "importStartedDescription": "{{resource}}导入已针对{{instance}}开始。你可以在[请求页面](/requests)查看进度。",
+        "backupCreatingStarted": "正在从备份创建{{instanceType}}",
+        "exportCsvProgress": "正在导出{{resourceName}}：{{loadedCount}} / {{totalCount}}",
+        "exportDatasetFailed": "无法为[{{instanceType}} {{id}}](/{{instanceTypePath}}s/{{id}})导出数据集",
+        "exportFinished": "导出已完成",
+        "exportFinishedLocal": "{{resource}}导出已完成：{{instanceType}} {{id}}。你可以[在此下载](/requests)。",
+        "exportFinishedCloud": "{{resource}}导出已上传到云存储：{{instanceType}} {{id}}。",
+        "exportBackupFailed": "无法导出{{instanceType}} #{{id}}",
+        "backupExportFinished": "备份导出已完成",
+        "backupExportFinishedLocal": "{{instanceType}} {{id}} 的备份已完成。你可以[在此下载](/requests)。",
+        "backupExportFinishedCloud": "{{instanceType}} {{id}} 的备份已上传到云存储。",
+        "annotationsLoaded": "标注已加载到",
+        "datasetImported": "数据集已导入到",
+        "annotationsImportFinished": "标注导入已完成",
+        "datasetImportFinished": "数据集导入已完成",
+        "importDatasetFailed": "无法将数据集导入到[项目 #{{id}}](/projects/{{id}})",
+        "uploadAnnotationFailed": "无法上传[任务 #{{id}}](/tasks/{{id}})的标注",
+        "backupRestored": "{{instanceType}}已成功恢复。点击[这里](/{{instanceTypePath}}s/{{id}})打开",
+        "importBackupFinished": "备份导入已完成",
+        "restoreBackupFailed": "无法恢复{{instanceType}}备份。"
+    }
+}

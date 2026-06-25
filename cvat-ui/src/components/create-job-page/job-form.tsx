@@ -14,6 +14,7 @@ import Select from 'antd/lib/select';
 import InputNumber from 'antd/lib/input-number';
 import Space from 'antd/lib/space';
 import { QuestionCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import CVATTooltip from 'components/common/cvat-tooltip';
 
 import { JobType, MediaType } from 'cvat-core/src/enums';
@@ -56,6 +57,7 @@ const defaultQuantity = 5;
 
 function JobForm(props: Props): JSX.Element {
     const { task } = props;
+    const { t } = useTranslation('forms');
     const isVisionTask = task.mediaType && [MediaType.IMAGE, MediaType.POINT_CLOUD].includes(task.mediaType);
     const visibleSections = isVisionTask ? CV_JOB_FORM_SECTIONS : AUDIO_JOB_FORM_SECTIONS;
     const hasSection = (section: JobFormSection): boolean => visibleSections.includes(section);
@@ -136,20 +138,22 @@ function JobForm(props: Props): JSX.Element {
         onQuantityChange(currentQuantity);
     }, [form, frameSelectionMethod, onQuantityChange, supportsFrameSelection]);
 
-    const description = 'A representative set, 5-15% of randomly chosen frames is recommended';
+    const description = t('help.representativeFrames', {
+        defaultValue: '建议随机选择具有代表性的 5-15% 帧',
+    });
     const jobTypeItem = (
         <Col key={JobFormSection.JOB_TYPE}>
             <Form.Item
                 name='type'
-                label='Job type'
-                rules={[{ required: true, message: 'Please, specify Job type' }]}
+                label={t('fields.jobType')}
+                rules={[{ required: true, message: t('validation.jobTypeRequired') }]}
             >
                 <Select
                     virtual={false}
                     className='cvat-select-job-type'
                 >
                     <Select.Option value={JobType.GROUND_TRUTH}>
-                        Ground truth
+                        {t('options.groundTruth')}
                     </Select.Option>
                 </Select>
             </Form.Item>
@@ -160,8 +164,8 @@ function JobForm(props: Props): JSX.Element {
         <Col key={JobFormSection.FRAME_SELECTION}>
             <Form.Item
                 name='frameSelectionMethod'
-                label='Frame selection method'
-                rules={[{ required: true, message: 'Please, specify frame selection method' }]}
+                label={t('fields.frameSelectionMethod')}
+                rules={[{ required: true, message: t('validation.frameSelectionRequired') }]}
             >
                 <Select
                     virtual={false}
@@ -169,10 +173,10 @@ function JobForm(props: Props): JSX.Element {
                     onChange={setFrameSelectionMethod}
                 >
                     <Select.Option value={FrameSelectionMethod.RANDOM}>
-                        Random
+                        {t('options.random')}
                     </Select.Option>
                     <Select.Option value={FrameSelectionMethod.RANDOM_PER_JOB}>
-                        Random per job
+                        {t('options.randomPerJob')}
                     </Select.Option>
                 </Select>
             </Form.Item>
@@ -188,7 +192,7 @@ function JobForm(props: Props): JSX.Element {
                         label={(
                             <Space>
                                 {frameSelectionMethod === FrameSelectionMethod.RANDOM ?
-                                    'Quantity' : 'Quantity per job'}
+                                    t('fields.quantity') : t('fields.quantityPerJob')}
                                 <CVATTooltip title={description}>
                                     <QuestionCircleOutlined
                                         style={{ opacity: 0.5 }}
@@ -196,7 +200,7 @@ function JobForm(props: Props): JSX.Element {
                                 </CVATTooltip>
                             </Space>
                         )}
-                        rules={[{ required: true, message: 'Please, specify quantity' }]}
+                        rules={[{ required: true, message: t('validation.quantityRequired') }]}
                     >
                         <InputNumber
                             className='cvat-input-frame-quantity'
@@ -214,7 +218,7 @@ function JobForm(props: Props): JSX.Element {
                                 name='frameCount'
                                 label={(
                                     <Space>
-                                        Frame count
+                                        {t('fields.frameCount')}
                                         <CVATTooltip title={description}>
                                             <QuestionCircleOutlined
                                                 style={{ opacity: 0.5 }}
@@ -222,7 +226,7 @@ function JobForm(props: Props): JSX.Element {
                                         </CVATTooltip>
                                     </Space>
                                 )}
-                                rules={[{ required: true, message: 'Please, specify frame count' }]}
+                                rules={[{ required: true, message: t('validation.frameCountRequired') }]}
                             >
                                 <InputNumber
                                     className='cvat-input-frame-count'
@@ -238,7 +242,7 @@ function JobForm(props: Props): JSX.Element {
                 <Col>
                     <Form.Item
                         name='randomSeed'
-                        label='Seed'
+                        label={t('fields.seed')}
                     >
                         <InputNumber
                             className='cvat-input-seed'
@@ -284,7 +288,7 @@ function JobForm(props: Props): JSX.Element {
                             loading={fetching}
                             disabled={fetching}
                         >
-                            Submit
+                            {t('actions.submit')}
                         </Button>
                     </Col>
                 </Row>

@@ -36,7 +36,7 @@ function ApproximationAccuracy(props: Props): React.ReactPortal | null {
                         onChange={onChange}
                     />
                 </Col>
-                <Text type='secondary'>approximation accuracy</Text>
+                <Text type='secondary'>近似精度</Text>
             </Row>,
             target,
         ) :

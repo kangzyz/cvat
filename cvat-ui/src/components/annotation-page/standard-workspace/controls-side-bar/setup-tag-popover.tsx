@@ -29,13 +29,12 @@ function SetupTagPopover(props: Props): JSX.Element {
             <Row justify='start'>
                 <Col>
                     <Text className='cvat-text-color' strong>
-                        Setup tag
-                    </Text>
+                        设置标记</Text>
                 </Col>
             </Row>
             <Row justify='start'>
                 <Col>
-                    <Text className='cvat-text-color'>Label</Text>
+                    <Text className='cvat-text-color'>标签</Text>
                 </Col>
             </Row>
             <Row justify='start'>
@@ -46,7 +45,7 @@ function SetupTagPopover(props: Props): JSX.Element {
                         onChange={onChangeLabel}
                         onEnterPress={() => onSetup()}
                     />
-                    <CVATTooltip title={`Press ${repeatShapeShortcut} to add a tag again`}>
+                    <CVATTooltip title={`按 ${repeatShapeShortcut} 再次添加标记`}>
                         <Button
                             type='primary'
                             className='cvat-add-tag-button'

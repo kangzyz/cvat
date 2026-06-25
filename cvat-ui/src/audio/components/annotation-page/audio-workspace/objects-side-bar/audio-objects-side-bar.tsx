@@ -9,6 +9,7 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import Tabs from 'antd/lib/tabs';
 import Layout from 'antd/lib/layout';
 
+import i18n from 'i18n';
 import { CombinedState } from 'reducers';
 import { collapseSidebar as collapseSidebarAction } from 'actions/annotation-actions';
 import AudioAppearanceBlock from 'audio/components/annotation-page/audio-workspace/audio-appearance-block';
@@ -80,7 +81,11 @@ function AudioObjectsSideBar(props: StateToProps & DispatchToProps & OwnProps): 
                 className='cvat-objects-sidebar-sider'
                 onClick={collapse}
             >
-                {sidebarCollapsed ? <MenuFoldOutlined title='Show' /> : <MenuUnfoldOutlined title='Hide' />}
+                {sidebarCollapsed ? (
+                    <MenuFoldOutlined title={i18n.t('audioPlugins:common.show')} />
+                ) : (
+                    <MenuUnfoldOutlined title={i18n.t('audioPlugins:common.hide')} />
+                )}
             </span>
 
             <Tabs
@@ -89,11 +94,11 @@ function AudioObjectsSideBar(props: StateToProps & DispatchToProps & OwnProps): 
                 className='cvat-objects-sidebar-tabs'
                 items={[{
                     key: 'objects',
-                    label: 'Objects',
+                    label: i18n.t('audioPlugins:common.objects'),
                     children: objectsList,
                 }, {
                     key: 'labels',
-                    label: 'Labels',
+                    label: i18n.t('audioPlugins:common.labels'),
                     forceRender: true,
                     children: <AudioLabelsList />,
                 }]}

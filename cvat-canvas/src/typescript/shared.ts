@@ -314,7 +314,7 @@ export function getSkeletonEdgeCoordinates(edge: SVG.Line): {
 
     const parent = edge.parent() as any as SVG.G;
     if (parent.type !== 'g') {
-        throw new Error('Edge parent must be a group');
+        throw new Error('边的父元素必须是分组');
     }
 
     const dataNodeFrom = edge.attr('data-node-from');
@@ -325,7 +325,7 @@ export function getSkeletonEdgeCoordinates(edge: SVG.Line): {
         .find((element: SVG.Element): boolean => element.attr('data-node-id') === dataNodeTo);
 
     if (!nodeFrom || !nodeTo) {
-        throw new Error(`Edge's nodeFrom ${dataNodeFrom} or nodeTo ${dataNodeTo} do not to refer to any node`);
+        throw new Error(`边的 nodeFrom ${dataNodeFrom} 或 nodeTo ${dataNodeTo} 未指向任何节点`);
     }
 
     x1 = nodeFrom.cx();
@@ -344,7 +344,7 @@ export function getSkeletonEdgeCoordinates(edge: SVG.Line): {
     }
 
     if ([x1, y1, x2, y2].some((coord: number): boolean => typeof coord !== 'number')) {
-        throw new Error(`Edge coordinates must be numbers, got [${x1}, ${y1}, ${x2}, ${y2}]`);
+        throw new Error(`边坐标必须是数字，当前为 [${x1}, ${y1}, ${x2}, ${y2}]`);
     }
 
     return {
@@ -370,7 +370,7 @@ export function setupSkeletonEdges(
             const dataNodeFrom = child.attr('data-node-from');
             const dataNodeTo = child.attr('data-node-to');
             if (!Number.isInteger(dataNodeFrom) || !Number.isInteger(dataNodeTo)) {
-                throw new Error(`Edge nodeFrom and nodeTo must be numbers, got ${dataNodeFrom}, ${dataNodeTo}`);
+                throw new Error(`边的 nodeFrom 和 nodeTo 必须是数字，当前为 ${dataNodeFrom}, ${dataNodeTo}`);
             }
             if (visibleNodeIDs && (!visibleNodeIDs.has(dataNodeFrom) || !visibleNodeIDs.has(dataNodeTo))) {
                 continue;
@@ -598,8 +598,8 @@ export function validateUnionResult(result: martinez.Geometry): void {
     for (const polygon of result) {
         if (polygon.length > 1) {
             throw new Error(
-                'Cannot join these polygons: the operation would create a shape with holes, ' +
-                'which is not supported by CVAT. Please select different polygons or use the mask tool.',
+                '无法合并这些多边形：该操作会创建带孔洞的形状，' +
+                'CVAT 不支持这种形状。请选择其他多边形，或使用蒙版工具。',
             );
         }
     }

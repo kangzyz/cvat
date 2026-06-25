@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import jsonLogic from 'json-logic-js';
 import _ from 'lodash';
@@ -74,7 +75,14 @@ function setUpJobsList(jobs: Job[], newPage: number, pageSize: number): Job[] {
 
 function JobListComponent(props: Readonly<Props>): JSX.Element {
     const { task: taskInstance, onJobUpdate } = props;
+    const { t } = useTranslation('resources');
     const [visibility, setVisibility] = useState(defaultVisibility);
+    const sortingFieldLabels = {
+        ID: t('fields.id'),
+        Assignee: t('fields.assignee'),
+        State: t('fields.state'),
+        Stage: t('fields.stage'),
+    };
 
     const history = useHistory();
     const { id: taskId } = taskInstance;
@@ -130,7 +138,7 @@ function JobListComponent(props: Readonly<Props>): JSX.Element {
             <div className='cvat-jobs-list-wrapper'>
                 <Row>
                     <Col>
-                        <Text className='cvat-text-color cvat-jobs-header'> Jobs </Text>
+                        <Text className='cvat-text-color cvat-jobs-header'> {t('headings.jobs')} </Text>
                         <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                     </Col>
                 </Row>
@@ -142,6 +150,7 @@ function JobListComponent(props: Readonly<Props>): JSX.Element {
                                 setVisibility({ ...defaultVisibility, sorting: visible })
                             )}
                             defaultFields={query.sort?.split(',') || ['-ID']}
+                            sortingFieldLabels={sortingFieldLabels}
                             sortingFields={['ID', 'Assignee', 'State', 'Stage']}
                             onApplySorting={(sort: string | null) => {
                                 setQuery({
@@ -201,7 +210,7 @@ function JobListComponent(props: Readonly<Props>): JSX.Element {
                     </Col>
                 </div>
             ) : (
-                <Empty description='No jobs found' />
+                <Empty description={t('empty.noJobsFound')} />
             )}
             <Row justify='center' align='middle'>
                 <Col>

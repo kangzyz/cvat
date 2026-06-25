@@ -26,15 +26,14 @@ function PaidFeaturePlaceholder(props: Readonly<Props>): JSX.Element | null {
         <div className='cvat-paid-feature-placeholder-wrapper'>
             <Card
                 className='cvat-paid-feature-placeholder'
-                cover={<img src='/assets/paid-feature.png' alt='some text' />}
+                cover={<img src='/assets/paid-feature.png' alt='一些文本' />}
             >
                 <Row className='cvat-paid-feature-placeholder-inner-wrapper'>
                     <Col span={24}>
                         <Row justify='center'>
                             <Col className='cvat-paid-feature-placeholder-title'>
                                 <Text>
-                                    You discovered a premium feature
-                                </Text>
+                                    你发现了一个高级功能</Text>
                             </Col>
                         </Row>
                         <Row justify='center'>
@@ -55,8 +54,7 @@ function PaidFeaturePlaceholder(props: Readonly<Props>): JSX.Element | null {
                                         window.open(url, '_blank');
                                     }}
                                 >
-                                    Check pricing
-                                </Button>
+                                    查看价格</Button>
                             </Col>
                         </Row>
                     </Col>

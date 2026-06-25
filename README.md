@@ -20,6 +20,25 @@
 [Academy](https://www.cvat.ai/resources/academy) ·
 [Blog](https://www.cvat.ai/resources/blog)
 
+## 中文说明
+
+本仓库当前包含 CVAT 前端简体中文本地化改造，目标是在保持原有接口、枚举值、路由和数据格式不变的前提下，将用户可见的前端页面、弹窗、通知、校验提示、快捷键说明、标注工作区提示、音频工作区、插件提示以及 canvas/canvas3d 可见消息统一调整为标准中文。
+
+本地构建与部署可使用 Docker Compose：
+
+```bash
+# 构建本地开发镜像（包含 cvat/server:dev 和 cvat/ui:dev）
+docker compose -f docker-compose.yml -f docker-compose.dev.yml build
+
+# 启动本地服务
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# 首次部署后创建管理员账号
+docker exec -it cvat_server bash -ic 'python3 ~/manage.py createsuperuser'
+```
+
+启动完成后，在浏览器打开 [http://localhost:8080](http://localhost:8080) 访问本地 CVAT。若修改了 `CVAT_HOST`，请使用对应的主机名或域名访问。
+
 ## What is CVAT Community?
 
 **CVAT Community** is the free, self-hosted open-source edition of [CVAT](https://www.cvat.ai/) — one of

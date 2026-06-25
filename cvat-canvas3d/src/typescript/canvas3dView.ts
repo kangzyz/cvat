@@ -940,7 +940,7 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                 detail: {
                     domain,
                     exception: exception instanceof Error ?
-                        exception : new Error(`Unknown exception: "${exception}"`),
+                        exception : new Error(`未知异常：“${exception}”`),
                 },
             }),
         );
@@ -1392,9 +1392,9 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                             canvasContext.textAlign = 'center';
                             canvasContext.lineWidth = fontSize / 20;
                             canvasContext.strokeStyle = 'white';
-                            canvasContext.strokeText('IMAGE REMOVED', width / 2, height / 2);
+                            canvasContext.strokeText('图像已移除', width / 2, height / 2);
                             canvasContext.fillStyle = 'black';
-                            canvasContext.fillText('IMAGE REMOVED', width / 2, height / 2);
+                            canvasContext.fillText('图像已移除', width / 2, height / 2);
                             this.dispatchEvent(new CustomEvent('canvas.setup'));
                         } finally {
                             model.unlockFrameUpdating();
@@ -1638,7 +1638,7 @@ export class Canvas3dViewImpl implements Canvas3dView, Listener {
                 model.data.activeElement.clientID = null;
             }
         } else if (reason === UpdateReasons.DATA_FAILED) {
-            this.onError(model.exception, 'data fetching');
+            this.onError(model.exception, '数据获取');
         }
     }
 

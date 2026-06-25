@@ -117,7 +117,7 @@ function modelData({
 
 const samPlugin: SAMPlugin = {
     name: 'Segment Anything',
-    description: 'Handles non-default SAM serverless function output',
+    description: '处理非默认分割模型无服务器函数输出',
     cvat: {
         jobs: {
             get: {

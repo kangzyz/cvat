@@ -14,6 +14,7 @@ import { RcFile } from 'antd/lib/upload/interface';
 import Icon, {
     DeleteOutlined, DownloadOutlined, DragOutlined, LineOutlined, PictureOutlined, UploadOutlined,
 } from '@ant-design/icons';
+import i18n from 'i18n';
 
 import { PointIcon } from 'icons';
 import GlobalHotKeys from 'utils/mousetrap-react';
@@ -52,8 +53,8 @@ interface State {
 
 const componentShortcuts = {
     CANCEL_SKELETON_EDGE: {
-        name: 'Cancel skeleton drawing',
-        description: 'Interrupts drawing a new skeleton edge',
+        name: i18n.t('forms:help.cancelSkeletonDrawing', { defaultValue: '取消骨架绘制' }),
+        description: i18n.t('forms:help.cancelSkeletonEdge'),
         sequences: ['esc'],
         scope: ShortcutScope.LABELS_EDITOR,
     },
@@ -623,7 +624,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
     public wrappedSubmit(): SkeletonConfiguration {
         const svg = this.svgRef.current;
         if (!svg) {
-            throw new Error('SVG reference is null');
+            throw new Error(i18n.t('forms:validation.svgRefNull'));
         }
 
         const sublabels = Object.values(this.labels);
@@ -640,7 +641,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                         child.setAttribute('data-label-name', elementLabel.name);
                     } else {
                         throw new Error(
-                            `Element ${elementID} does not refer to any label`,
+                            i18n.t('forms:validation.skeletonElementNoLabel', { id: elementID }),
                         );
                     }
                 }
@@ -652,7 +653,10 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                     const node2 = svg.querySelector(`[data-node-to="${dataNodeTo}"]`);
                     if (!node1 || !node2) {
                         throw new Error(
-                            `Edge's nodeFrom ${dataNodeFrom} or nodeTo ${dataNodeTo} do not to refer to any node`,
+                            i18n.t('forms:validation.skeletonEdgeNoNode', {
+                                from: dataNodeFrom,
+                                to: dataNodeTo,
+                            }),
                         );
                     }
                 }
@@ -660,14 +664,14 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
         });
 
         if (!sublabels.length || !elements) {
-            throw new Error('At least one skeleton element is necessary');
+            throw new Error(i18n.t('forms:validation.skeletonNeedsElement'));
         }
 
         if (elements !== sublabels.length) {
-            throw new Error(
-                `Skeleton configurator state is not consistent. Number of sublabels ${sublabels.length} ` +
-                `differs from number of elements ${elements}`,
-            );
+            throw new Error(i18n.t('forms:validation.skeletonStateInconsistent', {
+                sublabels: sublabels.length,
+                elements,
+            }));
         }
 
         const svgText = Array.from(svg.children)
@@ -752,8 +756,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                             beforeUpload={(file: RcFile) => {
                                 if (!['image/jpeg', 'image/png'].includes(file.type)) {
                                     notification.error({
-                                        message:
-                                            `File must be a JPEG or PNG image. Detected mime type is "${file.type}"`,
+                                        message: i18n.t('forms:notifications.jpegPngOnly', { type: file.type }),
                                     });
                                 }
                                 this.setState({ image: file }, () => {
@@ -763,7 +766,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                             }}
                         >
                             <p className='ant-upload-drag-icon'>
-                                <CVATTooltip title='Upload a background image'>
+                                <CVATTooltip title={i18n.t('forms:help.uploadBackground')}>
                                     <Button className='cvat-upload-skeleton-constructor-background' icon={<PictureOutlined />} />
                                 </CVATTooltip>
                             </p>
@@ -781,25 +784,25 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                                     this.setState({ activeTool: e.target.value });
                                 }}
                             >
-                                <CVATTooltip title='Click the canvas to add a point'>
+                                <CVATTooltip title={i18n.t('forms:help.clickCanvasAddPoint')}>
                                     <Radio.Button defaultChecked value='point'>
                                         <Icon component={PointIcon} />
                                     </Radio.Button>
                                 </CVATTooltip>
 
-                                <CVATTooltip title='Click and drag points'>
+                                <CVATTooltip title={i18n.t('forms:help.clickDragPoints')}>
                                     <Radio.Button defaultChecked value='drag'>
                                         <DragOutlined />
                                     </Radio.Button>
                                 </CVATTooltip>
 
-                                <CVATTooltip title='Click two points to setup an edge'>
+                                <CVATTooltip title={i18n.t('forms:help.clickTwoPointsEdge')}>
                                     <Radio.Button value='join'>
                                         <LineOutlined />
                                     </Radio.Button>
                                 </CVATTooltip>
 
-                                <CVATTooltip title='Click an element to remove it'>
+                                <CVATTooltip title={i18n.t('forms:help.clickElementRemove')}>
                                     <Radio.Button value='delete'>
                                         <DeleteOutlined />
                                     </Radio.Button>
@@ -808,7 +811,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                         </Col>
                     </Row>
                     <Row justify='space-between' className='cvat-skeleton-configurator-svg-buttons'>
-                        <CVATTooltip title='Download skeleton as SVG'>
+                        <CVATTooltip title={i18n.t('forms:help.downloadSkeletonSvg')}>
                             <Button
                                 className='cvat-download-skeleton-svg-button'
                                 type='default'
@@ -888,7 +891,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                                         this.setupSkeleton(svg, labels as Record<string, LabelOptColor>);
                                     } catch (_: unknown) {
                                         notification.error({
-                                            message: 'Wrong skeleton structure',
+                                            message: i18n.t('forms:notifications.wrongSkeletonStructure'),
                                         });
                                     }
                                 });
@@ -896,7 +899,7 @@ export default class SkeletonConfigurator extends React.PureComponent<Props, Sta
                                 return false;
                             }}
                         >
-                            <CVATTooltip title='Upload a skeleton from SVG'>
+                            <CVATTooltip title={i18n.t('forms:help.uploadSkeletonSvg')}>
                                 <Button
                                     className='cvat-upload-skeleton-svg-button'
                                     style={disabledStyle}

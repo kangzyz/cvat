@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { shallowEqual } from 'utils/redux';
 import Dropdown from 'antd/lib/dropdown';
@@ -42,6 +43,7 @@ function JobActionsComponent(
         onApplyFilter,
     } = props;
     const dispatch = useDispatch();
+    const { t } = useTranslation('resources');
 
     const pluginActions = usePlugins((state: CombinedState) => state.plugins.components.jobActions.items, props);
     const {
@@ -86,8 +88,8 @@ function JobActionsComponent(
     const onMergeConsensusJob = useCallback(() => {
         if (jobInstance.replicasCount > 0) {
             Modal.confirm({
-                title: 'The consensus job will be merged',
-                content: 'Existing annotations in the parent job will be updated. Continue?',
+                title: t('confirm.mergeConsensusJobTitle'),
+                content: t('confirm.mergeConsensusJobContent'),
                 className: 'cvat-modal-confirm-consensus-merge-job',
                 onOk: () => {
                     dispatch(mergeConsensusJobsAsync(jobInstance));
@@ -96,19 +98,19 @@ function JobActionsComponent(
                     type: 'primary',
                     danger: true,
                 },
-                okText: 'Merge',
+                okText: t('confirm.merge'),
             });
         }
-    }, [jobInstance]);
+    }, [jobInstance, t]);
 
     const onDeleteJob = useCallback(() => {
         Modal.confirm({
             title: isBulkMode ?
-                `Delete ${jobsToAct.length} selected jobs` :
-                `The job ${jobInstance.id} will be deleted`,
+                t('confirm.deleteJobTitleBulk', { count: jobsToAct.length }) :
+                t('confirm.deleteJobTitle', { id: jobInstance.id }),
             content: isBulkMode ?
-                'All related data (annotations) for all selected jobs will be lost. Continue?' :
-                'All related data (annotations) will be lost. Continue?',
+                t('confirm.deleteJobContentBulk') :
+                t('confirm.deleteJobContent'),
             className: 'cvat-modal-confirm-delete-job',
             onOk: () => {
                 setTimeout(() => {
@@ -119,7 +121,11 @@ function JobActionsComponent(
                                 await dispatch(deleteJobAsync(job));
                             }
                         },
-                        (job, idx, total) => `Deleting job #${job.id} (${idx + 1}/${total})`,
+                        (job, idx, total) => t('bulkOperations.deletingJob', {
+                            id: job.id,
+                            current: idx + 1,
+                            total,
+                        }),
                     ));
                 }, 0);
             },
@@ -127,9 +133,9 @@ function JobActionsComponent(
                 type: 'primary',
                 danger: true,
             },
-            okText: isBulkMode ? 'Delete selected' : 'Delete',
+            okText: isBulkMode ? t('confirm.deleteSelected') : t('confirm.delete'),
         });
-    }, [jobInstance, isBulkMode, jobsToAct, dispatch]);
+    }, [jobInstance, isBulkMode, jobsToAct, dispatch, t]);
 
     const onGoToParent = useCallback(() => {
         if (onApplyFilter) {
@@ -181,9 +187,13 @@ function JobActionsComponent(
             async (job) => {
                 await dispatch(updateJobAsync(job, fields));
             },
-            (job, idx, total) => `Updating job #${job.id} (${idx + 1}/${total})`,
+            (job, idx, total) => t('bulkOperations.updatingJob', {
+                id: job.id,
+                current: idx + 1,
+                total,
+            }),
         ));
-    }, [jobsToAct, dispatch, stopEditField]);
+    }, [jobsToAct, dispatch, stopEditField, t]);
 
     let menuItems;
     if (editField) {

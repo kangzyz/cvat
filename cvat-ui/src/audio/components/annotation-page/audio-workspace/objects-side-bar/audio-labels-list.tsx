@@ -10,6 +10,7 @@ import { shallowEqual, ThunkDispatch } from 'utils/redux';
 import message from 'antd/lib/message';
 
 import { CombinedState } from 'reducers';
+import i18n from 'i18n';
 import {
     audioActions,
     updateAudioIntervalAsync,
@@ -30,8 +31,8 @@ const makeKey = (index: number): string => `SWITCH_LABEL_AUDIO_${index}`;
 
 for (const index of [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) {
     componentShortcuts[makeKey(index)] = {
-        name: 'Switch label (audio)',
-        description: 'Change label of selected audio region, or default label for next created region',
+        name: i18n.t('audioPlugins:audio.labelsList.switchLabelName'),
+        description: i18n.t('audioPlugins:audio.labelsList.switchLabelDescription'),
         sequences: [`ctrl+${index}`],
         nonActive: true,
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
@@ -142,9 +143,8 @@ function AudioLabelsList(): JSX.Element {
                 updated[key] = {
                     ...updated[key],
                     nonActive: false,
-                    name: `Switch audio label to ${labelName}`,
-                    description: `Change the label to ${labelName} for the active audio region,
-                        or set it as default for the next created region`,
+                    name: i18n.t('audioPlugins:audio.labelsList.switchToLabelName', { label: labelName }),
+                    description: i18n.t('audioPlugins:audio.labelsList.switchToLabelDescription', { label: labelName }),
                 };
             }
         }
@@ -172,7 +172,7 @@ function AudioLabelsList(): JSX.Element {
         } else {
             dispatch(audioActions.setAudioActiveLabel(labelID));
             message.destroy();
-            message.success(`Default label has been changed to "${label.name}"`);
+            message.success(i18n.t('audioPlugins:audio.labelsList.defaultChanged', { label: label.name }));
         }
     }, [dispatch, keyToLabelMapping, labels]);
 
@@ -190,7 +190,7 @@ function AudioLabelsList(): JSX.Element {
         <div className='cvat-objects-sidebar-labels-list'>
             <GlobalHotKeys keyMap={subKeyMap(componentShortcuts, keyMap)} handlers={handlers} />
             <div className='cvat-objects-sidebar-labels-list-header'>
-                <Text>{`Items: ${labels.length}`}</Text>
+                <Text>{i18n.t('audioPlugins:common.items', { count: labels.length })}</Text>
             </div>
             {labelIDs.map((labelID: number): JSX.Element => (
                 <MemoizedAudioLabelItem key={labelID} labelID={labelID} />

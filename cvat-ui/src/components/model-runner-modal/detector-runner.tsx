@@ -5,6 +5,7 @@
 
 import './styles.scss';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import Select from 'antd/lib/select';
 import Text from 'antd/lib/typography/Text';
@@ -77,6 +78,7 @@ function DetectorRunner(props: Props): JSX.Element {
         models, withCleanup, labels, dimension, runInference,
         frameWidth, frameHeight, canvasInstance, onRegionOfInterestChange,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
 
     const [modelID, setModelID] = useState<string | null>(null);
     const [threshold, setThreshold] = useState<number>(0.5);
@@ -124,7 +126,7 @@ function DetectorRunner(props: Props): JSX.Element {
         if (model) {
             setModelLabels(model.labels);
             if (!model.labels.length && model.kind !== ModelKind.REID) {
-                notification.warning({ message: 'This model does not have specified labels' });
+                notification.warning({ message: t('models.runner.noSpecifiedLabels') });
             }
         } else {
             setModelLabels([]);
@@ -146,10 +148,12 @@ function DetectorRunner(props: Props): JSX.Element {
     return (
         <div className='cvat-run-model-content'>
             <Row align='middle'>
-                <Col span={4}>Model:</Col>
+                <Col span={4}>{t('models.runner.model')}</Col>
                 <Col span={20}>
                     <Select
-                        placeholder={dimension === DimensionType.DIMENSION_2D ? 'Select a model' : 'No models available'}
+                        placeholder={dimension === DimensionType.DIMENSION_2D ?
+                            t('models.runner.selectModel') :
+                            t('models.runner.noModelsAvailable')}
                         disabled={dimension !== DimensionType.DIMENSION_2D}
                         style={{ width: '100%' }}
                         onChange={(_modelID: string): void => {
@@ -169,8 +173,8 @@ function DetectorRunner(props: Props): JSX.Element {
             {isDetector && (
                 <div>
                     <div className='cvat-detector-runner-mapping-header'>
-                        <Text>Setup mapping between labels and attributes</Text>
-                        <CVATTooltip title='Each class, or attribute that model may predict, may be mapped to a label or attribute of the current specification'>
+                        <Text>{t('models.runner.setupMapping')}</Text>
+                        <CVATTooltip title={t('models.runner.mappingHelp')}>
                             <QuestionCircleOutlined className='cvat-info-circle-icon' />
                         </CVATTooltip>
                     </div>
@@ -185,8 +189,8 @@ function DetectorRunner(props: Props): JSX.Element {
             {isDetector && (
                 <div className='cvat-detector-runner-threshold-wrapper'>
                     <div>
-                        <Text>Threshold</Text>
-                        <CVATTooltip title='Minimum confidence threshold for detections. Leave empty to use the default value specified in the model settings'>
+                        <Text>{t('models.runner.threshold')}</Text>
+                        <CVATTooltip title={t('models.runner.detectorThresholdHelp')}>
                             <QuestionCircleOutlined className='cvat-info-circle-icon' />
                         </CVATTooltip>
                     </div>
@@ -221,7 +225,7 @@ function DetectorRunner(props: Props): JSX.Element {
                             setConvertMasksToPolygons(checked);
                         }}
                     />
-                    <Text>Convert masks to polygons</Text>
+                    <Text>{t('models.runner.convertMasksToPolygons')}</Text>
                 </div>
             )}
             {isDetector && withCleanup && (
@@ -230,17 +234,17 @@ function DetectorRunner(props: Props): JSX.Element {
                         checked={cleanup}
                         onChange={(checked: boolean): void => setCleanup(checked)}
                     />
-                    <Text>Clean previous annotations</Text>
+                    <Text>{t('models.runner.cleanPreviousAnnotations')}</Text>
                 </div>
             )}
             {isReId ? (
                 <div>
                     <Row align='middle' justify='start'>
                         <Col>
-                            <Text>Threshold</Text>
+                            <Text>{t('models.runner.threshold')}</Text>
                         </Col>
                         <Col offset={1}>
-                            <CVATTooltip title='Minimum similarity value for shapes that can be merged'>
+                            <CVATTooltip title={t('models.runner.similarityThresholdHelp')}>
                                 <InputNumber
                                     min={0.01}
                                     step={0.01}
@@ -257,12 +261,12 @@ function DetectorRunner(props: Props): JSX.Element {
                     </Row>
                     <Row align='middle' justify='start'>
                         <Col>
-                            <Text>Maximum distance</Text>
+                            <Text>{t('models.runner.maximumDistance')}</Text>
                         </Col>
                         <Col offset={1}>
-                            <CVATTooltip title='Maximum distance between shapes that can be merged'>
+                            <CVATTooltip title={t('models.runner.maximumDistanceHelp')}>
                                 <InputNumber
-                                    placeholder='Threshold'
+                                    placeholder={t('models.runner.threshold')}
                                     min={1}
                                     value={distance}
                                     onChange={(value: number | undefined | string | null) => {
@@ -301,7 +305,7 @@ function DetectorRunner(props: Props): JSX.Element {
                             }
                         }}
                     >
-                        Annotate
+                        {t('models.runner.annotate')}
                     </Button>
                 </Col>
             </Row>

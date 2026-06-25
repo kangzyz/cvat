@@ -114,9 +114,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
             content: (
                 <div className='cvat-remove-organization-submit'>
                     <Text type='warning'>
-                        To remove the organization,
-                        enter its short name below
-                    </Text>
+                        要移除组织，请在下方输入其短名称</Text>
                     <Input
                         onChange={
                             (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +133,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                 disabled: true,
                 danger: true,
             },
-            okText: 'Remove',
+            okText: '移除',
         });
     };
 
@@ -179,14 +177,14 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                                         items: [
                                             {
                                                 key: MenuActions.SET_WEBHOOKS,
-                                                label: <Link to='/organization/webhooks'>Setup webhooks</Link>,
+                                                label: <Link to='/organization/webhooks'>设置 Webhook</Link>,
                                             },
                                             ...(owner && userID === owner.id ? [{
                                                 type: 'divider' as const,
                                             }, {
                                                 key: MenuActions.REMOVE_ORGANIZATION,
                                                 onClick: onRemove,
-                                                label: 'Remove organization',
+                                                label: '移除组织',
                                             }] : []),
                                         ],
                                         className: 'cvat-organization-actions-menu',
@@ -194,7 +192,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                                     trigger={['click']}
                                 >
                                     <Button size='middle' className='cvat-organization-page-actions-button'>
-                                        <Text className='cvat-text-color'>Actions</Text>
+                                        <Text className='cvat-text-color'>操作</Text>
                                         <MoreOutlined className='cvat-menu-icon' />
                                     </Button>
                                 </Dropdown>
@@ -247,8 +245,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                                             type='primary'
                                             htmlType='submit'
                                         >
-                                            Submit
-                                        </Button>
+                                            提交</Button>
                                     </Form.Item>
                                 </Form>
                             </div>
@@ -259,7 +256,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                     <div className='cvat-organization-top-bar-contacts'>
                         <div>
                             <PhoneOutlined />
-                            { !contact.phoneNumber ? <Text type='secondary'>Add phone number</Text> : null }
+                            { !contact.phoneNumber ? <Text type='secondary'>添加电话号码</Text> : null }
                             <Text
                                 type='secondary'
                                 editable={{
@@ -277,7 +274,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                         </div>
                         <div>
                             <MailOutlined />
-                            { !contact.email ? <Text type='secondary'>Add email</Text> : null }
+                            { !contact.email ? <Text type='secondary'>添加邮箱</Text> : null }
                             <Text
                                 type='secondary'
                                 editable={{
@@ -295,7 +292,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                         </div>
                         <div>
                             <EnvironmentOutlined />
-                            { !contact.location ? <Text type='secondary'>Add location</Text> : null }
+                            { !contact.location ? <Text type='secondary'>添加位置</Text> : null }
                             <Text
                                 type='secondary'
                                 editable={{
@@ -333,20 +330,19 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                                         className: 'cvat-modal-organization-leave-confirm',
                                         content: (
                                             <>
-                                                <Text>Please, confirm leaving the organization</Text>
+                                                <Text>请确认离开组织</Text>
                                                 <Text strong>{` ${organizationInstance.slug}`}</Text>
-                                                <Text>. You will not have access to the organization data anymore</Text>
+                                                <Text>。你将无法再访问组织数据</Text>
                                             </>
                                         ),
-                                        okText: 'Leave',
+                                        okText: '离开',
                                         okButtonProps: {
                                             danger: true,
                                         },
                                     });
                                 }}
                             >
-                                Leave organization
-                            </Button>
+                                离开组织</Button>
                         ) : null}
                         <Button
                             className='cvat-invite-org-members-button'
@@ -354,8 +350,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                             onClick={() => setVisibleInviteModal(true)}
                             icon={<PlusCircleOutlined />}
                         >
-                            Invite members
-                        </Button>
+                            邀请成员</Button>
                     </Space>
                 </Col>
             </Row>
@@ -368,7 +363,7 @@ function OrganizationTopBar(props: Readonly<Props>): JSX.Element {
                         }}
                         defaultValue={query.search ?? ''}
                         className='cvat-organization-page-search-bar'
-                        placeholder='Search ...'
+                        placeholder='搜索...'
                     />
                     <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                 </Col>

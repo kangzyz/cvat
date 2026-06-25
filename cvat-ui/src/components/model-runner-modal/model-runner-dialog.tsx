@@ -6,6 +6,7 @@
 import './styles.scss';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Modal from 'antd/lib/modal';
 import notification from 'antd/lib/notification';
 
@@ -58,6 +59,7 @@ function ModelRunnerDialog(props: StateToProps & DispatchToProps): JSX.Element {
     const {
         reid, detectors, task, visible, runInference, closeDialog,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
 
     const models = [...reid, ...detectors];
     const [taskInstance, setTaskInstance] = useState<Task | null>(null);
@@ -69,7 +71,7 @@ function ModelRunnerDialog(props: StateToProps & DispatchToProps): JSX.Element {
                     setTaskInstance(_task);
                 }
             }).catch((error: any) => {
-                notification.error({ message: 'Could not get task details', description: error.toString() });
+                notification.error({ message: t('models.runner.couldNotGetTaskDetails'), description: error.toString() });
             });
         }
     }, [visible, task]);
@@ -81,7 +83,7 @@ function ModelRunnerDialog(props: StateToProps & DispatchToProps): JSX.Element {
             footer={[]}
             onCancel={(): void => closeDialog()}
             maskClosable
-            title='Automatic annotation'
+            title={t('models.runner.automaticAnnotation')}
         >
             { taskInstance ? (
                 <DetectorRunner

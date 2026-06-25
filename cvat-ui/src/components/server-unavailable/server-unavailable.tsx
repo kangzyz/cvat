@@ -48,9 +48,7 @@ function DefaultServerUnavailableComponent({ details }: ServerUnavailableProps):
         return (
             <div className='cvat-server-unavailable-message'>
                 <Text>
-                    CVAT could not reach the server or one of the services required to run it.
-                    Make sure the backend, database, Redis and Open Policy Agent are running and available.
-                </Text>
+                    CVAT 无法连接服务器或运行所需的某项服务。请确保后端、数据库、Redis 和 Open Policy Agent 正在运行且可用。</Text>
             </div>
         );
     }
@@ -64,7 +62,7 @@ function DefaultServerUnavailableComponent({ details }: ServerUnavailableProps):
                 type='error'
                 showIcon
                 icon={<ClockCircleOutlined />}
-                message='Connection check failed'
+                message='连接检查失败'
                 description={summary}
             />
         );
@@ -75,7 +73,7 @@ function DefaultServerUnavailableComponent({ details }: ServerUnavailableProps):
             className='cvat-health-check-error'
             type='error'
             showIcon
-            message='Required services are not healthy'
+            message='必要服务状态异常'
             description={(
                 <Space direction='vertical' size={12}>
                     <Text type='secondary'>{summary}</Text>

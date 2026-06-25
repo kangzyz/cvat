@@ -35,7 +35,7 @@ function ConfidenceThreshold(props: Props): React.ReactPortal | null {
                         onChange={onChange}
                     />
                 </Col>
-                <Text type='secondary'>minimum confidence filter</Text>
+                <Text type='secondary'>最低置信度筛选</Text>
             </Row>,
             target,
         ) :

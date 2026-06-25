@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import Button from 'antd/lib/button';
 import Empty from 'antd/lib/empty';
@@ -31,6 +32,7 @@ function compareProps(prevProps: Props, nextProps: Props): boolean {
 
 function PickFromModelComponent(props: Props): JSX.Element {
     const { onCreate, onCancel, labelNames } = props;
+    const { t } = useTranslation('forms');
     const [selectedModel, setSelectedModel] = useState<MLModel | null>(null);
     const models = useSelector((state: CombinedState) => state.models.detectors);
     const labels = selectedModel?.labels || [];
@@ -40,7 +42,7 @@ function PickFromModelComponent(props: Props): JSX.Element {
             { models.length ? (
                 <>
                     <div>
-                        <Text>Select a model to pick labels:</Text>
+                        <Text>{t('help.modelPick')}</Text>
                     </div>
                     <Select
                         onSelect={(id: string): void => {
@@ -57,15 +59,15 @@ function PickFromModelComponent(props: Props): JSX.Element {
                         style={{ width: '150px' }}
                         onClick={onCancel}
                     >
-                        Done
+                        {t('actions.done')}
                     </Button>
                 </>
 
             ) : (
                 <Empty description={(
                     <>
-                        <Text>No deployed models found</Text>
-                        <Button type='primary' onClick={onCancel}>Cancel</Button>
+                        <Text>{t('labels.noModels')}</Text>
+                        <Button type='primary' onClick={onCancel}>{t('actions.cancel')}</Button>
                     </>
                 )}
                 />
@@ -73,7 +75,7 @@ function PickFromModelComponent(props: Props): JSX.Element {
 
             <div className='cvat-label-constructor-pick-from-model-list'>
                 { !!selectedModel && !labels.length && (
-                    <Empty description='Labels not found in the specified model' />
+                    <Empty description={t('labels.modelLabelsNotFound')} />
                 )}
                 {labels.map((label) => (
                     <Button

@@ -7,6 +7,7 @@ import './styles.scss';
 import React, {
     useCallback, useEffect, useReducer, useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import Tabs, { TabsProps } from 'antd/lib/tabs';
 import Title from 'antd/lib/typography/Title';
@@ -184,6 +185,7 @@ const reducer = (state: State, action: ActionUnion<typeof reducerActions>): Stat
 
 const supportedTabs = ['overview', 'settings', 'management'];
 function QualityControlPage(): JSX.Element {
+    const { t } = useTranslation('qualityReviewModels');
     const [state, dispatch] = useReducer(reducer, {
         instance: null,
         instanceType: null,
@@ -236,7 +238,9 @@ function QualityControlPage(): JSX.Element {
             dispatch(reducerActions.setInstanceType(type));
         } catch (error: unknown) {
             notification.error({
-                message: `Could not receive requested ${type}`,
+                message: t('quality.couldNotReceive', {
+                    type: t(`importExport:resourceTypes.${type}`, { defaultValue: type }),
+                }),
                 description: `${error instanceof Error ? error.message : ''}`,
             });
             throw error;
@@ -260,7 +264,7 @@ function QualityControlPage(): JSX.Element {
             dispatch(reducerActions.setQualitySettings(settings, childrenSettings));
         } catch (error: unknown) {
             notification.error({
-                message: 'Could not receive quality settings',
+                message: t('quality.couldNotReceiveSettings'),
                 description: `${error instanceof Error ? error.message : ''}`,
             });
             throw error;
@@ -307,10 +311,10 @@ function QualityControlPage(): JSX.Element {
             }) ?? null;
 
             dispatch(reducerActions.setQualitySettings(updatedInstanceSettings, updatedChildrenSettings));
-            notification.info({ message: 'Settings have been updated' });
+            notification.info({ message: t('quality.settingsUpdated') });
         } catch (error: unknown) {
             notification.error({
-                message: 'Could not save quality settings',
+                message: t('quality.couldNotSaveSettings'),
                 description: typeof Error === 'object' ? (error as object).toString() : '',
             });
             throw error;
@@ -356,7 +360,7 @@ function QualityControlPage(): JSX.Element {
     }, [requestedInstanceType, requestedInstanceID]);
 
     useEffect(() => {
-        const onHashChange = () => setActiveTab(getTabFromHash(supportedTabs));
+        const onHashChange = (): void => setActiveTab(getTabFromHash(supportedTabs));
         window.addEventListener('hashchange', onHashChange);
         return () => window.removeEventListener('hashchange', onHashChange);
     }, []);
@@ -398,7 +402,7 @@ function QualityControlPage(): JSX.Element {
                 <div className='cvat-quality-control-page-error'>
                     <Result
                         status='error'
-                        title='Could not open the page'
+                        title={t('quality.couldNotOpenPage')}
                         subTitle={error.message}
                         extra={backNavigation}
                     />
@@ -421,7 +425,7 @@ function QualityControlPage(): JSX.Element {
         title = (
             <Col className='cvat-quality-page-header'>
                 <Title level={4} className='cvat-text-color'>
-                    {'Quality control for '}
+                    {t('quality.titlePrefix')}
                     <ResourceLink resource={instance} />
                 </Title>
             </Col>
@@ -432,7 +436,7 @@ function QualityControlPage(): JSX.Element {
         if (qualitySettings) {
             tabsItems.push({
                 key: 'overview',
-                label: 'Overview',
+                label: t('common.overview'),
                 children: (
                     <QualityOverviewTab
                         instance={instance}
@@ -448,7 +452,7 @@ function QualityControlPage(): JSX.Element {
         if (isTaskWithGT && validationLayout && qualitySettings) {
             tabsItems.push({
                 key: 'management',
-                label: 'Management',
+                label: t('common.management'),
                 children: (
                     <QualityManagementTab
                         task={instance}
@@ -466,7 +470,7 @@ function QualityControlPage(): JSX.Element {
         if (isTaskWithGT || isProject) {
             tabsItems.push({
                 key: 'settings',
-                label: 'Settings',
+                label: t('common.settings'),
                 children: (
                     <QualitySettingsTab
                         instance={instance}

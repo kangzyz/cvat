@@ -13,6 +13,7 @@ import Popover from 'antd/lib/popover';
 import { EditOutlined } from '@ant-design/icons';
 
 import { AudioIntervalState, Label, Attribute } from 'cvat-core-wrapper';
+import i18n from 'i18n';
 import { clamp } from 'utils/math';
 import { formatTimeShort } from 'audio/utils/format-audio-time';
 
@@ -26,10 +27,15 @@ interface AudioRegionDetailsProps {
 
 function formatDuration(seconds: number): string {
     const total = Math.max(0, seconds);
-    if (total < 60) return `${total.toFixed(1)}s`;
+    if (total < 60) return `${total.toFixed(1)}秒`;
     const mins = Math.floor(total / 60);
     const secs = Math.floor(total % 60);
-    return `${mins}m ${secs}s`;
+    return `${mins}分 ${secs}秒`;
+}
+
+function translateSource(source: string): string {
+    const sourceKey = source === 'semi-auto' ? 'semiAuto' : source;
+    return i18n.t(`audioPlugins:audio.details.sourceNames.${sourceKey}`, { defaultValue: source });
 }
 
 function AttributeInput({
@@ -176,7 +182,7 @@ function LabelSelectorTrigger({
                     style={{ backgroundColor: activeLabel?.color || '#9CA3AF' }}
                 />
                 <span className='cvat-audio-region-label-trigger-name'>
-                    {activeLabel?.name || 'No label'}
+                    {activeLabel?.name || i18n.t('audioPlugins:audio.details.noLabel')}
                 </span>
                 {!isReadonly && (
                     <EditOutlined className='cvat-audio-region-label-edit-icon' />
@@ -236,9 +242,9 @@ function AudioRegionDetails(props: AudioRegionDetailsProps): JSX.Element {
                 {interval.source && (
                     <span
                         className='cvat-audio-region-details-source'
-                        title={`Source: ${interval.source}`}
+                        title={i18n.t('audioPlugins:audio.details.source', { source: translateSource(interval.source) })}
                     >
-                        {interval.source}
+                        {translateSource(interval.source)}
                     </span>
                 )}
                 <span className='cvat-audio-region-details-time-range'>
@@ -277,7 +283,7 @@ function AudioRegionDetails(props: AudioRegionDetailsProps): JSX.Element {
                 )}
                 {attributes.length === 0 && activeLabel && (
                     <div className='cvat-audio-region-no-attributes'>
-                        No attributes defined for this label
+                        {i18n.t('audioPlugins:audio.details.noAttributes')}
                     </div>
                 )}
             </div>

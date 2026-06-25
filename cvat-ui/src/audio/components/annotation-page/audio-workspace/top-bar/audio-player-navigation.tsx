@@ -7,6 +7,7 @@ import { Row, Col } from 'antd/lib/grid';
 import Icon from '@ant-design/icons';
 
 import { Workspace } from 'reducers';
+import i18n from 'i18n';
 import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
 import { ShortcutScope } from 'utils/enums';
 import { registerComponentShortcuts } from 'actions/shortcuts-actions';
@@ -33,32 +34,32 @@ interface Props {
 
 const componentShortcuts = {
     PLAY_PAUSE_AUDIO: {
-        name: 'Play/Pause audio',
-        description: 'Play or pause audio playback',
+        name: i18n.t('audioPlugins:audio.topBar.playPauseName'),
+        description: i18n.t('audioPlugins:audio.topBar.playPauseDescription'),
         sequences: ['space'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
     AUDIO_BACKWARD: {
-        name: 'Audio backward',
-        description: 'Rewind audio by a short step',
+        name: i18n.t('audioPlugins:audio.topBar.backwardName'),
+        description: i18n.t('audioPlugins:audio.topBar.backwardDescription'),
         sequences: ['d'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
     AUDIO_FORWARD: {
-        name: 'Audio forward',
-        description: 'Forward audio by a short step',
+        name: i18n.t('audioPlugins:audio.topBar.forwardName'),
+        description: i18n.t('audioPlugins:audio.topBar.forwardDescription'),
         sequences: ['f'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
     AUDIO_FAST_BACKWARD: {
-        name: 'Audio fast backward',
-        description: 'Rewind audio by a long step',
+        name: i18n.t('audioPlugins:audio.topBar.fastBackwardName'),
+        description: i18n.t('audioPlugins:audio.topBar.fastBackwardDescription'),
         sequences: ['c'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
     AUDIO_FAST_FORWARD: {
-        name: 'Audio fast forward',
-        description: 'Forward audio by a long step',
+        name: i18n.t('audioPlugins:audio.topBar.fastForwardName'),
+        description: i18n.t('audioPlugins:audio.topBar.fastForwardDescription'),
         sequences: ['v'],
         scope: ShortcutScope.AUDIO_WORKSPACE_CONTROLS,
     },
@@ -75,19 +76,19 @@ type SeekButton = {
 
 const LEFT_BUTTONS: SeekButton[] = [
     {
-        title: 'Jump to start',
+        title: i18n.t('audioPlugins:audio.topBar.jumpToStart'),
         className: 'cvat-player-begin-button',
         icon: FirstIcon,
         getTarget: () => 0,
     },
     {
-        title: 'long-backward',
+        title: i18n.t('audioPlugins:audio.topBar.longBackward'),
         className: 'cvat-player-long-jump-backward-button',
         icon: BackJumpIcon,
         getTarget: (t, _duration, _shortJump, longJump) => t - longJump,
     },
     {
-        title: 'short-backward',
+        title: i18n.t('audioPlugins:audio.topBar.shortBackward'),
         className: 'cvat-player-short-jump-backward-button',
         icon: PreviousIcon,
         getTarget: (t, _duration, shortJump) => t - shortJump,
@@ -96,19 +97,19 @@ const LEFT_BUTTONS: SeekButton[] = [
 
 const RIGHT_BUTTONS: SeekButton[] = [
     {
-        title: 'short-forward',
+        title: i18n.t('audioPlugins:audio.topBar.shortForward'),
         className: 'cvat-player-short-jump-forward-button',
         icon: NextIcon,
         getTarget: (t, _duration, shortJump) => t + shortJump,
     },
     {
-        title: 'long-forward',
+        title: i18n.t('audioPlugins:audio.topBar.longForward'),
         className: 'cvat-player-long-jump-forward-button',
         icon: ForwardJumpIcon,
         getTarget: (t, _duration, _shortJump, longJump) => t + longJump,
     },
     {
-        title: 'Jump to end',
+        title: i18n.t('audioPlugins:audio.topBar.jumpToEnd'),
         className: 'cvat-player-end-button',
         icon: LastIcon,
         getTarget: (_, d) => d,
@@ -178,24 +179,16 @@ function AudioPlayerNavigation(props: Props): JSX.Element {
 
     const renderSeekButton = ({
         title, icon, getTarget, className,
-    }: SeekButton): JSX.Element => {
-        let tooltip = title;
-        if (title === 'short-backward') tooltip = 'Short step backward';
-        if (title === 'short-forward') tooltip = 'Short step forward';
-        if (title === 'long-backward') tooltip = 'Long step backward';
-        if (title === 'long-forward') tooltip = 'Long step forward';
-
-        return (
-            <CVATTooltip key={title} title={tooltip}>
-                <Icon
-                    className={className}
-                    component={icon}
-                    onClick={() => seekTo(getTarget(currentTime, duration, shortJump, longJump))}
-                    disabled={!isAudioLoaded}
-                />
-            </CVATTooltip>
-        );
-    };
+    }: SeekButton): JSX.Element => (
+        <CVATTooltip key={title} title={title}>
+            <Icon
+                className={className}
+                component={icon}
+                onClick={() => seekTo(getTarget(currentTime, duration, shortJump, longJump))}
+                disabled={!isAudioLoaded}
+            />
+        </CVATTooltip>
+    );
 
     const blockStyle = isAudioLoaded ? {} : {
         pointerEvents: 'none',
@@ -209,7 +202,7 @@ function AudioPlayerNavigation(props: Props): JSX.Element {
                 <Col>
                     <div style={blockStyle} className='cvat-player-buttons'>
                         {LEFT_BUTTONS.map(renderSeekButton)}
-                        <CVATTooltip title={playing ? 'Pause' : 'Play'}>
+                        <CVATTooltip title={playing ? i18n.t('audioPlugins:audio.topBar.pause') : i18n.t('audioPlugins:audio.topBar.play')}>
                             <Icon
                                 className={playing ? 'cvat-player-pause-button' : 'cvat-player-play-button'}
                                 component={playing ? PauseIcon : PlayIcon}

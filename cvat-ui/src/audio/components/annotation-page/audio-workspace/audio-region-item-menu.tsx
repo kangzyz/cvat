@@ -9,6 +9,7 @@ import Icon, {
     LinkOutlined, CopyOutlined, DeleteOutlined,
 } from '@ant-design/icons';
 
+import i18n from 'i18n';
 import { ColorizeIcon } from 'icons';
 import { ColorBy } from 'reducers';
 
@@ -31,7 +32,7 @@ function CreateURLItem({ onCreateURL, serverID }: Pick<Props, 'onCreateURL' | 's
             icon={<LinkOutlined />}
             onClick={onCreateURL}
         >
-            Create object URL
+            {i18n.t('audioPlugins:audio.menu.createObjectUrl')}
         </Button>
     );
 }
@@ -44,7 +45,7 @@ function MakeCopyItem({ onCopy }: Pick<Props, 'onCopy'>): JSX.Element {
             icon={<CopyOutlined />}
             onClick={onCopy}
         >
-            Make a copy
+            {i18n.t('audioPlugins:audio.menu.makeCopy')}
         </Button>
     );
 }
@@ -58,7 +59,7 @@ function RemoveItem({ onRemove, locked }: Pick<Props, 'onRemove' | 'locked'>): J
             onClick={onRemove}
             className='cvat-audio-region-menu-remove'
         >
-            Remove
+            {i18n.t('audioPlugins:common.remove')}
         </Button>
     );
 }
@@ -73,7 +74,9 @@ function ChangeColorItem({
             className='cvat-audio-region-menu-change-color'
         >
             <Icon component={ColorizeIcon} />
-            {`Change ${colorBy.toLowerCase()} color`}
+            {i18n.t('audioPlugins:audio.menu.changeColor', {
+                target: i18n.t(`audioPlugins:colorBy.${colorBy}`),
+            })}
         </Button>
     );
 }

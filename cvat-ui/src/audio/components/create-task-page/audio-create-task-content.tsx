@@ -17,6 +17,7 @@ import { getCore, Storage, StorageLocation } from 'cvat-core-wrapper';
 import LabelsEditor from 'components/labels-editor/labels-editor';
 import FileManagerComponent from 'components/file-manager/file-manager';
 import { RemoteFile } from 'components/file-manager/remote-browser';
+import i18n from 'i18n';
 import { isAudioFile, isAudioPath } from 'audio/utils/audio-files';
 
 import { FrameSelectionMethod } from 'components/create-job-page/job-form';
@@ -92,8 +93,8 @@ const defaultState: State = {
     statusInProgressTask: '',
 };
 
-const NON_AUDIO_ERROR = 'Wrong list of files. Only audio files are allowed for an audio task. ';
-const LOCAL_AUDIO_FILES_HINT = 'You can upload an audio file';
+const NON_AUDIO_ERROR = i18n.t('audioPlugins:createTask.nonAudioError');
+const LOCAL_AUDIO_FILES_HINT = i18n.t('audioPlugins:createTask.localFilesHint');
 
 function localFilesHaveNonAudio(files: File[]): boolean {
     const meaningful = files.filter((f) => !f.name.endsWith('.jsonl'));
@@ -334,8 +335,8 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
 
         if (!this.validateFiles()) {
             notification.error({
-                message: 'Could not create a task',
-                description: 'A task must contain at least one file',
+                message: i18n.t('audioPlugins:createTask.couldNotCreateTask'),
+                description: i18n.t('audioPlugins:createTask.taskMustContainFile'),
                 className: 'cvat-notification-create-task-fail',
             });
             reject();
@@ -384,7 +385,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
             }).then(resolve)
             .catch((error: Error | ValidateErrorEntity): void => {
                 notification.error({
-                    message: 'Could not create a task',
+                    message: i18n.t('audioPlugins:createTask.couldNotCreateTask'),
                     description: formFieldsError(error).map((text: string): JSX.Element => <div>{text}</div>),
                     className: 'cvat-notification-create-task-fail',
                 });
@@ -409,7 +410,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
             .then(this.createOneTask)
             .then(() => {
                 notification.info({
-                    message: 'The task has been created',
+                    message: i18n.t('audioPlugins:createTask.taskCreated'),
                     className: 'cvat-notification-create-task-success',
                 });
             })
@@ -444,7 +445,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
         return (
             <>
                 <Col span={24}>
-                    <Text className='cvat-text-color'>Project</Text>
+                    <Text className='cvat-text-color'>{i18n.t('audioPlugins:common.project')}</Text>
                 </Col>
                 <Col span={24}>
                     <ProjectSearchField onSelect={this.handleProjectIdChange} value={projectId} />
@@ -460,7 +461,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
             return (
                 <>
                     <Col span={24}>
-                        <Text className='cvat-text-color'>Subset</Text>
+                        <Text className='cvat-text-color'>{i18n.t('audioPlugins:common.subset')}</Text>
                     </Col>
                     <Col span={24}>
                         <ProjectSubsetField
@@ -484,10 +485,10 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
             return (
                 <>
                     <Col span={24}>
-                        <Text className='cvat-text-color'>Labels</Text>
+                        <Text className='cvat-text-color'>{i18n.t('audioPlugins:common.labels')}</Text>
                     </Col>
                     <Col span={24}>
-                        <Text type='secondary'>Project labels will be used</Text>
+                        <Text type='secondary'>{i18n.t('audioPlugins:createTask.projectLabelsUsed')}</Text>
                     </Col>
                 </>
             );
@@ -495,7 +496,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
 
         return (
             <Col span={24}>
-                <Text className='cvat-text-color'>Labels</Text>
+                <Text className='cvat-text-color'>{i18n.t('audioPlugins:common.labels')}</Text>
                 <LabelsEditor
                     enableSkeletonCreator={false}
                     enableFromModelCreator={false}
@@ -516,7 +517,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
             <>
                 <Col span={24}>
                     <Text type='danger'>* </Text>
-                    <Text className='cvat-text-color'>Select files</Text>
+                    <Text className='cvat-text-color'>{i18n.t('audioPlugins:createTask.selectFiles')}</Text>
                     <FileManagerComponent
                         localFilesHint={LOCAL_AUDIO_FILES_HINT}
                         onChangeActiveKey={this.changeFileManagerTab}
@@ -562,7 +563,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
                     className='cvat-advanced-configuration-wrapper'
                     items={[{
                         key: '1',
-                        label: <Text className='cvat-title'>Advanced configuration</Text>,
+                        label: <Text className='cvat-title'>{i18n.t('audioPlugins:createTask.advancedConfiguration')}</Text>,
                         children: (
                             <AdvancedConfigurationForm
                                 activeFileManagerTab={activeFileManagerTab}
@@ -600,7 +601,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
                     className='cvat-quality-configuration-wrapper'
                     items={[{
                         key: '1',
-                        label: <Text className='cvat-title'>Quality</Text>,
+                        label: <Text className='cvat-title'>{i18n.t('audioPlugins:common.quality')}</Text>,
                         children: (
                             <QualityConfigurationForm
                                 ref={this.qualityConfigurationComponent}
@@ -623,7 +624,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
         const { uploadFileErrorMessage, loading, statusInProgressTask: status } = this.state;
 
         if (status === 'FAILED' || loading) {
-            return (<Alert message={status} />);
+            return (<Alert message={status === 'FAILED' ? i18n.t('audioPlugins:createTask.failed') : status} />);
         }
         return (
             <Row justify='end' gutter={8}>
@@ -634,7 +635,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
                         onClick={this.handleSubmitAndOpen}
                         disabled={!!uploadFileErrorMessage}
                     >
-                        Submit & Open
+                        {i18n.t('audioPlugins:createTask.submitOpen')}
                     </Button>
                 </Col>
                 <Col>
@@ -644,7 +645,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
                         onClick={this.handleSubmitAndContinue}
                         disabled={!!uploadFileErrorMessage}
                     >
-                        Submit & Continue
+                        {i18n.t('audioPlugins:createTask.submitContinue')}
                     </Button>
                 </Col>
             </Row>
@@ -655,7 +656,7 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
         return (
             <Row justify='start' align='middle' className='cvat-create-task-content'>
                 <Col span={24}>
-                    <Text className='cvat-title'>Basic configuration</Text>
+                    <Text className='cvat-title'>{i18n.t('audioPlugins:createTask.basicConfiguration')}</Text>
                 </Col>
 
                 {this.renderBasicBlock()}

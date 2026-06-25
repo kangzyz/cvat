@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
@@ -40,6 +41,7 @@ export default function ProjectItemComponent(props: Props): JSX.Element {
         selected,
         onClick,
     } = props;
+    const { t } = useTranslation('resources');
 
     const history = useHistory();
     const ribbonPlugins = usePlugins((state: CombinedState) => state.plugins.components.projectItem.ribbon, props);
@@ -102,13 +104,12 @@ export default function ProjectItemComponent(props: Props): JSX.Element {
                             {ownerName && (
                                 <>
                                     <Text type='secondary'>
-                                        Created
-                                        {ownerName ? ` by ${ownerName}` : ''}
+                                        {t('details.createdBy', { owner: ownerName })}
                                     </Text>
                                     <br />
                                 </>
                             )}
-                            <Text type='secondary'>{`Last updated ${updated}`}</Text>
+                            <Text type='secondary'>{t('details.lastUpdated', { date: updated })}</Text>
                         </div>
                         <div>
                             <Button

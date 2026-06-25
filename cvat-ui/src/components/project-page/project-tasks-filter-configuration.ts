@@ -4,54 +4,55 @@
 // SPDX-License-Identifier: MIT
 
 import { Config } from '@react-awesome-query-builder/antd';
+import i18n from 'i18n';
 import asyncFetchUsers from 'components/resource-sorting-filtering/request-users';
 
 export const config: Partial<Config> = {
     fields: {
         dimension: {
-            label: 'Dimension',
+            label: i18n.t('resources:fields.dimension'),
             type: 'select',
             operators: ['select_equals'],
             valueSources: ['value'],
             fieldSettings: {
                 listValues: [
-                    { value: '2d', title: '2D' },
-                    { value: '3d', title: '3D' },
+                    { value: '2d', title: i18n.t('resources:dimension.2d') },
+                    { value: '3d', title: i18n.t('resources:dimension.3d') },
                 ],
             },
         },
         status: {
-            label: 'Status',
+            label: i18n.t('resources:fields.status'),
             type: 'select',
             valueSources: ['value'],
             operators: ['select_equals', 'select_any_in', 'select_not_any_in'],
             fieldSettings: {
                 listValues: [
-                    { value: 'annotation', title: 'Annotation' },
-                    { value: 'validation', title: 'Validation' },
-                    { value: 'completed', title: 'Completed' },
+                    { value: 'annotation', title: i18n.t('resources:status.annotation') },
+                    { value: 'validation', title: i18n.t('resources:status.validation') },
+                    { value: 'completed', title: i18n.t('resources:status.completed') },
                 ],
             },
         },
         mode: {
-            label: 'Data',
+            label: i18n.t('resources:fields.data'),
             type: 'select',
             valueSources: ['value'],
             fieldSettings: {
                 listValues: [
-                    { value: 'interpolation', title: 'Video' },
-                    { value: 'annotation', title: 'Images' },
+                    { value: 'interpolation', title: i18n.t('resources:data.video') },
+                    { value: 'annotation', title: i18n.t('resources:data.images') },
                 ],
             },
         },
         subset: {
-            label: 'Subset',
+            label: i18n.t('resources:fields.subset'),
             type: 'text',
             valueSources: ['value'],
             operators: ['equal'],
         },
         assignee: {
-            label: 'Assignee',
+            label: i18n.t('resources:fields.assignee'),
             type: 'select',
             valueSources: ['value'],
             operators: ['select_equals'],
@@ -62,7 +63,7 @@ export const config: Partial<Config> = {
             },
         },
         owner: {
-            label: 'Owner',
+            label: i18n.t('resources:fields.owner'),
             type: 'select',
             valueSources: ['value'],
             operators: ['select_equals'],
@@ -73,19 +74,19 @@ export const config: Partial<Config> = {
             },
         },
         updated_date: {
-            label: 'Last updated',
+            label: i18n.t('resources:fields.lastUpdated'),
             type: 'datetime',
             operators: ['between', 'greater', 'greater_or_equal', 'less', 'less_or_equal'],
         },
         id: {
-            label: 'ID',
+            label: i18n.t('resources:fields.id'),
             type: 'number',
             operators: ['equal', 'between', 'greater', 'greater_or_equal', 'less', 'less_or_equal'],
             fieldSettings: { min: 0 },
             valueSources: ['value'],
         },
         name: {
-            label: 'Name',
+            label: i18n.t('resources:fields.name'),
             type: 'text',
             valueSources: ['value'],
             operators: ['like'],
@@ -96,7 +97,7 @@ export const config: Partial<Config> = {
 export const localStorageRecentCapacity = 10;
 export const localStorageRecentKeyword = 'recentlyAppliedProjectTasksFilters';
 export const predefinedFilterValues = {
-    'Assigned to me': '{"and":[{"==":[{"var":"assignee"},"<username>"]}]}',
-    'Owned by me': '{"and":[{"==":[{"var":"owner"},"<username>"]}]}',
-    'Not completed': '{"!":{"and":[{"==":[{"var":"status"},"completed"]}]}}',
+    [i18n.t('resources:filters.assignedToMe')]: '{"and":[{"==":[{"var":"assignee"},"<username>"]}]}',
+    [i18n.t('resources:filters.ownedByMe')]: '{"and":[{"==":[{"var":"owner"},"<username>"]}]}',
+    [i18n.t('resources:filters.notCompleted')]: '{"!":{"and":[{"==":[{"var":"status"},"completed"]}]}}',
 };

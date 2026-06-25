@@ -3,35 +3,37 @@
 //
 // SPDX-License-Identifier: MIT
 
+import i18n from 'i18n';
+
 const validationPatterns = {
     validatePasswordLength: {
         pattern: /^(?=.{8,256}$)/,
-        message: 'Password must be between 8 and 256 characters',
+        message: i18n.t('common:validation.passwordLength'),
     },
 
     passwordContainsNumericCharacters: {
         pattern: /(?=.*[0-9])/,
-        message: 'Password must have at least 1 numeric characters',
+        message: i18n.t('common:validation.passwordNumeric'),
     },
 
     passwordContainsUpperCaseCharacter: {
         pattern: /(?=.*[A-Z])/,
-        message: 'Password must have at least 1 uppercase alphabetical character',
+        message: i18n.t('common:validation.passwordUppercase'),
     },
 
     passwordContainsLowerCaseCharacter: {
         pattern: /(?=.*[a-z])/,
-        message: 'Password must have at least 1 lowercase alphabetical character',
+        message: i18n.t('common:validation.passwordLowercase'),
     },
 
     validateUsernameLength: {
         pattern: /^.{5,150}$/u,
-        message: 'Username must be between 5 and 150 characters',
+        message: i18n.t('common:validation.usernameLength'),
     },
 
     validateUsernameCharacters: {
         pattern: /^[\p{L}\p{N}_@.+-]+$/u,
-        message: 'Only letters, numbers, and @/./+/-/_ characters are available',
+        message: i18n.t('common:validation.usernameCharacters'),
     },
 
     /*
@@ -47,38 +49,38 @@ const validationPatterns = {
     validateName: {
 
         pattern: /^(\p{L}|\p{Pd}|\p{Cf}|\p{Pc}|['\s]){2,}$/gu,
-        message: 'Invalid name',
+        message: i18n.t('common:validation.invalidName'),
     },
 
     validateAttributeName: {
         pattern: /\S+/,
-        message: 'Invalid name',
+        message: i18n.t('common:validation.invalidName'),
     },
 
     validateLabelName: {
         pattern: /\S+/,
-        message: 'Invalid name',
+        message: i18n.t('common:validation.invalidName'),
     },
 
     validateAttributeValue: {
         pattern: /\S+/,
-        message: 'Invalid attribute value',
+        message: i18n.t('common:validation.invalidAttributeValue'),
     },
 
     validateURL: {
 
         pattern: /^(https?:\/\/)[^\s$.?#].[^\s]*$/, // url, ip
-        message: 'URL is not valid',
+        message: i18n.t('common:validation.invalidUrl'),
     },
 
     validateOrganizationSlug: {
         pattern: /^[a-zA-Z\d]+$/,
-        message: 'Only Latin characters and numbers are allowed',
+        message: i18n.t('common:validation.latinCharactersAndNumbersOnly'),
     },
 
     validatePhoneNumber: {
         pattern: /^[+]*[-\s0-9]*$/g,
-        message: 'Input phone number is not correct',
+        message: i18n.t('common:validation.invalidPhoneNumber'),
     },
 };
 

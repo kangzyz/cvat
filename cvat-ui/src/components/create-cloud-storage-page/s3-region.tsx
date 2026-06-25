@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import i18n from 'i18n';
 import config from 'config';
 import Location from './location';
 
@@ -26,7 +27,7 @@ export default function S3Region(props: Props): JSX.Element {
             internalCommonProps={internalCommonProps}
             values={config.DEFAULT_AWS_REGIONS}
             name='region'
-            label='Region'
+            label={i18n.t('forms:fields.region')}
             href='https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions'
         />
     );

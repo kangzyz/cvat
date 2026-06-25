@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Form from 'antd/lib/form';
 import Input, { InputRef } from 'antd/lib/input';
 import Button from 'antd/lib/button';
@@ -34,6 +35,7 @@ function MessageForm(props: Readonly<FormProps>): JSX.Element {
     const {
         top, left, angle, scale, fetching, submit, cancel, clientCoordinates, canvasRect,
     } = props;
+    const { t } = useTranslation('qualityReviewModels');
 
     const dialogRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<InputRef>(null);
@@ -75,9 +77,9 @@ function MessageForm(props: Readonly<FormProps>): JSX.Element {
             >
                 <Form.Item
                     name='issue_description'
-                    rules={[{ required: true, message: 'Please, fill out the field' }]}
+                    rules={[{ required: true, message: t('review.fillField') }]}
                 >
-                    <Input ref={inputRef} autoComplete='off' placeholder='Please, describe the issue' />
+                    <Input ref={inputRef} autoComplete='off' placeholder={t('review.describeIssue')} />
                 </Form.Item>
                 <Row justify='space-between'>
                     <Col>
@@ -86,7 +88,7 @@ function MessageForm(props: Readonly<FormProps>): JSX.Element {
                             disabled={fetching}
                             className='cvat-create-issue-dialog-cancel-button'
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                     </Col>
                     <Col>
@@ -97,7 +99,7 @@ function MessageForm(props: Readonly<FormProps>): JSX.Element {
                             htmlType='submit'
                             className='cvat-create-issue-dialog-submit-button'
                         >
-                            Submit
+                            {t('common.submit')}
                         </Button>
                     </Col>
                 </Row>

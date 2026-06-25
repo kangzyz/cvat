@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState } from 'react';
+import i18n from 'i18n';
 import notification from 'antd/lib/notification';
 import Text from 'antd/lib/typography/Text';
 import SelectCloudStorage from 'components/select-cloud-storage/select-cloud-storage';
@@ -22,7 +23,7 @@ export async function getCloudStorageById(id: number): Promise<CloudStorage | nu
         return data;
     } catch (error: any) {
         notification.error({
-            message: 'Could not fetch a cloud storage',
+            message: i18n.t('resources:details.couldNotFetchCloudStorage'),
             description: error.toString(),
         });
     }
@@ -34,7 +35,7 @@ export default function CloudStorageEditorComponent(props: Props): JSX.Element |
 
     const [searchPhrase, setSearchPhrase] = useState(cloudStorageInstance ? cloudStorageInstance.displayName : '');
 
-    const label = <Text type='secondary'>Cloud storage</Text>;
+    const label = <Text type='secondary'>{i18n.t('resources:details.cloudStorage')}</Text>;
 
     if (taskMeta.storage !== StorageLocation.CLOUD_STORAGE) {
         return null;

@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Form from 'antd/lib/form';
 import Button from 'antd/lib/button';
 import { LockOutlined } from '@ant-design/icons';
@@ -25,6 +26,7 @@ interface Props {
 
 function ResetPasswordConfirmFormComponent({ fetching, onSubmit }: Props): JSX.Element {
     const location = useLocation();
+    const { t } = useTranslation('auth');
     return (
         <Form
             onFinish={(values: Record<string, string>): void => {
@@ -43,14 +45,14 @@ function ResetPasswordConfirmFormComponent({ fetching, onSubmit }: Props): JSX.E
                 rules={[
                     {
                         required: true,
-                        message: 'Please input new password!',
+                        message: t('resetPassword.newPasswordRequired'),
                     }, validatePassword,
                 ]}
             >
                 <Input.Password
                     autoComplete='new-password'
                     prefix={<LockOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
-                    placeholder='New password'
+                    placeholder={t('resetPassword.newPassword')}
                 />
             </Form.Item>
 
@@ -61,14 +63,14 @@ function ResetPasswordConfirmFormComponent({ fetching, onSubmit }: Props): JSX.E
                 rules={[
                     {
                         required: true,
-                        message: 'Please confirm your new password!',
+                        message: t('resetPassword.confirmNewPasswordRequired'),
                     }, validateConfirmation('newPassword1'),
                 ]}
             >
                 <Input.Password
                     autoComplete='new-password'
                     prefix={<LockOutlined style={{ color: 'rgba(0, 0, 0, 0.25)' }} />}
-                    placeholder='Confirm new password'
+                    placeholder={t('resetPassword.confirmNewPassword')}
                 />
             </Form.Item>
 
@@ -80,7 +82,7 @@ function ResetPasswordConfirmFormComponent({ fetching, onSubmit }: Props): JSX.E
                     loading={fetching}
                     disabled={fetching}
                 >
-                    Change password
+                    {t('resetPassword.changePassword')}
                 </Button>
             </Form.Item>
         </Form>

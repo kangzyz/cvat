@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactDOM from 'react-dom';
+import i18n from 'i18n';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import Button from 'antd/lib/button';
 import Modal from 'antd/lib/modal';
@@ -59,17 +61,18 @@ function SkeletonElementContextMenu(props: ContextMenuProps): JSX.Element {
         container, disabled, elementID, onDelete,
     } = props;
     const [configuratorVisible, setConfiguratorVisible] = useState(false);
+    const { t } = useTranslation('forms');
 
     const targetPoint = container.querySelector(`[data-element-id="${elementID}"]`);
     if (!targetPoint) {
-        throw new Error('Target SVG point was not found');
+        throw new Error(i18n.t('forms:validation.targetSvgPointNotFound'));
     }
 
     const cx = targetPoint.getAttribute('cx');
     const cy = targetPoint.getAttribute('cy');
 
     if (!cx || !cy) {
-        throw new Error('Circle attributes "cx", "cy" are not defined');
+        throw new Error(i18n.t('forms:validation.circleAttributesMissing'));
     }
 
     const [x, y] = fromSVGCoord(container, [+cx, +cy]);
@@ -96,7 +99,7 @@ function SkeletonElementContextMenu(props: ContextMenuProps): JSX.Element {
                         icon={<EditOutlined />}
                         key='configure_label'
                     >
-                        Configure
+                        {t('actions.configure')}
                     </Button>
                     <Button
                         type='link'
@@ -107,7 +110,7 @@ function SkeletonElementContextMenu(props: ContextMenuProps): JSX.Element {
                         icon={<DeleteOutlined />}
                         key='delete'
                     >
-                        Delete
+                        {t('actions.delete')}
                     </Button>
                 </div>
             )}

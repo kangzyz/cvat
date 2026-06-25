@@ -11,6 +11,7 @@ import Spin from 'antd/lib/spin';
 import Text from 'antd/lib/typography/Text';
 
 import { CombinedState, Workspace } from 'reducers';
+import i18n from 'i18n';
 import { showStatistics } from 'actions/annotation-actions';
 import { formatMilliseconds } from 'audio/utils/format-audio-time';
 
@@ -50,7 +51,7 @@ function mapStateToProps(state: CombinedState): StateToProps {
         data,
         workspace,
         bugTracker: instance?.bugTracker ?? null,
-        assignee: instance?.assignee?.username || 'Nobody',
+        assignee: instance?.assignee?.username || i18n.t('audioPlugins:common.nobody'),
         duration,
     };
 }
@@ -113,7 +114,7 @@ function AudioStatisticsModalComponent(props: StateToProps & DispatchToProps): J
 
     rows.push({
         key: '___total',
-        label: 'Total',
+        label: i18n.t('audioPlugins:audio.statistics.total'),
         count: data.total.interval.count,
         totalDuration: formatMilliseconds(data.total.interval.duration),
         coverage: formatCoverage(data.total.interval.coverage),
@@ -121,23 +122,23 @@ function AudioStatisticsModalComponent(props: StateToProps & DispatchToProps): J
 
     const columns = [
         {
-            title: <Text strong>Label</Text>,
+            title: <Text strong>{i18n.t('audioPlugins:audio.statistics.label')}</Text>,
             dataIndex: 'label',
             key: 'label',
             render: (text: string) => <Text strong>{text}</Text>,
         },
         {
-            title: <Text strong>Regions</Text>,
+            title: <Text strong>{i18n.t('audioPlugins:audio.statistics.regions')}</Text>,
             dataIndex: 'count',
             key: 'count',
         },
         {
-            title: <Text strong>Total duration</Text>,
+            title: <Text strong>{i18n.t('audioPlugins:audio.statistics.totalDuration')}</Text>,
             dataIndex: 'totalDuration',
             key: 'totalDuration',
         },
         {
-            title: <Text strong>Coverage</Text>,
+            title: <Text strong>{i18n.t('audioPlugins:audio.statistics.coverage')}</Text>,
             dataIndex: 'coverage',
             key: 'coverage',
         },
@@ -148,36 +149,36 @@ function AudioStatisticsModalComponent(props: StateToProps & DispatchToProps): J
             <div className='cvat-job-info-modal-window'>
                 <Row justify='start'>
                     <Col>
-                        <Text className='cvat-text'>Overview</Text>
+                        <Text className='cvat-text'>{i18n.t('audioPlugins:audio.statistics.overview')}</Text>
                     </Col>
                 </Row>
                 <Row justify='start'>
                     <Col span={6}>
-                        <Text strong className='cvat-text'>Assignee</Text>
+                        <Text strong className='cvat-text'>{i18n.t('audioPlugins:audio.statistics.assignee')}</Text>
                         <Text className='cvat-text'>{assignee}</Text>
                     </Col>
                     <Col span={6}>
-                        <Text strong className='cvat-text'>Duration</Text>
+                        <Text strong className='cvat-text'>{i18n.t('audioPlugins:audio.statistics.duration')}</Text>
                         <Text className='cvat-text'>
                             {duration > 0 ? formatMilliseconds(duration * 1000) : '—'}
                         </Text>
                     </Col>
                     <Col span={6}>
-                        <Text strong className='cvat-text'>Regions</Text>
+                        <Text strong className='cvat-text'>{i18n.t('audioPlugins:audio.statistics.regions')}</Text>
                         <Text className='cvat-text'>{data.total.interval.count}</Text>
                     </Col>
                 </Row>
                 {!!bugTracker && (
                     <Row justify='start' className='cvat-job-info-bug-tracker'>
                         <Col>
-                            <Text strong className='cvat-text'>Bug tracker</Text>
+                            <Text strong className='cvat-text'>{i18n.t('audioPlugins:audio.statistics.bugTracker')}</Text>
                             <a href={bugTracker}>{bugTracker}</a>
                         </Col>
                     </Row>
                 )}
                 <Row justify='space-around' className='cvat-job-info-statistics'>
                     <Col span={24}>
-                        <Text className='cvat-text'>Annotations statistics</Text>
+                        <Text className='cvat-text'>{i18n.t('audioPlugins:audio.statistics.annotationsStatistics')}</Text>
                         <Table
                             scroll={{ y: 400 }}
                             bordered

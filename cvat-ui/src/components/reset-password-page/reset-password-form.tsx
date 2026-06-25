@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Form from 'antd/lib/form';
 import Button from 'antd/lib/button';
 import Icon from '@ant-design/icons';
@@ -25,6 +26,7 @@ interface Props {
 }
 
 function ResetPasswordFormComponent({ fetching, onSubmit }: Props): JSX.Element {
+    const { t } = useTranslation('auth');
     const [form] = Form.useForm();
     const authQuery = useAuthQuery();
     const defaultCredential = authQuery?.email;
@@ -45,12 +47,12 @@ function ResetPasswordFormComponent({ fetching, onSubmit }: Props): JSX.Element 
             </Row>
             <Row>
                 <Col>
-                    <Title level={2}> Forgot password? </Title>
+                    <Title level={2}>{t('resetPassword.title')}</Title>
                 </Col>
             </Row>
             <Row>
                 <Col>
-                    <Title level={2}> Let&apos;s create a new one </Title>
+                    <Title level={2}>{t('resetPassword.subtitle')}</Title>
                 </Col>
             </Row>
             <Form
@@ -69,23 +71,23 @@ function ResetPasswordFormComponent({ fetching, onSubmit }: Props): JSX.Element 
                     rules={[
                         {
                             type: 'email',
-                            message: 'The input is not valid E-mail!',
+                            message: t('resetPassword.invalidEmail'),
                         },
                         {
                             required: true,
-                            message: 'Please specify an email address',
+                            message: t('resetPassword.emailRequired'),
                         },
                     ]}
                 >
                     <CVATSigningInput
                         autoComplete='email'
-                        placeholder='Email'
+                        placeholder={t('resetPassword.email')}
                         onReset={() => form.setFieldsValue({ email: '' })}
                     />
                 </Form.Item>
                 <Row>
                     <Col className='cvat-password-reset-tip'>
-                        <Text> We will send link to your email </Text>
+                        <Text>{t('resetPassword.tip')}</Text>
                     </Col>
                 </Row>
                 <Form.Item>
@@ -94,7 +96,7 @@ function ResetPasswordFormComponent({ fetching, onSubmit }: Props): JSX.Element 
                         loading={fetching}
                         htmlType='submit'
                     >
-                        Send
+                        {t('resetPassword.send')}
                     </Button>
                 </Form.Item>
             </Form>

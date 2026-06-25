@@ -7,6 +7,7 @@ import './styles.scss';
 import React, {
     useCallback, useEffect, useRef, useState,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { shallowEqual } from 'utils/redux';
 import { useHistory, useParams } from 'react-router';
@@ -58,6 +59,7 @@ interface ParamType {
 
 export default function ProjectPageComponent(): JSX.Element {
     const id = +useParams<ParamType>().id;
+    const { t } = useTranslation('resources');
     const dispatch = useDispatch();
     const history = useHistory();
     const [projectInstance, setProjectInstance] = useState<Project | null>(null);
@@ -88,6 +90,17 @@ export default function ProjectPageComponent(): JSX.Element {
     const [visibility, setVisibility] = useState(defaultVisibility);
 
     const updatedQuery = useResourceQuery<TasksQuery>(tasksQuery);
+    const sortingFieldLabels = {
+        ID: t('fields.id'),
+        Owner: t('fields.owner'),
+        Status: t('fields.status'),
+        Assignee: t('fields.assignee'),
+        'Updated date': t('fields.updatedDate'),
+        Subset: t('fields.subset'),
+        Mode: t('fields.mode'),
+        Dimension: t('fields.dimension'),
+        Name: t('fields.name'),
+    };
 
     const isProjectUpdating = updates[id];
 
@@ -102,7 +115,7 @@ export default function ProjectPageComponent(): JSX.Element {
                 }).catch((error: Error) => {
                     if (mounted.current) {
                         notification.error({
-                            message: 'Could not receive the requested project from the server',
+                            message: t('details.couldNotReceiveProject'),
                             description: error.toString(),
                         });
                     }
@@ -113,8 +126,8 @@ export default function ProjectPageComponent(): JSX.Element {
                 });
         } else {
             notification.error({
-                message: 'Could not receive the requested project from the server',
-                description: `Requested project id "${id}" is not valid`,
+                message: t('details.couldNotReceiveProject'),
+                description: t('details.invalidProjectId', { id }),
             });
             setFetchingProject(false);
         }
@@ -139,7 +152,7 @@ export default function ProjectPageComponent(): JSX.Element {
 
     const onSelectAll = useCallback(() => {
         dispatch(selectionActions.selectResources(
-            tasks.map((t) => t.id).filter((taskId) => !deletedTasks[taskId]),
+            tasks.map((task) => task.id).filter((taskId) => !deletedTasks[taskId]),
             SelectedResourceType.TASKS,
         ));
     }, [tasks, deletedTasks]);
@@ -238,7 +251,7 @@ export default function ProjectPageComponent(): JSX.Element {
             )}
         </BulkWrapper>
     ) : (
-        <Empty description='No tasks found' />
+        <Empty description={t('empty.noTasksFound')} />
     );
 
     return (
@@ -275,7 +288,7 @@ export default function ProjectPageComponent(): JSX.Element {
                                     }}
                                     defaultValue={tasksQuery.search ?? ''}
                                     className='cvat-project-page-tasks-search-bar'
-                                    placeholder='Search ...'
+                                    placeholder={t('search.placeholder')}
                                 />
                                 <ResourceSelectionInfo
                                     selectedCount={selectedCount}
@@ -289,6 +302,7 @@ export default function ProjectPageComponent(): JSX.Element {
                                         setVisibility({ ...defaultVisibility, sorting: visible })
                                     )}
                                     defaultFields={tasksQuery.sort?.split(',') || ['-ID']}
+                                    sortingFieldLabels={sortingFieldLabels}
                                     sortingFields={['ID', 'Owner', 'Status', 'Assignee', 'Updated date', 'Subset', 'Mode', 'Dimension', 'Name']}
                                     onApplySorting={(sorting: string | null) => {
                                         dispatch(getProjectTasksAsync({
@@ -341,7 +355,7 @@ export default function ProjectPageComponent(): JSX.Element {
                                         className='cvat-create-task-button'
                                         onClick={() => history.push(`/tasks/create?projectId=${id}`)}
                                     >
-                                        Create a new task
+                                        {t('actions.createNewTask')}
                                     </Button>
                                     <Button
                                         type='primary'
@@ -349,7 +363,7 @@ export default function ProjectPageComponent(): JSX.Element {
                                         className='cvat-create-multi-tasks-button'
                                         onClick={() => history.push(`/tasks/create?projectId=${id}&many=true`)}
                                     >
-                                        Create multi tasks
+                                        {t('actions.createMultiTasks')}
                                     </Button>
                                 </CvatDropdownMenuPaper>
                             )}

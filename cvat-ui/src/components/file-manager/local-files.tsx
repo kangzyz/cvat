@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Text from 'antd/lib/typography/Text';
 import Upload, { RcFile } from 'antd/lib/upload';
@@ -19,6 +20,7 @@ export default function LocalFiles(props: Props): JSX.Element {
     const {
         files, onUpload, hint,
     } = props;
+    const { t } = useTranslation('forms');
 
     return (
         <>
@@ -36,13 +38,13 @@ export default function LocalFiles(props: Props): JSX.Element {
                 <p className='ant-upload-drag-icon'>
                     <InboxOutlined />
                 </p>
-                <p className='ant-upload-text'>Click or drag files to this area</p>
+                <p className='ant-upload-text'>{t('fileManager.dragFiles')}</p>
                 <p className='ant-upload-hint'>{ hint }</p>
             </Upload.Dragger>
             {files.length >= 5 && (
                 <>
                     <br />
-                    <Text className='cvat-text-color'>{`${files.length} files selected`}</Text>
+                    <Text className='cvat-text-color'>{t('fileManager.filesSelected', { count: files.length })}</Text>
                 </>
             )}
         </>

@@ -10,12 +10,13 @@ import {
     EyeInvisibleFilled, EyeOutlined, LockFilled, UnlockOutlined,
 } from '@ant-design/icons';
 
+import i18n from 'i18n';
 import CVATTooltip from 'components/common/cvat-tooltip';
 
 export enum AudioRegionsOrdering {
-    INSERTION = 'Insertion order',
-    START_TIME = 'Start time',
-    LABEL_NAME = 'Label name',
+    INSERTION = 'insertion',
+    START_TIME = 'startTime',
+    LABEL_NAME = 'labelName',
 }
 
 interface Props {
@@ -51,17 +52,17 @@ function AudioRegionsListHeader(props: Props): JSX.Element {
         <div className='cvat-audio-regions-list-header'>
             <Row justify='space-between' align='middle'>
                 <Col>
-                    <Text>{`Items: ${count}`}</Text>
+                    <Text>{i18n.t('audioPlugins:common.items', { count })}</Text>
                 </Col>
                 <Col className='cvat-audio-regions-list-header-actions'>
-                    <CVATTooltip title={`Switch lock for all ${switchLockAllShortcut}`}>
+                    <CVATTooltip title={i18n.t('audioPlugins:audio.list.switchLockAll', { shortcut: switchLockAllShortcut })}>
                         {allLocked ? (
                             <LockFilled onClick={onUnlockAll} />
                         ) : (
                             <UnlockOutlined onClick={onLockAll} />
                         )}
                     </CVATTooltip>
-                    <CVATTooltip title={`Switch hidden for all ${switchHiddenAllShortcut}`}>
+                    <CVATTooltip title={i18n.t('audioPlugins:audio.list.switchHiddenAll', { shortcut: switchHiddenAllShortcut })}>
                         {allHidden ? (
                             <EyeInvisibleFilled onClick={onShowAll} />
                         ) : (
@@ -71,7 +72,7 @@ function AudioRegionsListHeader(props: Props): JSX.Element {
                 </Col>
             </Row>
             <Row className='cvat-audio-regions-list-ordering' align='middle'>
-                <Text>Sort by</Text>
+                <Text>{i18n.t('audioPlugins:audio.list.sortBy')}</Text>
                 <Select
                     size='small'
                     className='cvat-audio-regions-list-ordering-selector'
@@ -80,7 +81,7 @@ function AudioRegionsListHeader(props: Props): JSX.Element {
                 >
                     {Object.values(AudioRegionsOrdering).map((value) => (
                         <Select.Option key={value} value={value}>
-                            {value}
+                            {i18n.t(`audioPlugins:audio.list.ordering.${value}`)}
                         </Select.Option>
                     ))}
                 </Select>

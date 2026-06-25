@@ -17,6 +17,17 @@ import { clamp } from 'utils/math';
 import LabelSelector from 'components/label-selector/label-selector';
 import CVATTooltip from 'components/common/cvat-tooltip';
 
+const shapeTypeDisplayNames: Record<string, string> = {
+    [ShapeType.RECTANGLE]: '矩形',
+    [ShapeType.POLYGON]: '多边形',
+    [ShapeType.POLYLINE]: '折线',
+    [ShapeType.POINTS]: '点',
+    [ShapeType.ELLIPSE]: '椭圆',
+    [ShapeType.CUBOID]: '长方体',
+    [ShapeType.SKELETON]: '骨架',
+    [ShapeType.MASK]: '蒙版',
+};
+
 interface Props {
     shapeType: ShapeType;
     labels: any[];
@@ -61,19 +72,21 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
     const is2D = jobInstance.dimension === DimensionType.DIMENSION_2D;
     const simplifyDisabled = typeof numberOfPoints !== 'undefined';
     const simplifyTooltip = simplifyDisabled ?
-        'Simplification is unavailable when a predefined number of points is set' :
-        'Automatically start polygon/polyline simplification after shape is drawn';
+        '设置了预定义点数时不可使用简化' :
+        '形状绘制完成后自动开始多边形/折线简化';
 
     return (
         <div className='cvat-draw-shape-popover-content'>
             <Row justify='start'>
                 <Col>
-                    <Text className='cvat-text-color' strong>{`Draw new ${shapeType}`}</Text>
+                    <Text className='cvat-text-color' strong>
+                        {`绘制新${shapeTypeDisplayNames[shapeType] || shapeType}`}
+                    </Text>
                 </Col>
             </Row>
             <Row justify='start'>
                 <Col>
-                    <Text className='cvat-text-color'>Label</Text>
+                    <Text className='cvat-text-color'>标签</Text>
                 </Col>
             </Row>
             <Row justify='center'>
@@ -90,7 +103,7 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                 <>
                     <Row>
                         <Col>
-                            <Text className='cvat-text-color'> Drawing method </Text>
+                            <Text className='cvat-text-color'> 绘制方式</Text>
                         </Col>
                     </Row>
                     <Row justify='space-around'>
@@ -101,11 +114,9 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                                 onChange={onChangeRectDrawingMethod}
                             >
                                 <Radio value={RectDrawingMethod.CLASSIC} style={{ width: 'auto' }}>
-                                    By 2 Points
-                                </Radio>
+                                    按 2 点</Radio>
                                 <Radio value={RectDrawingMethod.EXTREME_POINTS} style={{ width: 'auto' }}>
-                                    By 4 Points
-                                </Radio>
+                                    按 4 点</Radio>
                             </Radio.Group>
                         </Col>
                     </Row>
@@ -115,7 +126,7 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                 <>
                     <Row>
                         <Col>
-                            <Text className='cvat-text-color'> Drawing method </Text>
+                            <Text className='cvat-text-color'> 绘制方式</Text>
                         </Col>
                     </Row>
                     <Row justify='space-around'>
@@ -126,11 +137,9 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                                 onChange={onChangeCuboidDrawingMethod}
                             >
                                 <Radio value={CuboidDrawingMethod.CLASSIC} style={{ width: 'auto' }}>
-                                    From rectangle
-                                </Radio>
+                                    从矩形生成</Radio>
                                 <Radio value={CuboidDrawingMethod.CORNER_POINTS} style={{ width: 'auto' }}>
-                                    By 4 Points
-                                </Radio>
+                                    按 4 点</Radio>
                             </Radio.Group>
                         </Col>
                     </Row>
@@ -140,7 +149,7 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                 <>
                     <Row justify='space-around' align='middle'>
                         <Col span={14}>
-                            <Text className='cvat-text-color'> Number of points: </Text>
+                            <Text className='cvat-text-color'> 点数：</Text>
                         </Col>
                         <Col span={10}>
                             <InputNumber
@@ -165,7 +174,7 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
                         <CVATTooltip title={simplifyTooltip}>
                             <Row justify='space-around' align='middle'>
                                 <Col span={14}>
-                                    <Text className='cvat-text-color'> Simplify </Text>
+                                    <Text className='cvat-text-color'> 简化</Text>
                                 </Col>
                                 <Col span={10}>
                                     <Switch
@@ -182,17 +191,16 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
             ) : null}
             <Row justify='space-around'>
                 <Col span={24}>
-                    <CVATTooltip title={`Press ${repeatShapeShortcut} to draw again`}>
-                        <Button className={`cvat-draw-${shapeType}-shape-button`} onClick={onDrawShape}>Shape</Button>
+                    <CVATTooltip title={`按 ${repeatShapeShortcut} 再次绘制`}>
+                        <Button className={`cvat-draw-${shapeType}-shape-button`} onClick={onDrawShape}>形状</Button>
                     </CVATTooltip>
                     {shapeType !== ShapeType.MASK && (
-                        <CVATTooltip title={`Press ${repeatShapeShortcut} to draw again`}>
+                        <CVATTooltip title={`按 ${repeatShapeShortcut} 再次绘制`}>
                             <Button
                                 className={`cvat-draw-${shapeType}-track-button`}
                                 onClick={onDrawTrack}
                             >
-                                Track
-                            </Button>
+                                轨迹</Button>
                         </CVATTooltip>
                     )}
                 </Col>

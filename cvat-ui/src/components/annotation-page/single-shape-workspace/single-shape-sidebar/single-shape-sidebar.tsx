@@ -55,21 +55,40 @@ function cancelCurrentCanvasOp(state: CombinedState): void {
     }
 }
 
+const labelTypeDisplayNames: Partial<Record<LabelType, string>> = {
+    [LabelType.RECTANGLE]: '矩形',
+    [LabelType.POLYGON]: '多边形',
+    [LabelType.POLYLINE]: '折线',
+    [LabelType.POINTS]: '点',
+    [LabelType.ELLIPSE]: '椭圆',
+    [LabelType.CUBOID]: '长方体',
+    [LabelType.MASK]: '蒙版',
+    [LabelType.SKELETON]: '骨架',
+};
+
 function makeMessage(label: Label, labelType: State['labelType'], pointsCount: number): JSX.Element {
     let readableShape = '';
     if (labelType === LabelType.POINTS) {
-        readableShape = pointsCount === 1 ? 'one point' : `${pointsCount} points`;
+        readableShape = pointsCount === 1 ? '1 个点' : `${pointsCount} 个点`;
     } else if (labelType === LabelType.ELLIPSE) {
-        readableShape = 'an ellipse';
+        readableShape = '一个椭圆';
+    } else if (labelType === LabelType.RECTANGLE) {
+        readableShape = '一个矩形';
+    } else if (labelType === LabelType.POLYGON) {
+        readableShape = '一个多边形';
+    } else if (labelType === LabelType.POLYLINE) {
+        readableShape = '一条折线';
+    } else if (labelType === LabelType.CUBOID) {
+        readableShape = '一个长方体';
     } else {
-        readableShape = `a ${labelType}`;
+        readableShape = String(labelType);
     }
 
     return (
         <>
-            <Text>Annotate</Text>
+            <Text>标注</Text>
             <Text strong>{` ${label.name} `}</Text>
-            <Text>on the image, using</Text>
+            <Text>在图像上使用</Text>
             <Text strong>{` ${readableShape} `}</Text>
         </>
     );
@@ -174,27 +193,27 @@ const reducer = (state: State, action: ActionUnion<typeof actionCreators>): Stat
 
 const componentShortcuts = {
     SWITCH_DRAW_MODE_SINGLE_SHAPE: {
-        name: 'Draw mode',
+        name: '绘制模式',
         description:
-            'Repeat the latest procedure of drawing with the same parameters',
+            '使用相同参数重复最近一次绘制流程',
         sequences: ['n'],
         scope: ShortcutScope.SINGLE_SHAPE_ANNOTATION_WORKSPACE,
     },
     CANCEL_SINGLE_SHAPE: {
-        name: 'Cancel',
-        description: 'Cancel any active canvas mode',
+        name: '取消',
+        description: '取消任何活动的画布模式',
         sequences: ['esc'],
         scope: ShortcutScope.SINGLE_SHAPE_ANNOTATION_WORKSPACE,
     },
     DELETE_OBJECT_SINGLE_SHAPE: {
-        name: 'Delete object',
-        description: 'Delete an active object. Use shift to force delete of locked objects',
+        name: '删除对象',
+        description: '删除活动对象。按住 Shift 可强制删除已锁定对象',
         sequences: ['del', 'shift+del'],
         scope: ShortcutScope.SINGLE_SHAPE_ANNOTATION_WORKSPACE,
     },
     HIDE_MASK_SINGLE_SHAPE: {
-        name: 'Hide mask',
-        description: 'Hide currently edited mask',
+        name: '隐藏蒙版',
+        description: '隐藏当前正在编辑的蒙版',
         sequences: ['h'],
         scope: ShortcutScope.SINGLE_SHAPE_ANNOTATION_WORKSPACE,
     },
@@ -308,7 +327,7 @@ function SingleShapeSidebar(): JSX.Element {
                 message.open({
                     duration: 1,
                     type: 'success',
-                    content: 'You tagged the job as completed',
+                    content: '你已将该作业标记为已完成',
                     className: 'cvat-annotation-job-finished-success',
                 });
             })).finally(() => {
@@ -430,7 +449,7 @@ function SingleShapeSidebar(): JSX.Element {
         return (
             <Layout.Sider {...siderProps}>
                 <div className='cvat-single-shape-annotation-sidebar-not-found-wrapper'>
-                    <Text strong>No available labels found</Text>
+                    <Text strong>未找到可用标签</Text>
                 </div>
             </Layout.Sider>
         );
@@ -455,12 +474,10 @@ function SingleShapeSidebar(): JSX.Element {
                             <Col>
                                 {typeof state.nextFrame === 'number' ? (
                                     <Button size='large' onClick={() => finishOnThisFrame(false)}>
-                                        Skip
-                                    </Button>
+                                        跳过</Button>
                                 ) : (
                                     <Button size='large' type='primary' onClick={() => finishOnThisFrame(true)}>
-                                        Submit Results
-                                    </Button>
+                                        提交结果</Button>
                                 )}
                             </Col>
                         </Row>
@@ -472,72 +489,58 @@ function SingleShapeSidebar(): JSX.Element {
                                     { typeof state.nextFrame === 'number' ? (
                                         <li>
                                             <Text>
-                                                Click
-                                                <Text strong>{' Skip '}</Text>
-                                                if there is nothing to annotate
+                                                如果没有可标注内容，点击<Text strong>{' 跳过 '}</Text>
                                             </Text>
                                         </li>
                                     ) : (
                                         <li>
                                             <Text>
-                                                Click
-                                                <Text strong>{' Submit Results '}</Text>
-                                                to finish the job
-                                            </Text>
+                                                点击<Text strong>{' 提交结果 '}</Text>
+                                                完成作业</Text>
                                         </li>
                                     )}
                                     <li>
                                         <Text>
-                                            Hold
-                                            <Text strong>{' [Alt] '}</Text>
-                                            button to avoid drag the image and avoid drawing
-                                        </Text>
+                                            按住<Text strong>{' [Alt] '}</Text>
+                                            键以避免拖动图像或绘制</Text>
                                     </li>
                                     <li>
                                         <Text>
-                                            Press
-                                            <Text strong>{` ${normalizedKeyMap.UNDO} `}</Text>
-                                            to undo a created object
-                                        </Text>
+                                            按<Text strong>{` ${normalizedKeyMap.UNDO} `}</Text>
+                                            以撤销已创建对象</Text>
                                     </li>
                                     { (!isPolylabel || !state.pointsCountIsPredefined || state.pointsCount > 1) && (
                                         <li>
                                             <Text>
-                                                Press
-                                                <Text strong>
+                                                按<Text strong>
                                                     {` ${
                                                         normalizedKeyMap.CANCEL_SINGLE_SHAPE
                                                     } `}
                                                 </Text>
-                                                to reset drawing process
-                                            </Text>
+                                                以重置绘制流程</Text>
                                         </li>
                                     ) }
 
                                     { (isPolylabel && (!state.pointsCountIsPredefined || state.pointsCount > 1)) && (
                                         <li>
                                             <Text>
-                                                Press
-                                                <Text strong>
+                                                按<Text strong>
                                                     {` ${
                                                         normalizedKeyMap.SWITCH_DRAW_MODE_SINGLE_SHAPE
                                                     } `}
                                                 </Text>
-                                                to finish drawing process
-                                            </Text>
+                                                以完成绘制流程</Text>
                                         </li>
                                     ) }
                                     { activatedStateID !== null && (
                                         <li>
                                             <Text>
-                                                Press
-                                                <Text strong>
+                                                按<Text strong>
                                                     {` ${
                                                         normalizedKeyMap.DELETE_OBJECT_SINGLE_SHAPE
                                                     } `}
                                                 </Text>
-                                                to delete current object
-                                            </Text>
+                                                以删除当前对象</Text>
                                         </li>
                                     )}
                                 </ul>
@@ -550,7 +553,7 @@ function SingleShapeSidebar(): JSX.Element {
                 <>
                     <Row justify='start' className='cvat-single-shape-annotation-sidebar-label'>
                         <Col>
-                            <Text strong>Label selector</Text>
+                            <Text strong>标签选择器</Text>
                         </Col>
                     </Row>
                     <Row justify='start' className='cvat-single-shape-annotation-sidebar-label-select'>
@@ -568,7 +571,7 @@ function SingleShapeSidebar(): JSX.Element {
                 <>
                     <Row justify='start' className='cvat-single-shape-annotation-sidebar-label-type'>
                         <Col>
-                            <Text strong>Label type selector</Text>
+                            <Text strong>标签类型选择器</Text>
                         </Col>
                     </Row>
                     <Row justify='start' className='cvat-single-shape-annotation-sidebar-label-type-selector'>
@@ -579,13 +582,27 @@ function SingleShapeSidebar(): JSX.Element {
                                     actionCreators.setActiveLabel(state.label as Label, labelType),
                                 )}
                             >
-                                <Select.Option value={LabelType.RECTANGLE}>{LabelType.RECTANGLE}</Select.Option>
-                                <Select.Option value={LabelType.POLYGON}>{LabelType.POLYGON}</Select.Option>
-                                <Select.Option value={LabelType.POLYLINE}>{LabelType.POLYLINE}</Select.Option>
-                                <Select.Option value={LabelType.POINTS}>{LabelType.POINTS}</Select.Option>
-                                <Select.Option value={LabelType.ELLIPSE}>{LabelType.ELLIPSE}</Select.Option>
-                                <Select.Option value={LabelType.CUBOID}>{LabelType.CUBOID}</Select.Option>
-                                <Select.Option value={LabelType.MASK}>{LabelType.MASK}</Select.Option>
+                                <Select.Option value={LabelType.RECTANGLE}>
+                                    {labelTypeDisplayNames[LabelType.RECTANGLE]}
+                                </Select.Option>
+                                <Select.Option value={LabelType.POLYGON}>
+                                    {labelTypeDisplayNames[LabelType.POLYGON]}
+                                </Select.Option>
+                                <Select.Option value={LabelType.POLYLINE}>
+                                    {labelTypeDisplayNames[LabelType.POLYLINE]}
+                                </Select.Option>
+                                <Select.Option value={LabelType.POINTS}>
+                                    {labelTypeDisplayNames[LabelType.POINTS]}
+                                </Select.Option>
+                                <Select.Option value={LabelType.ELLIPSE}>
+                                    {labelTypeDisplayNames[LabelType.ELLIPSE]}
+                                </Select.Option>
+                                <Select.Option value={LabelType.CUBOID}>
+                                    {labelTypeDisplayNames[LabelType.CUBOID]}
+                                </Select.Option>
+                                <Select.Option value={LabelType.MASK}>
+                                    {labelTypeDisplayNames[LabelType.MASK]}
+                                </Select.Option>
                             </Select>
                         </Col>
                     </Row>
@@ -600,8 +617,7 @@ function SingleShapeSidebar(): JSX.Element {
                             dispatch(actionCreators.switchAutoNextFrame(!state.autoNextFrame));
                         }}
                     >
-                        Automatically go to the next frame
-                    </Checkbox>
+                        自动转到下一帧</Checkbox>
                 </Col>
             </Row>
             <Row className='cvat-single-shape-annotation-sidebar-auto-save-checkbox'>
@@ -613,8 +629,7 @@ function SingleShapeSidebar(): JSX.Element {
                             dispatch(actionCreators.switchAutoSaveOnFinish());
                         }}
                     >
-                        Automatically save when finish
-                    </Checkbox>
+                        完成时自动保存</Checkbox>
                 </Col>
             </Row>
             <Row className='cvat-single-shape-annotation-sidebar-navigate-empty-checkbox'>
@@ -630,8 +645,7 @@ function SingleShapeSidebar(): JSX.Element {
                             }
                         }}
                     >
-                        Navigate only empty frames
-                    </Checkbox>
+                        仅导航空帧</Checkbox>
                 </Col>
             </Row>
             { isPolylabel && (
@@ -644,8 +658,7 @@ function SingleShapeSidebar(): JSX.Element {
                                 dispatch(actionCreators.switchCountOfPointsIsPredefined());
                             }}
                         >
-                            Predefined number of points
-                        </Checkbox>
+                            预定义点数</Checkbox>
                     </Col>
                 </Row>
             )}
@@ -653,7 +666,7 @@ function SingleShapeSidebar(): JSX.Element {
                 <>
                     <Row justify='start' className='cvat-single-shape-annotation-sidebar-points-count'>
                         <Col>
-                            <Text strong>Number of points</Text>
+                            <Text strong>点数</Text>
                         </Col>
                     </Row>
                     <Row justify='start' className='cvat-single-shape-annotation-sidebar-points-count-input'>

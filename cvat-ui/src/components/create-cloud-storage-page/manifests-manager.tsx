@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DeleteOutlined, PlusCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import Button from 'antd/lib/button';
 import Col from 'antd/lib/col';
@@ -23,6 +24,7 @@ interface Props {
 
 export default function ManifestsManager(props: Props): JSX.Element {
     const { form, manifestNames, setManifestNames } = props;
+    const { t } = useTranslation('forms');
     const { DATASET_MANIFEST_GUIDE_URL } = config;
 
     const updateManifestFields = (): void => {
@@ -59,8 +61,8 @@ export default function ManifestsManager(props: Props): JSX.Element {
                 className='cvat-manifests-manager-form-item'
                 label={(
                     <>
-                        Manifests
-                        <Tooltip title='Click to open guide'>
+                        {t('fields.manifests')}
+                        <Tooltip title={t('help.openGuide')}>
                             <Button
                                 type='link'
                                 target='_blank'
@@ -88,12 +90,12 @@ export default function ManifestsManager(props: Props): JSX.Element {
                                                 rules={[
                                                     {
                                                         required: true,
-                                                        message: 'Please specify a manifest name',
+                                                        message: t('validation.manifestNameRequired'),
                                                     },
                                                     {
                                                         type: 'string',
                                                         pattern: /^.*\.(jsonl)$/,
-                                                        message: 'Manifest file must have .jsonl extension',
+                                                        message: t('validation.manifestJsonlRequired'),
                                                     },
                                                 ]}
                                                 initialValue={field.name}
@@ -127,7 +129,7 @@ export default function ManifestsManager(props: Props): JSX.Element {
             <Row justify='start'>
                 <Col>
                     <Button onClick={onAddManifestItem} className='cvat-add-manifest-button'>
-                        Add manifest
+                        {t('actions.addManifest')}
                         <PlusCircleOutlined />
                     </Button>
                 </Col>
@@ -138,7 +140,7 @@ export default function ManifestsManager(props: Props): JSX.Element {
                         <Alert
                             showIcon
                             type='info'
-                            message='We highly recommend attaching a manifest file to reduce the number of requests to the bucket'
+                            message={t('notifications.manifestRecommended')}
                         />
                     </Col>
                 </Row>

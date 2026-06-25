@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import { TasksQuery } from 'reducers';
+import i18n from 'i18n';
 import { CSVColumn } from 'utils/csv-writer';
 import { getCore, Task } from 'cvat-core-wrapper';
 import createCSVExportButton from '../export-csv-button-hoc';
@@ -10,33 +11,33 @@ import createCSVExportButton from '../export-csv-button-hoc';
 const cvat = getCore();
 
 const columns: CSVColumn<Task>[] = [
-    { header: 'ID', accessor: (task) => task.id },
-    { header: 'Name', accessor: (task) => task.name },
-    { header: 'Task URL', accessor: (task) => `${window.location.origin}/tasks/${task.id}` },
-    { header: 'Project ID', accessor: (task) => task.projectId },
-    { header: 'Project Name', accessor: (task) => task.projectName ?? '' },
-    { header: 'Project URL', accessor: (task) => (task.projectId ? `${window.location.origin}/projects/${task.projectId}` : '') },
-    { header: 'Owner', accessor: (task) => task.owner?.username ?? '' },
-    { header: 'Assignee', accessor: (task) => task.assignee?.username ?? '' },
-    { header: 'Status', accessor: (task) => task.status },
-    { header: 'Mode', accessor: (task) => task.mode },
-    { header: 'Size', accessor: (task) => task.size },
-    { header: 'Subset', accessor: (task) => task.subset ?? '' },
+    { header: i18n.t('resources:csv.headers.id'), accessor: (task) => task.id },
+    { header: i18n.t('resources:csv.headers.name'), accessor: (task) => task.name },
+    { header: i18n.t('resources:csv.headers.taskUrl'), accessor: (task) => `${window.location.origin}/tasks/${task.id}` },
+    { header: i18n.t('resources:csv.headers.projectId'), accessor: (task) => task.projectId },
+    { header: i18n.t('resources:csv.headers.projectName'), accessor: (task) => task.projectName ?? '' },
+    { header: i18n.t('resources:csv.headers.projectUrl'), accessor: (task) => (task.projectId ? `${window.location.origin}/projects/${task.projectId}` : '') },
+    { header: i18n.t('resources:csv.headers.owner'), accessor: (task) => task.owner?.username ?? '' },
+    { header: i18n.t('resources:csv.headers.assignee'), accessor: (task) => task.assignee?.username ?? '' },
+    { header: i18n.t('resources:csv.headers.status'), accessor: (task) => task.status },
+    { header: i18n.t('resources:csv.headers.mode'), accessor: (task) => task.mode },
+    { header: i18n.t('resources:csv.headers.size'), accessor: (task) => task.size },
+    { header: i18n.t('resources:csv.headers.subset'), accessor: (task) => task.subset ?? '' },
     {
-        header: 'Created Date',
+        header: i18n.t('resources:csv.headers.createdDate'),
         accessor: (task) => task.createdDate,
     },
     {
-        header: 'Updated Date',
+        header: i18n.t('resources:csv.headers.updatedDate'),
         accessor: (task) => task.updatedDate,
     },
-    { header: 'Bug Tracker', accessor: (task) => task.bugTracker ?? '' },
+    { header: i18n.t('resources:csv.headers.bugTracker'), accessor: (task) => task.bugTracker ?? '' },
 ];
 
 const TasksCSVExportButton = createCSVExportButton<Task, TasksQuery>({
     resourceName: 'tasks',
     className: 'cvat-tasks-export-csv-button',
-    tooltipTitle: 'Export tasks to CSV',
+    tooltipTitle: i18n.t('resources:csv.tooltips.tasks'),
     columns,
     uniqueKey: 'id',
     fetchPage: async (query) => {

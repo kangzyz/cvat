@@ -9,6 +9,7 @@ import { PercentageOutlined } from '@ant-design/icons';
 import Radio from 'antd/lib/radio';
 import { Col, Row } from 'antd/lib/grid';
 import Select from 'antd/lib/select';
+import i18n from 'i18n';
 
 import { FrameSelectionMethod } from 'components/create-job-page/job-form';
 
@@ -90,7 +91,7 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
             ));
         }
 
-        return Promise.reject(new Error('Quality form ref is empty'));
+        return Promise.reject(new Error(i18n.t('forms:validation.qualityFormRefEmpty')));
     }
 
     public resetFields(): void {
@@ -117,16 +118,18 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
                     <Col>
                         <Form.Item
                             name='frameSelectionMethod'
-                            label='Frame selection method'
-                            rules={[{ required: true, message: 'Please, specify frame selection method' }]}
+                            label={i18n.t('forms:fields.frameSelectionMethod')}
+                            rules={[{ required: true, message: i18n.t('forms:validation.frameSelectionRequired') }]}
                         >
                             <Select
                                 className='cvat-select-frame-selection-method'
                                 onChange={onChangeFrameSelectionMethod}
                             >
-                                <Select.Option value={FrameSelectionMethod.RANDOM}>Random</Select.Option>
+                                <Select.Option value={FrameSelectionMethod.RANDOM}>
+                                    {i18n.t('forms:options.random')}
+                                </Select.Option>
                                 <Select.Option value={FrameSelectionMethod.RANDOM_PER_JOB}>
-                                    Random per job
+                                    {i18n.t('forms:options.randomPerJob')}
                                 </Select.Option>
                             </Select>
                         </Form.Item>
@@ -137,13 +140,13 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
                     supportsValidationQuantity && frameSelectionMethod === FrameSelectionMethod.RANDOM && (
                         <Col span={7}>
                             <Form.Item
-                                label='Quantity'
+                                label={i18n.t('forms:fields.quantity')}
                                 name='validationFramesPercent'
                                 normalize={(value) => +value}
                                 rules={[
-                                    { required: true, message: 'The field is required' },
+                                    { required: true, message: i18n.t('forms:validation.fieldRequired') },
                                     {
-                                        type: 'number', min: 0, max: 100, message: 'Value is not valid',
+                                        type: 'number', min: 0, max: 100, message: i18n.t('forms:validation.invalidValue'),
                                     },
                                 ]}
                             >
@@ -162,13 +165,13 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
                     supportsValidationQuantity && frameSelectionMethod === FrameSelectionMethod.RANDOM_PER_JOB && (
                         <Col span={7}>
                             <Form.Item
-                                label='Quantity per job'
+                                label={i18n.t('forms:fields.quantityPerJob')}
                                 name='validationFramesPerJobPercent'
                                 normalize={(value) => +value}
                                 rules={[
-                                    { required: true, message: 'The field is required' },
+                                    { required: true, message: i18n.t('forms:validation.fieldRequired') },
                                     {
-                                        type: 'number', min: 0, max: 100, message: 'Value is not valid',
+                                        type: 'number', min: 0, max: 100, message: i18n.t('forms:validation.invalidValue'),
                                     },
                                 ]}
                             >
@@ -192,13 +195,13 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
             <Row>
                 <Col span={7}>
                     <Form.Item
-                        label='Total honeypots'
+                        label={i18n.t('forms:fields.totalHoneypots')}
                         name='validationFramesPercent'
                         normalize={(value) => +value}
                         rules={[
-                            { required: true, message: 'The field is required' },
+                            { required: true, message: i18n.t('forms:validation.fieldRequired') },
                             {
-                                type: 'number', min: 0, max: 100, message: 'Value is not valid',
+                                type: 'number', min: 0, max: 100, message: i18n.t('forms:validation.invalidValue'),
                             },
                         ]}
                     >
@@ -207,13 +210,13 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
                 </Col>
                 <Col span={7} offset={1}>
                     <Form.Item
-                        label='Overhead per job'
+                        label={i18n.t('forms:fields.overheadPerJob')}
                         name='validationFramesPerJobPercent'
                         normalize={(value) => +value}
                         rules={[
-                            { required: true, message: 'The field is required' },
+                            { required: true, message: i18n.t('forms:validation.fieldRequired') },
                             {
-                                type: 'number', min: 0, max: 100, message: 'Value is not valid',
+                                type: 'number', min: 0, max: 100, message: i18n.t('forms:validation.invalidValue'),
                             },
                         ]}
                     >
@@ -244,7 +247,7 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
                 ref={this.formRef}
             >
                 <Form.Item
-                    label='Validation mode'
+                    label={i18n.t('forms:fields.validationMode')}
                     name='validationMode'
                     rules={[{ required: true }]}
                 >
@@ -255,14 +258,14 @@ export default class QualityConfigurationForm extends React.PureComponent<Props>
                         }}
                     >
                         <Radio.Button value={ValidationMode.NONE} key={ValidationMode.NONE}>
-                            None
+                            {i18n.t('forms:options.none')}
                         </Radio.Button>
                         <Radio.Button value={ValidationMode.GT} key={ValidationMode.GT}>
-                            Ground Truth
+                            {i18n.t('forms:options.groundTruth')}
                         </Radio.Button>
                         {supportsHoneypots && (
                             <Radio.Button value={ValidationMode.HONEYPOTS} key={ValidationMode.HONEYPOTS}>
-                                Honeypots
+                                {i18n.t('forms:options.honeypots')}
                             </Radio.Button>
                         )}
                     </Radio.Group>

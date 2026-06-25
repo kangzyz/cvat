@@ -57,16 +57,11 @@ function SelectCSUpdatingSchemeModal(): JSX.Element | null {
                         title={(
                             <>
                                 <div>
-                                    <strong>Move & Detach</strong>
-                                    : Transfer and unlink from a cloud storage.
-                                </div>
+                                    <strong>移动并断开</strong>
+                                    ：转移并取消与云存储的关联。</div>
                                 <div>
-                                    <strong>Move & Auto Match</strong>
-                                    : Transfer and attempt to auto-link with a similar cloud storage
-                                    in the target workspace. A similar cloud storage is defined
-                                    by comparing the whole cloud storage configuration except credentials
-                                    and owner.
-                                </div>
+                                    <strong>移动并自动匹配</strong>
+                                    ：转移并尝试与目标工作区中的相似云存储自动关联。相似云存储通过比较除凭据和所有者之外的完整云存储配置来确定。</div>
                             </>
                         )}
                     >
@@ -79,8 +74,7 @@ function SelectCSUpdatingSchemeModal(): JSX.Element | null {
             open
             footer={[
                 <Button key='cancel' onClick={() => closeModal()}>
-                    Cancel
-                </Button>,
+                    取消</Button>,
                 <Button
                     key='move_and_detach'
                     type='primary'
@@ -101,8 +95,7 @@ function SelectCSUpdatingSchemeModal(): JSX.Element | null {
                         onUpdate();
                     }}
                 >
-                    Move & detach
-                </Button>,
+                    移动并断开</Button>,
                 // do not show option "move and auto match" when only data storage is linked
                 (
                     instances.some((instance) => (
@@ -117,8 +110,7 @@ function SelectCSUpdatingSchemeModal(): JSX.Element | null {
                             onUpdate();
                         }}
                     >
-                        Move & Auto match
-                    </Button>
+                        移动并自动匹配</Button>
                 ),
             ]}
         >
@@ -137,8 +129,7 @@ function SelectCSUpdatingSchemeModal(): JSX.Element | null {
             }
 
             <p>
-                Please choose how you would like the transfer to be done.
-            </p>
+                请选择转移方式。</p>
         </Modal>
     );
 }

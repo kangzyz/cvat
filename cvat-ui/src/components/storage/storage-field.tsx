@@ -4,6 +4,7 @@
 
 import './styles.scss';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Select from 'antd/lib/select';
 import Form from 'antd/lib/form';
 import SelectCloudStorage from 'components/select-cloud-storage/select-cloud-storage';
@@ -31,6 +32,7 @@ export default function StorageField(props: Props): JSX.Element {
     const [cloudStorage, setCloudStorage] = useState<CloudStorage | null>(null);
     const [potentialCloudStorage, setPotentialCloudStorage] = useState('');
     const [storageType, setStorageType] = useState('');
+    const { t } = useTranslation('forms');
 
     useEffect(() => {
         setStorageType(locationName[0].replace('Storage', '-storage'));
@@ -84,14 +86,14 @@ export default function StorageField(props: Props): JSX.Element {
                         key={`${storageType}-${StorageLocation.LOCAL.toLowerCase()}`}
                         className={`cvat-select-${storageType}-location`}
                     >
-                        Local
+                        {t('options.local')}
                     </Option>
                     <Option
                         value={StorageLocation.CLOUD_STORAGE}
                         key={`${storageType}-${StorageLocation.CLOUD_STORAGE.toLowerCase()}`}
                         className={`cvat-select-${storageType}-location`}
                     >
-                        Cloud storage
+                        {t('options.cloudStorage')}
                     </Option>
                 </Select>
             </Form.Item>

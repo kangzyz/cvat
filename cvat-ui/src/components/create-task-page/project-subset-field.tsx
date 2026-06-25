@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Autocomplete from 'antd/lib/auto-complete';
 
 import config from 'config';
@@ -26,6 +27,7 @@ export default function ProjectSubsetField(props: Props): JSX.Element {
     const {
         projectId, projectSubsets, value, onChange,
     } = props;
+    const { t } = useTranslation('forms');
 
     const [internalValue, setInternalValue] = useState('');
     const [internalSubsets, setInternalSubsets] = useState<Set<string>>(new Set());
@@ -62,7 +64,7 @@ export default function ProjectSubsetField(props: Props): JSX.Element {
     return (
         <Autocomplete
             value={internalValue}
-            placeholder='Input subset'
+            placeholder={t('placeholders.inputSubset')}
             className='cvat-project-search-field cvat-project-subset-field'
             onSearch={setInternalValue}
             onSelect={(_value) => {

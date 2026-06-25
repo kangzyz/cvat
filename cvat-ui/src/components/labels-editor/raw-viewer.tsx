@@ -12,6 +12,7 @@ import Tag from 'antd/lib/tag';
 import Modal from 'antd/lib/modal';
 import { Store } from 'antd/lib/form/interface';
 import Paragraph from 'antd/lib/typography/Paragraph';
+import i18n from 'i18n';
 
 import { SerializedLabel, SerializedAttribute } from 'cvat-core-wrapper';
 import CVATTooltip from 'components/common/cvat-tooltip';
@@ -58,7 +59,7 @@ function validateLabels(_: RuleObject, value: string): Promise<void> {
     try {
         const parsed = JSON.parse(replaceTrailingCommas(value));
         if (!Array.isArray(parsed)) {
-            return Promise.reject(new Error('Field is expected to be a JSON array'));
+            return Promise.reject(new Error(i18n.t('forms:validation.jsonArrayExpected')));
         }
 
         for (const label of parsed) {
@@ -71,7 +72,7 @@ function validateLabels(_: RuleObject, value: string): Promise<void> {
 
         const labelNames = parsed.map((label: SerializedLabel) => label.name.trim());
         if (new Set(labelNames).size !== labelNames.length) {
-            return Promise.reject(new Error('Label name must be unique'));
+            return Promise.reject(new Error(i18n.t('forms:validation.labelNameUnique')));
         }
     } catch (error) {
         return Promise.reject(error);
@@ -182,13 +183,13 @@ export default class RawViewer extends React.PureComponent<Props> {
 
         if (deletedLabels.length || deletedAttributes.length) {
             Modal.confirm({
-                title: 'You are going to remove existing labels/attributes',
+                title: i18n.t('forms:labels.removeExistingTitle'),
                 className: 'cvat-modal-confirm-remove-existing-labels',
                 content: (
                     <>
                         {deletedLabels.length ? (
                             <Paragraph>
-                                Following labels are going to be removed:
+                                {i18n.t('forms:labels.followingLabelsRemoved')}
                                 <div className='cvat-modal-confirm-content-remove-existing-labels'>
                                     {deletedLabels
                                         .map((_label: LabelOptColor): JSX.Element => (
@@ -200,7 +201,7 @@ export default class RawViewer extends React.PureComponent<Props> {
                         ) : null}
                         {deletedAttributes.length ? (
                             <Paragraph>
-                                Following attributes are going to be removed:
+                                {i18n.t('forms:labels.followingAttributesRemoved')}
                                 <div className='cvat-modal-confirm-content-remove-existing-attributes'>
                                     {deletedAttributes.map(({ attribute, labelPath }: AttributeWithLabelPath) => (
                                         <Tag key={attribute.id as number}>{`${labelPath}: ${attribute.name}`}</Tag>
@@ -208,10 +209,10 @@ export default class RawViewer extends React.PureComponent<Props> {
                                 </div>
                             </Paragraph>
                         ) : null}
-                        <Paragraph type='danger'>All related annotations will be destroyed. Continue?</Paragraph>
+                        <Paragraph type='danger'>{i18n.t('forms:labels.relatedAnnotationsDestroyed')}</Paragraph>
                     </>
                 ),
-                okText: 'Delete existing data',
+                okText: i18n.t('forms:labels.deleteExistingData'),
                 okButtonProps: {
                     danger: true,
                 },
@@ -260,19 +261,19 @@ export default class RawViewer extends React.PureComponent<Props> {
                 </Form.Item>
                 <Row justify='start' align='middle'>
                     <Col>
-                        <CVATTooltip title='Save labels'>
+                        <CVATTooltip title={i18n.t('forms:help.saveLabels')}>
                             <Button
                                 className='cvat-submit-raw-labels-conf-button'
                                 style={{ width: '150px' }}
                                 type='primary'
                                 htmlType='submit'
                             >
-                                Done
+                                {i18n.t('forms:actions.done')}
                             </Button>
                         </CVATTooltip>
                     </Col>
                     <Col offset={1}>
-                        <CVATTooltip title='Reset all changes'>
+                        <CVATTooltip title={i18n.t('forms:help.resetChanges')}>
                             <Button
                                 className='cvat-reset-raw-labels-conf-button'
                                 type='primary'
@@ -284,7 +285,7 @@ export default class RawViewer extends React.PureComponent<Props> {
                                     }
                                 }}
                             >
-                                Reset
+                                {i18n.t('forms:actions.reset')}
                             </Button>
                         </CVATTooltip>
                     </Col>

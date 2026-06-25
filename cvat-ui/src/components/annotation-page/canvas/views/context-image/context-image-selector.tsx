@@ -54,8 +54,7 @@ function ContextImageSelector(props: Props): React.ReactPortal {
             <div className='cvat-context-image-gallery'>
                 <div className='cvat-context-image-gallery-header'>
                     <Text>
-                        Click the image to display it as a context image
-                    </Text>
+                        点击图像以将其显示为上下文图像</Text>
                     <CloseOutlined className='cvat-context-image-close-button' onClick={onClose} />
                 </div>
                 <div className='cvat-context-image-gallery-items'>

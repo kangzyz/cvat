@@ -57,7 +57,7 @@ export default function StoragesTopBar(props: Readonly<Props>): JSX.Element {
                             }}
                             defaultValue={query.search ?? ''}
                             className='cvat-cloudstorages-page-tasks-search-bar'
-                            placeholder='Search ...'
+                            placeholder='搜索...'
                         />
                         <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                     </div>
