@@ -15,6 +15,9 @@ LICENSE         text
 *.conf          text
 *.mimetypes     text
 *.sh            text eol=lf
+manage.py       text eol=lf
+rqscheduler.py  text eol=lf
+backend_entrypoint.d/*.conf text eol=lf
 
 *.avi           binary
 *.bmp           binary
