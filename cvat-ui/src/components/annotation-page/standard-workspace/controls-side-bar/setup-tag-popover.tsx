@@ -23,6 +23,7 @@ function SetupTagPopover(props: Props): JSX.Element {
     const {
         labels, selectedLabelID, repeatShapeShortcut, onChangeLabel, onSetup,
     } = props;
+    const repeatTooltip = repeatShapeShortcut ? `按 ${repeatShapeShortcut} 再次添加标记` : '再次添加标记';
 
     return (
         <div className='cvat-setup-tag-popover-content'>
@@ -45,7 +46,7 @@ function SetupTagPopover(props: Props): JSX.Element {
                         onChange={onChangeLabel}
                         onEnterPress={() => onSetup()}
                     />
-                    <CVATTooltip title={`按 ${repeatShapeShortcut} 再次添加标记`}>
+                    <CVATTooltip title={repeatTooltip}>
                         <Button
                             type='primary'
                             className='cvat-add-tag-button'

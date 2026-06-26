@@ -74,6 +74,7 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
     const simplifyTooltip = simplifyDisabled ?
         '设置了预定义点数时不可使用简化' :
         '形状绘制完成后自动开始多边形/折线简化';
+    const repeatTooltip = repeatShapeShortcut ? `按 ${repeatShapeShortcut} 再次绘制` : '再次绘制';
 
     return (
         <div className='cvat-draw-shape-popover-content'>
@@ -191,11 +192,11 @@ function DrawShapePopoverComponent(props: Props): JSX.Element {
             ) : null}
             <Row justify='space-around'>
                 <Col span={24}>
-                    <CVATTooltip title={`按 ${repeatShapeShortcut} 再次绘制`}>
+                    <CVATTooltip title={repeatTooltip}>
                         <Button className={`cvat-draw-${shapeType}-shape-button`} onClick={onDrawShape}>形状</Button>
                     </CVATTooltip>
                     {shapeType !== ShapeType.MASK && (
-                        <CVATTooltip title={`按 ${repeatShapeShortcut} 再次绘制`}>
+                        <CVATTooltip title={repeatTooltip}>
                             <Button
                                 className={`cvat-draw-${shapeType}-track-button`}
                                 onClick={onDrawTrack}

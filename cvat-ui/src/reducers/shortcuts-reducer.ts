@@ -49,16 +49,20 @@ function formatShortcuts(shortcuts: KeyMapItem): string {
         .join(', ')}]`;
 }
 
+function formatKeyMap(keyMap: KeyMap): Record<string, string> {
+    return Object.keys(keyMap).reduce((acc: Record<string, string>, key: string) => {
+        const normalized = formatShortcuts(keyMap[key]);
+        acc[key] = normalized;
+        return acc;
+    }, {});
+}
+
 const defaultKeyMap = {} as any as KeyMap;
 
 const defaultState: ShortcutsState = {
     visibleShortcutsHelp: false,
     keyMap: defaultKeyMap,
-    normalizedKeyMap: Object.keys(defaultKeyMap).reduce((acc: Record<string, string>, key: string) => {
-        const normalized = formatShortcuts(defaultKeyMap[key]);
-        acc[key] = normalized;
-        return acc;
-    }, {}),
+    normalizedKeyMap: formatKeyMap(defaultKeyMap),
     defaultState: { ...defaultKeyMap },
 };
 
@@ -71,14 +75,22 @@ export default (state = defaultState, action: ShortcutsActions | BoundariesActio
                 return state;
             }
             conflictDetector(shortcuts, state.keyMap);
+            const keyMap = { ...state.keyMap, ...shortcuts };
+            const nextDefaultState = { ...state.defaultState };
+            keys.forEach((key: string): void => {
+                if (!(key in nextDefaultState)) {
+                    nextDefaultState[key] = shortcuts[key];
+                }
+            });
             return {
                 ...state,
-                keyMap: { ...state.keyMap, ...shortcuts },
+                keyMap,
                 normalizedKeyMap: keys.reduce((acc: Record<string, string>, key: string) => {
                     const normalized = formatShortcuts(shortcuts[key]);
                     acc[key] = normalized;
                     return acc;
                 }, { ...state.normalizedKeyMap }),
+                defaultState: nextDefaultState,
             };
         }
 
@@ -115,7 +127,13 @@ export default (state = defaultState, action: ShortcutsActions | BoundariesActio
         }
         case BoundariesActionTypes.RESET_AFTER_ERROR:
         case AuthActionTypes.LOGOUT_SUCCESS: {
-            return { ...defaultState };
+            const keyMap = { ...state.defaultState };
+            return {
+                ...defaultState,
+                keyMap,
+                normalizedKeyMap: formatKeyMap(keyMap),
+                defaultState: keyMap,
+            };
         }
         default: {
             return state;
