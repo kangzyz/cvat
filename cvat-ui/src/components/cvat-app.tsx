@@ -30,7 +30,6 @@ import ExportBackupModal from 'components/export-backup/export-backup-modal';
 import ImportDatasetModal from 'components/import-dataset/import-dataset-modal';
 import ImportBackupModal from 'components/import-backup/import-backup-modal';
 import UploadFileStatusModal from 'components/common/upload-file-status-modal';
-import SelectCSUpdatingSchemeModal from 'components/update-linked-cs-modal/select-cs-updating-scheme-modal';
 
 import JobsPageComponent from 'components/jobs-page/jobs-page';
 import ModelsPageComponent from 'components/models-page/models-page';
@@ -43,10 +42,6 @@ import ProjectsPageComponent from 'components/projects-page/projects-page';
 import CreateProjectPageComponent from 'components/create-project-page/create-project-page';
 import ProjectPageComponent from 'components/project-page/project-page';
 
-import CloudStoragesPageComponent from 'components/cloud-storages-page/cloud-storages-page';
-import CreateCloudStoragePageComponent from 'components/create-cloud-storage-page/create-cloud-storage-page';
-import UpdateCloudStoragePageComponent from 'components/update-cloud-storage-page/update-cloud-storage-page';
-
 import OrganizationPage from 'components/organization-page/organization-page';
 import CreateOrganizationComponent from 'components/create-organization-page/create-organization-page';
 import { ShortcutsContextProvider } from 'components/shortcuts.context';
@@ -56,6 +51,8 @@ import CreateWebhookPage from 'components/setup-webhook-pages/create-webhook-pag
 import UpdateWebhookPage from 'components/setup-webhook-pages/update-webhook-page';
 
 import AnnotationGuidePage from 'components/md-guide/annotation-guide-page';
+
+import DocumentationPage from 'components/documentation-page/documentation-page';
 
 import InvitationsPage from 'components/invitations-page/invitations-page';
 
@@ -535,17 +532,6 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                                         <Route exact path='/tasks/:tid/jobs/:jid' component={AnnotationPageContainer} />
                                         <Route exact path='/tasks/:tid/jobs/:jid/analytics' component={AnalyticsReportPage} />
                                         <Route exact path='/jobs' component={JobsPageComponent} />
-                                        <Route exact path='/cloudstorages' component={CloudStoragesPageComponent} />
-                                        <Route
-                                            exact
-                                            path='/cloudstorages/create'
-                                            component={CreateCloudStoragePageComponent}
-                                        />
-                                        <Route
-                                            exact
-                                            path='/cloudstorages/update/:id'
-                                            component={UpdateCloudStoragePageComponent}
-                                        />
                                         <Route
                                             exact
                                             path='/organizations/create'
@@ -558,6 +544,8 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                                         <Route exact path='/organization' component={OrganizationPage} />
                                         <Route exact path='/requests' component={RequestsPage} />
                                         <Route exact path='/profile' component={ProfilePageComponent} />
+                                        <Route exact path='/documentation' component={DocumentationPage} />
+                                        <Route exact path='/documentation/:slug' component={DocumentationPage} />
                                         { routesToRender }
                                         <Route
                                             path='/models'
@@ -580,7 +568,6 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                                     <ImportBackupModal />
                                     <InvitationWatcher />
                                     <UploadFileStatusModal />
-                                    <SelectCSUpdatingSchemeModal />
                                     <SelectOrganizationModal />
                                     <BulkProgress />
                                     {/* eslint-disable-next-line */}

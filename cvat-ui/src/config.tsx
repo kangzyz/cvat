@@ -5,19 +5,17 @@
 
 const NO_BREAK_SPACE = '\u00a0';
 const UNDEFINED_ATTRIBUTE_VALUE = '__undefined__';
-const CHANGELOG_URL = 'https://github.com/cvat-ai/cvat/blob/develop/CHANGELOG.md';
-const LICENSE_URL = 'https://github.com/cvat-ai/cvat/blob/develop/LICENSE';
+const CHANGELOG_URL = 'https://github.com/kangzyz/cvat/blob/develop/CHANGELOG.md';
+const LICENSE_URL = 'https://github.com/kangzyz/cvat/blob/develop/LICENSE';
 const DISCORD_URL = 'https://discord.gg/fNR3eXfk6C';
-const GITHUB_URL = 'https://github.com/cvat-ai/cvat';
-const GITHUB_IMAGE_URL = 'https://github.com/cvat-ai/cvat/raw/develop/site/content/en/images/cvat.jpg';
-const GUIDE_URL = 'https://docs.cvat.ai/docs';
-const UPGRADE_GUIDE_URL = 'https://docs.cvat.ai/docs/administration/advanced/upgrade_guide';
-const SHARE_MOUNT_GUIDE_URL =
-    'https://docs.cvat.ai/docs/administration/basics/installation/#share-path';
-const NUCLIO_GUIDE =
-    'https://docs.cvat.ai//docs/administration/advanced/installation_automatic_annotation/';
-const FILTERS_GUIDE_URL = 'https://docs.cvat.ai/docs/manual/advanced/filter/';
-const DATASET_MANIFEST_GUIDE_URL = 'https://docs.cvat.ai/docs/manual/advanced/dataset_manifest/';
+const GITHUB_URL = 'https://github.com/kangzyz/cvat';
+const GITHUB_IMAGE_URL = 'https://github.com/kangzyz/cvat/raw/develop/site/content/en/images/cvat.jpg';
+const GUIDE_URL = '/documentation';
+const UPGRADE_GUIDE_URL = '/documentation/installation';
+const SHARE_MOUNT_GUIDE_URL = '/documentation/installation';
+const NUCLIO_GUIDE = '/documentation/auto-annotation';
+const FILTERS_GUIDE_URL = '/documentation/manual-annotation';
+const DATASET_MANIFEST_GUIDE_URL = '/documentation/dataset-management';
 const CANVAS_BACKGROUND_COLORS = ['#ffffff', '#f1f1f1', '#e5e5e5', '#d8d8d8', '#CCCCCC', '#B3B3B3', '#999999'];
 const NEW_LABEL_COLOR = '#b3b3b3';
 const LATEST_COMMENTS_SHOWN_QUICK_ISSUE = 3;

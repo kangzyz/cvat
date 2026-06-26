@@ -187,6 +187,10 @@ module.exports = (env, argv = {}) => {
                     test: /\.(png|jpg|jpeg|gif)$/i,
                     type: 'asset/resource',
                 },
+                {
+                    test: /\.md$/i,
+                    type: 'asset/source',
+                },
             ],
             parser: {
                 javascript: {

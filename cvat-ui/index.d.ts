@@ -6,3 +6,7 @@
 import 'redux-thunk/extend-redux';
 
 declare module '*.svg';
+declare module '*.md' {
+    const content: string;
+    export default content;
+}
