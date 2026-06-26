@@ -4,45 +4,314 @@
 
 @import 'base';
 
+$doc-accent: #1890ff;
+$doc-bg: #f5f7fa;
+$doc-border: #e8ecf1;
+
 .cvat-documentation-page {
     height: 100%;
-    background: $background-color-2;
+    background: $doc-bg;
 
+    // ---- Sidebar ----------------------------------------------------------
     .cvat-documentation-page-sidebar {
         height: 100%;
         overflow-y: auto;
-        border-right: 1px solid $border-color-1;
+        background: $background-color-1;
+        border-right: 1px solid $doc-border;
+        box-shadow: 1px 0 4px rgba(0, 0, 0, 3%);
 
         .cvat-documentation-page-sidebar-header {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 16px 24px 8px;
+            align-items: center;
+            gap: $grid-unit-size * 1.5;
+            padding: $grid-unit-size * 3 $grid-unit-size * 3 $grid-unit-size * 2;
+            border-bottom: 1px solid $doc-border;
 
-            .ant-typography {
-                margin: 8px 0 0;
+            .cvat-logo-icon {
+                flex-shrink: 0;
+                width: 40px;
+                height: 40px;
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                }
+            }
+
+            .cvat-documentation-page-sidebar-title {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.2;
+
+                h5.ant-typography {
+                    margin: 0;
+                }
+
+                .ant-typography-secondary {
+                    font-size: 12px;
+                }
+            }
+        }
+
+        .cvat-documentation-page-menu.ant-menu {
+            border-inline-end: none;
+            padding: $grid-unit-size $grid-unit-size * 1.5;
+
+            .ant-menu-item {
+                width: calc(100% - #{$grid-unit-size});
+                margin: 2px auto;
+                height: $grid-unit-size * 5;
+                line-height: $grid-unit-size * 5;
+                border-radius: $border-radius-base;
+                color: $text-color;
+                transition: all 0.15s ease;
+
+                .anticon {
+                    color: $text-color-secondary;
+                    transition: color 0.15s ease;
+                }
+
+                &:hover {
+                    background: rgba(24, 144, 255, 8%);
+                }
+
+                &.ant-menu-item-selected {
+                    background: $doc-accent;
+                    color: #fff;
+                    font-weight: 600;
+
+                    .anticon {
+                        color: #fff;
+                    }
+
+                    &::after {
+                        display: none;
+                    }
+                }
             }
         }
     }
 
+    // ---- Content ----------------------------------------------------------
     .cvat-documentation-page-content {
         height: 100%;
         overflow-y: auto;
-        padding: 16px 40px 60px;
+        scrollbar-gutter: stable;
+        padding: $grid-unit-size * 3 $grid-unit-size * 5 $grid-unit-size * 8;
 
-        .cvat-documentation-page-top {
-            margin-bottom: 12px;
+        .cvat-documentation-page-toolbar {
+            max-width: 880px;
+            margin: 0 auto $grid-unit-size * 2;
+            display: flex;
+            align-items: center;
+            gap: $grid-unit-size * 2;
+
+            .cvat-documentation-page-breadcrumb {
+                display: flex;
+                align-items: center;
+                gap: $grid-unit-size;
+                font-size: 13px;
+
+                .anticon {
+                    color: $doc-accent;
+                }
+            }
         }
 
-        .cvat-documentation-page-markdown {
-            max-width: 900px;
+        .cvat-documentation-page-article {
+            max-width: 880px;
             margin: 0 auto;
-            background: $background-color-2;
+            background: $background-color-1;
+            border: 1px solid $doc-border;
+            border-radius: $border-radius-base * 1.5;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 3%), 0 8px 24px rgba(0, 0, 0, 5%);
+            padding: $grid-unit-size * 5 $grid-unit-size * 7;
+        }
 
-            .wmde-markdown {
-                background: transparent;
-                font-size: 15px;
+        // ---- Pager (prev / next) -----------------------------------------
+        .cvat-documentation-page-pager {
+            display: flex;
+            justify-content: space-between;
+            gap: $grid-unit-size * 2;
+            margin-top: $grid-unit-size * 5;
+            padding-top: $grid-unit-size * 3;
+            border-top: 1px solid $doc-border;
+
+            button {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                max-width: 48%;
+                padding: $grid-unit-size * 1.5 $grid-unit-size * 2;
+                background: $background-color-1;
+                border: 1px solid $doc-border;
+                border-radius: $border-radius-base;
+                cursor: pointer;
+                transition: all 0.15s ease;
+
+                &.cvat-documentation-page-pager-next {
+                    text-align: right;
+                    margin-left: auto;
+                }
+
+                &:hover {
+                    border-color: $doc-accent;
+                    box-shadow: 0 2px 8px rgba(24, 144, 255, 12%);
+
+                    .ant-typography:not(.ant-typography-secondary) {
+                        color: $doc-accent;
+                    }
+                }
             }
+        }
+    }
+
+    // ---- Markdown typography ----------------------------------------------
+    .cvat-documentation-page-markdown .wmde-markdown {
+        background: transparent;
+        color: $text-color;
+        font-size: 15px;
+        line-height: 1.8;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+            'Microsoft YaHei', sans-serif;
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.35;
+            color: #1f2329;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0 0 $grid-unit-size * 3;
+            padding-bottom: $grid-unit-size * 1.5;
+            border-bottom: 2px solid $doc-border;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin: $grid-unit-size * 4 0 $grid-unit-size * 2;
+            padding-bottom: $grid-unit-size;
+            border-bottom: 1px solid $doc-border;
+        }
+
+        h3 {
+            font-size: 18px;
+            margin: $grid-unit-size * 3 0 $grid-unit-size * 1.5;
+        }
+
+        p {
+            margin: $grid-unit-size * 1.5 0;
+        }
+
+        a {
+            color: $doc-accent;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        ul, ol {
+            padding-left: $grid-unit-size * 3;
+            margin: $grid-unit-size * 1.5 0;
+
+            li {
+                margin: $grid-unit-size * 0.75 0;
+            }
+        }
+
+        // Inline code
+        code {
+            background: rgba(24, 144, 255, 8%);
+            color: #c7254e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: $monospaced-fonts-stack;
+        }
+
+        // Code blocks
+        pre {
+            background: #1f2329;
+            border-radius: $border-radius-base;
+            padding: $grid-unit-size * 2;
+            margin: $grid-unit-size * 2 0;
+            overflow: auto;
+
+            code {
+                background: transparent;
+                color: #e6e6e6;
+                padding: 0;
+                font-size: 13px;
+                line-height: 1.6;
+            }
+        }
+
+        blockquote {
+            margin: $grid-unit-size * 2 0;
+            padding: $grid-unit-size $grid-unit-size * 2;
+            color: #5a6169;
+            background: rgba(24, 144, 255, 5%);
+            border-left: 4px solid $doc-accent;
+            border-radius: 0 $border-radius-base $border-radius-base 0;
+
+            > :first-child { margin-top: 0; }
+            > :last-child { margin-bottom: 0; }
+        }
+
+        // Tables
+        table {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: $grid-unit-size * 2 0;
+            border: 1px solid $doc-border;
+            border-radius: $border-radius-base;
+            overflow: hidden;
+
+            th, td {
+                border: none;
+                border-bottom: 1px solid $doc-border;
+                padding: $grid-unit-size * 1.25 $grid-unit-size * 2;
+                text-align: left;
+            }
+
+            thead th {
+                background: #f0f5ff;
+                color: #1f2329;
+                font-weight: 600;
+            }
+
+            tbody tr {
+                background: $background-color-1;
+
+                &:nth-child(even) {
+                    background: #fafbfc;
+                }
+
+                &:hover {
+                    background: rgba(24, 144, 255, 5%);
+                }
+
+                &:last-child td {
+                    border-bottom: none;
+                }
+            }
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid $doc-border;
+            margin: $grid-unit-size * 3 0;
+        }
+
+        img {
+            max-width: 100%;
+            border-radius: $border-radius-base;
         }
     }
 }
