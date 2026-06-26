@@ -29,6 +29,7 @@ import ProjectSubsetField from './project-subset-field';
 import MultiTasksProgress from './multi-task-progress';
 import AdvancedConfigurationForm, { AdvancedConfiguration, SortingMethod } from './advanced-configuration-form';
 import QualityConfigurationForm, { QualityConfiguration, ValidationMode } from './quality-configuration-form';
+import VideoCurationPanel from './video-curation-panel';
 
 type TabName = 'local' | 'share' | 'remote' | 'cloudStorage';
 const core = getCore();
@@ -216,13 +217,8 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
     };
 
     private validateFiles = (): boolean => {
-        const { activeFileManagerTab, files } = this.state;
+        const { files } = this.state;
 
-        if (activeFileManagerTab === 'cloudStorage') {
-            this.setState({
-                cloudStorageId: this.fileManagerComponent.getCloudStorageId(),
-            });
-        }
         const totalLen = Object.keys(files).reduce((acc, key: string) => acc + files[(key as TabName)].length, 0);
 
         return !!totalLen;
@@ -422,23 +418,6 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
                 files: {
                     ...files,
                     share: filteredFiles.map((it) => it.key),
-                },
-            });
-        }
-    };
-
-    private handleUploadCloudStorageFiles = (cloudStorageFiles: RemoteFile[]): void => {
-        const { files } = this.state;
-        const { many } = this.props;
-        const uploadFileErrorMessage = validateRemoteFiles(cloudStorageFiles, many);
-        const filteredFiles = filterFiles(cloudStorageFiles, many);
-        this.setState({ uploadFileErrorMessage });
-
-        if (!uploadFileErrorMessage) {
-            this.setState({
-                files: {
-                    ...files,
-                    cloudStorage: filteredFiles.map((it) => it.key),
                 },
             });
         }
@@ -761,6 +740,24 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
         }));
     };
 
+    private handlePreparedVideoDataset = (sharePath: string): void => {
+        const normalizedSharePath = sharePath.endsWith('/') ? sharePath : `${sharePath}/`;
+
+        this.fileManagerComponent?.selectShareFiles([normalizedSharePath]);
+        this.setState((state) => ({
+            activeFileManagerTab: 'share',
+            uploadFileErrorMessage: '',
+            files: {
+                ...defaultState.files,
+                share: [normalizedSharePath],
+            },
+            advanced: {
+                ...state.advanced,
+                sortingMethod: SortingMethod.NATURAL,
+            },
+        }));
+    };
+
     private getTaskName = (indexFile: number, fileManagerTabName: TabName, defaultFileName = ''): string => {
         const { many } = this.props;
         const { basic } = this.state;
@@ -880,13 +877,13 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
                 <Col span={24}>
                     <Text type='danger'>* </Text>
                     <Text className='cvat-text-color'>{i18n.t('forms:fields.selectFiles')}</Text>
+                    <VideoCurationPanel onPrepared={this.handlePreparedVideoDataset} />
                     <FileManagerComponent
                         localFilesHint={many ? UploadFileHints.multi : UploadFileHints.one}
                         onChangeActiveKey={this.changeFileManagerTab}
                         onUploadLocalFiles={this.handleUploadLocalFiles}
                         onUploadRemoteFiles={this.handleUploadRemoteFiles}
                         onUploadShareFiles={this.handleUploadShareFiles}
-                        onUploadCloudStorageFiles={this.handleUploadCloudStorageFiles}
                         ref={(component): void => {
                             this.fileManagerComponent = component;
                         }}

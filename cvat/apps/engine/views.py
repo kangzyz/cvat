@@ -150,6 +150,11 @@ from cvat.apps.engine.serializers import (
 from cvat.apps.engine.tus import TusFile
 from cvat.apps.engine.types import ExtendedRequest
 from cvat.apps.engine.utils import parse_exception_message, sendfile
+from cvat.apps.engine.video_curation import (
+    VideoCurationRequestSerializer,
+    VideoCurationResponseSerializer,
+    prepare_video_dataset,
+)
 from cvat.apps.engine.view_utils import (
     get_410_response_for_export_api,
     get_410_response_when_checking_process_status,
@@ -300,6 +305,27 @@ class ServerViewSet(viewsets.ViewSet):
                 "{} is an invalid directory".format(directory_param),
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @staticmethod
+    @extend_schema(
+        summary="Extract and deduplicate frames from videos",
+        request=VideoCurationRequestSerializer,
+        responses={"201": VideoCurationResponseSerializer},
+    )
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="video-curation",
+        serializer_class=VideoCurationRequestSerializer,
+        parser_classes=_UPLOAD_PARSER_CLASSES,
+    )
+    def video_curation(request: ExtendedRequest):
+        serializer = VideoCurationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = prepare_video_dataset(serializer.validated_data)
+        response_serializer = VideoCurationResponseSerializer(data=result)
+        response_serializer.is_valid(raise_exception=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @staticmethod
     @extend_schema(

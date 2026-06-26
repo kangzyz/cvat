@@ -85,6 +85,33 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
         const result = await serverProxy.server.share(...args);
         return result.map((item) => ({ ...omit(item, 'mime_type'), mimeType: item.mime_type }));
     });
+    implementationMixin(cvat.server.prepareVideoDataset, async (
+        ...args: Parameters<typeof serverProxy.server.prepareVideoDataset>
+    ) => {
+        const result = await serverProxy.server.prepareVideoDataset(...args);
+        return {
+            sharePath: result.share_path,
+            outputDir: result.output_dir,
+            totalVideos: result.total_videos,
+            processedVideos: result.processed_videos,
+            failedVideos: result.failed_videos,
+            sampledFrames: result.sampled_frames,
+            keptFrames: result.kept_frames,
+            duplicateFrames: result.duplicate_frames,
+            requestedBackend: result.requested_backend,
+            usedBackend: result.used_backend,
+            videos: result.videos.map((video) => ({
+                source: video.source,
+                saved: video.saved,
+                duplicates: video.duplicates,
+                sampled: video.sampled,
+                totalFrames: video.total_frames,
+                backend: video.backend,
+                error: video.error,
+                fallbackError: video.fallback_error,
+            })),
+        };
+    });
     implementationMixin(cvat.server.formats, async () => {
         const result = await serverProxy.server.formats();
         return new AnnotationFormats(result);

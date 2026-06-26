@@ -14,7 +14,6 @@ import { Organization, Project, User } from 'cvat-core-wrapper';
 import { useDropdownEditField, usePlugins } from 'utils/hooks';
 import { CombinedState } from 'reducers';
 import { deleteProjectAsync, getProjectsAsync, updateProjectAsync } from 'actions/projects-actions';
-import { cloudStoragesActions } from 'actions/cloud-storage-actions';
 import { exportActions } from 'actions/export-actions';
 import { importActions } from 'actions/import-actions';
 import UserSelector from 'components/task-page/user-selector';
@@ -155,18 +154,7 @@ function ProjectActionsComponent(props: Readonly<Props>): JSX.Element {
             newOrganization,
             () => {
                 const updateFunction = onUpdateProject ? updateCurrent : updateBulk;
-                if (
-                    projectsToUpdate.some((project) => {
-                        const { sourceStorage, targetStorage } = project;
-                        return !!sourceStorage.cloudStorageId || !!targetStorage.cloudStorageId;
-                    })
-                ) {
-                    dispatch(
-                        cloudStoragesActions.openLinkedCloudStorageUpdatingModal(projectsToUpdate, updateFunction),
-                    );
-                } else {
-                    updateFunction();
-                }
+                updateFunction();
             },
         );
     }, [currentOrganization, projectInstance, stopEditField, onUpdateProject, collectObjectsForBulkUpdate, t]);

@@ -446,6 +446,83 @@ async function share(directoryArg: string, searchPrefix?: string): Promise<Seria
     return response.data;
 }
 
+export interface VideoCurationRequest {
+    clientFiles?: File[];
+    shareFiles?: string[];
+    frameInterval?: number;
+    rotateAngle?: number;
+    deduplicate?: boolean;
+    duplicateThreshold?: number;
+    recursive?: boolean;
+    imageQuality?: number;
+    processingBackend?: 'auto' | 'cpu' | 'ffmpeg_gpu';
+}
+
+export interface VideoCurationResponse {
+    share_path: string;
+    output_dir: string;
+    total_videos: number;
+    processed_videos: number;
+    failed_videos: number;
+    sampled_frames: number;
+    kept_frames: number;
+    duplicate_frames: number;
+    requested_backend: string;
+    used_backend: string;
+    videos: {
+        source: string;
+        saved: number;
+        duplicates: number;
+        sampled: number;
+        total_frames: number | null;
+        backend: string;
+        error?: string;
+        fallback_error?: string;
+    }[];
+}
+
+async function prepareVideoDataset(payload: VideoCurationRequest): Promise<VideoCurationResponse> {
+    const { backendAPI } = config;
+    const formData = new FormData();
+
+    (payload.clientFiles || []).forEach((file, index) => {
+        formData.append(`client_files[${index}]`, file);
+    });
+
+    (payload.shareFiles || []).forEach((shareFile, index) => {
+        formData.append(`share_paths[${index}]`, shareFile);
+    });
+
+    if (typeof payload.frameInterval !== 'undefined') {
+        formData.append('frame_interval', payload.frameInterval.toString());
+    }
+    if (typeof payload.rotateAngle !== 'undefined') {
+        formData.append('rotate_angle', payload.rotateAngle.toString());
+    }
+    if (typeof payload.deduplicate !== 'undefined') {
+        formData.append('deduplicate', payload.deduplicate.toString());
+    }
+    if (typeof payload.duplicateThreshold !== 'undefined') {
+        formData.append('duplicate_threshold', payload.duplicateThreshold.toString());
+    }
+    if (typeof payload.recursive !== 'undefined') {
+        formData.append('recursive', payload.recursive.toString());
+    }
+    if (typeof payload.imageQuality !== 'undefined') {
+        formData.append('image_quality', payload.imageQuality.toString());
+    }
+    if (typeof payload.processingBackend !== 'undefined') {
+        formData.append('processing_backend', payload.processingBackend);
+    }
+
+    try {
+        const response = await Axios.post(`${backendAPI}/server/video-curation`, formData);
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 async function formats(): Promise<SerializedAnnotationFormats> {
     const { backendAPI } = config;
 
@@ -2603,6 +2680,7 @@ export default Object.freeze({
     server: Object.freeze({
         about,
         share,
+        prepareVideoDataset,
         formats,
         login,
         logout,

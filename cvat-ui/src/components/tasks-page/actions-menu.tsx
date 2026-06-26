@@ -24,7 +24,6 @@ import { mergeConsensusJobsAsync } from 'actions/consensus-actions';
 import {
     deleteTaskAsync, getTasksAsync, switchMoveTaskModalVisible, updateTaskAsync,
 } from 'actions/tasks-actions';
-import { cloudStoragesActions } from 'actions/cloud-storage-actions';
 import { ResourceUpdateTypes } from 'utils/enums';
 import UserSelector from 'components/task-page/user-selector';
 
@@ -225,18 +224,7 @@ function TaskActionsComponent(props: Readonly<Props>): JSX.Element {
             newOrganization,
             () => {
                 const updateFunction = onUpdateTask ? updateCurrent : updateBulk;
-                if (
-                    tasksToUpdate.some((task) => {
-                        const { sourceStorage, targetStorage } = task;
-                        return !!sourceStorage.cloudStorageId || !!targetStorage.cloudStorageId;
-                    })
-                ) {
-                    dispatch(
-                        cloudStoragesActions.openLinkedCloudStorageUpdatingModal(tasksToUpdate, updateFunction),
-                    );
-                } else {
-                    updateFunction();
-                }
+                updateFunction();
             },
         );
     }, [currentOrganization, taskInstance, stopEditField, onUpdateTask, collectObjectsForBulkUpdate, t]);

@@ -57,6 +57,10 @@ function build(): CVATCore {
                 const result = await PluginRegistry.apiWrapper(cvat.server.share, directory, searchPrefix);
                 return result;
             },
+            async prepareVideoDataset(payload) {
+                const result = await PluginRegistry.apiWrapper(cvat.server.prepareVideoDataset, payload);
+                return result;
+            },
             async formats() {
                 const result = await PluginRegistry.apiWrapper(cvat.server.formats);
                 return result;

@@ -85,7 +85,6 @@ export default function StorageWithSwitchField(props: Readonly<Props>): JSX.Elem
                 >
                     <StorageField
                         locationName={[storageName, 'location']}
-                        selectCloudStorageName={[storageName, 'cloudStorageId']}
                         locationValue={locationValue}
                         onChangeStorage={onChangeStorage}
                         onChangeLocationValue={onChangeLocationValue}

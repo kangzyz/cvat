@@ -154,13 +154,8 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
     };
 
     private validateFiles = (): boolean => {
-        const { activeFileManagerTab, files } = this.state;
+        const { files } = this.state;
 
-        if (activeFileManagerTab === 'cloudStorage') {
-            this.setState({
-                cloudStorageId: this.fileManagerComponent.getCloudStorageId(),
-            });
-        }
         const totalLen = Object.keys(files).reduce((acc, key: string) => acc + files[(key as TabName)].length, 0);
 
         return !!totalLen;
@@ -308,23 +303,6 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
                 files: {
                     ...files,
                     share: keys,
-                },
-            });
-        }
-    };
-
-    private handleUploadCloudStorageFiles = (cloudStorageFiles: RemoteFile[]): void => {
-        const { files } = this.state;
-        const keys = cloudStorageFiles.map((it) => it.key);
-        const uploadFileErrorMessage = pathsHaveNonAudio(keys) ? NON_AUDIO_ERROR : '';
-
-        this.setState({ uploadFileErrorMessage });
-
-        if (!uploadFileErrorMessage) {
-            this.setState({
-                files: {
-                    ...files,
-                    cloudStorage: keys,
                 },
             });
         }
@@ -524,7 +502,6 @@ class AudioCreateTaskContent extends React.PureComponent<Props & RouteComponentP
                         onUploadLocalFiles={this.handleUploadLocalFiles}
                         onUploadRemoteFiles={this.handleUploadRemoteFiles}
                         onUploadShareFiles={this.handleUploadShareFiles}
-                        onUploadCloudStorageFiles={this.handleUploadCloudStorageFiles}
                         ref={(component): void => {
                             this.fileManagerComponent = component;
                         }}

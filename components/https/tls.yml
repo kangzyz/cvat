@@ -1,0 +1,9 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/cvat.crt
+        keyFile: /certs/cvat.key
+  certificates:
+    - certFile: /certs/cvat.crt
+      keyFile: /certs/cvat.key

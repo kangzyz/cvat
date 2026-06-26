@@ -20,7 +20,6 @@ router.register("server", views.ServerViewSet, basename="server")
 router.register("issues", views.IssueViewSet)
 router.register("comments", views.CommentViewSet)
 router.register("labels", views.LabelViewSet)
-router.register("cloudstorages", views.CloudStorageViewSet)
 router.register("assets", views.AssetsViewSet)
 router.register("guides", views.AnnotationGuidesViewSet)
 

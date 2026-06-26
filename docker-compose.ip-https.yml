@@ -1,0 +1,45 @@
+# HTTPS override for public-IP access without using ports 80/443.
+#
+# This uses a certificate mounted from CVAT_TLS_CERTS_DIR and exposes HTTPS on
+# CVAT_HTTPS_PORT, defaulting to 28443. It does not use Let's Encrypt.
+# Generate a certificate before starting:
+#
+#   PUBLIC_IP=your.public.ip
+#   sudo mkdir -p /data/cvat/certs
+#   sudo openssl req -x509 -nodes -newkey rsa:4096 -sha256 -days 825 \
+#     -keyout /data/cvat/certs/cvat.key \
+#     -out /data/cvat/certs/cvat.crt \
+#     -subj "/CN=${PUBLIC_IP}" \
+#     -addext "subjectAltName=IP:${PUBLIC_IP}"
+#   sudo chmod 600 /data/cvat/certs/cvat.key
+#   sudo chmod 644 /data/cvat/certs/cvat.crt
+#
+# Deployment:
+#   docker compose --env-file .env \
+#     -f docker-compose.yml \
+#     -f docker-compose.aliyun-gpu.yml \
+#     -f docker-compose.ip-https.yml \
+#     up -d
+
+services:
+  cvat_server:
+    labels:
+      traefik.http.routers.cvat.entrypoints: websecure
+      traefik.http.routers.cvat.tls: "true"
+
+  cvat_ui:
+    labels:
+      traefik.http.routers.cvat-ui.entrypoints: websecure
+      traefik.http.routers.cvat-ui.tls: "true"
+
+  traefik:
+    environment:
+      TRAEFIK_ENTRYPOINTS_web_ADDRESS: :8080
+      TRAEFIK_ENTRYPOINTS_websecure_ADDRESS: :8443
+    ports: !override
+      - ${CVAT_HTTP_BIND:-127.0.0.1}:${CVAT_HTTP_PORT:-28080}:8080
+      - ${CVAT_HTTPS_BIND:-0.0.0.0}:${CVAT_HTTPS_PORT:-28443}:8443
+      - ${CVAT_DASHBOARD_BIND:-127.0.0.1}:${CVAT_DASHBOARD_PORT:-28090}:8090
+    volumes:
+      - ${CVAT_TLS_CERTS_DIR:-/data/cvat/certs}:/certs:ro
+      - ./components/https/tls.yml:/etc/traefik/rules/tls.yml:ro

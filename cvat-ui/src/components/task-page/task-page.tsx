@@ -16,7 +16,7 @@ import notification from 'antd/lib/notification';
 import { getInferenceStatusAsync } from 'actions/models-actions';
 import { updateJobAsync, jobsActions } from 'actions/jobs-actions';
 import {
-    getCore, Task, Job, FramesMetaData, MediaType,
+    getCore, Task, Job, MediaType,
 } from 'cvat-core-wrapper';
 import { TaskNotFoundComponent } from 'components/common/not-found';
 import JobListComponent from 'components/task-page/job-list';
@@ -24,10 +24,9 @@ import ModelRunnerModal from 'components/model-runner-modal/model-runner-dialog'
 import CVATLoadingSpinner from 'components/common/loading-spinner';
 import MoveTaskModal from 'components/move-task-modal/move-task-modal';
 import { CombinedState } from 'reducers';
-import { updateTaskAsync, updateTaskMetadataAsync } from 'actions/tasks-actions';
+import { updateTaskAsync } from 'actions/tasks-actions';
 import TopBarComponent from './top-bar';
 import DetailsComponent from './details';
-import { getCloudStorageById } from './cloud-storage-editor';
 
 const core = getCore();
 
@@ -37,10 +36,6 @@ function TaskPageComponent(): JSX.Element {
     const id = +useParams<{ id: string }>().id;
     const dispatch = useDispatch();
     const [taskInstance, setTaskInstance] = useState<Task | null>(null);
-    const [taskMeta, setTaskMeta] = useState<FramesMetaData | null>(null);
-    const [
-        cloudStorageInstance, setCloudStorageInstance,
-    ] = useState<CombinedState['cloudStorages']['current'][number] | null>(null);
     const [fetchingTask, setFetchingTask] = useState(true);
 
     const {
@@ -65,14 +60,6 @@ function TaskPageComponent(): JSX.Element {
                 dispatch(jobsActions.getJobsSuccess(
                     Object.assign([...task.jobs], { count: task.jobs.length })),
                 );
-
-                const meta = await task.meta.get();
-                setTaskMeta(meta);
-
-                if (meta.cloudStorageId) {
-                    const cloudStorage = await getCloudStorageById(meta.cloudStorageId);
-                    setCloudStorageInstance(cloudStorage);
-                }
             }
         } catch (error: any) {
             notification.error({
@@ -118,18 +105,6 @@ function TaskPageComponent(): JSX.Element {
         return promise;
     };
 
-    const onUpdateTaskMeta = (meta: FramesMetaData): Promise<void> => (
-        dispatch(updateTaskMetadataAsync(taskInstance, meta)).then((updatedMeta: FramesMetaData) => {
-            setTaskMeta(updatedMeta);
-            if (updatedMeta && updatedMeta.cloudStorageId) {
-                return getCloudStorageById(updatedMeta.cloudStorageId);
-            }
-            return null;
-        }).then((_cloudStorage) => {
-            setCloudStorageInstance(_cloudStorage);
-        })
-    );
-
     const onJobUpdate = (job: Job, data: Parameters<Job['save']>[0]): void => {
         dispatch(updateJobAsync(job, data));
     };
@@ -147,9 +122,6 @@ function TaskPageComponent(): JSX.Element {
                     <DetailsComponent
                         task={taskInstance}
                         onUpdateTask={onUpdateTask}
-                        taskMeta={taskMeta}
-                        cloudStorageInstance={cloudStorageInstance}
-                        onUpdateTaskMeta={onUpdateTaskMeta}
                         labelsEditorProps={labelsEditorProps}
                     />
                     <JobListComponent task={taskInstance} onJobUpdate={onJobUpdate} />

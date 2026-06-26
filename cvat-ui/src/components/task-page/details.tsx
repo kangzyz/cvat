@@ -13,7 +13,7 @@ import Text from 'antd/lib/typography/Text';
 import Title from 'antd/lib/typography/Title';
 
 import {
-    User, getCore, Project, Task, FramesMetaData, CloudStorage,
+    User, getCore, Project, Task,
 } from 'cvat-core-wrapper';
 import AutomaticAnnotationProgress from 'components/tasks-page/automatic-annotation-progress';
 import MdGuideControl from 'components/md-guide/md-guide-control';
@@ -23,16 +23,12 @@ import { CombinedState, ActiveInference } from 'reducers';
 import CVATTag, { TagType } from 'components/common/cvat-tag';
 import UserSelector from './user-selector';
 import BugTrackerEditor from './bug-tracker-editor';
-import CloudStorageEditor from './cloud-storage-editor';
 import LabelsEditorComponent from '../labels-editor/labels-editor';
 import ProjectSubsetField from '../create-task-page/project-subset-field';
 
 interface OwnProps {
     task: Task;
     onUpdateTask: (task: Task, fields?: Parameters<Task['save']>[0]) => Promise<Task>;
-    taskMeta: FramesMetaData;
-    cloudStorageInstance: CloudStorage | null;
-    onUpdateTaskMeta: (meta: FramesMetaData) => Promise<void>;
     labelsEditorProps?: Record<string, unknown>;
 }
 
@@ -125,9 +121,6 @@ class DetailsComponent extends React.PureComponent<Props, State> {
         const {
             task: taskInstance,
             onUpdateTask,
-            taskMeta,
-            cloudStorageInstance,
-            onUpdateTaskMeta,
         } = this.props;
         const { consensusEnabled } = this.state;
         const owner = taskInstance.owner ? taskInstance.owner.username : null;
@@ -165,13 +158,6 @@ class DetailsComponent extends React.PureComponent<Props, State> {
                         <Text type='secondary'>{i18n.t('resources:details.assignedTo')}</Text>
                         {assigneeSelect}
                     </Col>
-                </Row>
-                <Row justify='end' className='cvat-task-details-cloud-storage'>
-                    <CloudStorageEditor
-                        taskMeta={taskMeta}
-                        cloudStorageInstance={cloudStorageInstance}
-                        onUpdateTaskMeta={onUpdateTaskMeta}
-                    />
                 </Row>
             </>
         );

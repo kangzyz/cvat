@@ -55,3 +55,28 @@
         align-items: center;
     }
 }
+
+.cvat-video-curation-wrapper {
+    margin: $grid-unit-size 0;
+
+    .ant-collapse-item > .ant-collapse-header {
+        align-items: center;
+    }
+
+    .ant-input-number {
+        display: block;
+        width: 100%;
+        margin-top: $grid-unit-size;
+    }
+
+    .ant-select {
+        display: block;
+        width: 100%;
+        margin-top: $grid-unit-size;
+    }
+
+    .cvat-video-curation-switch {
+        height: 100%;
+        padding-top: $grid-unit-size * 3;
+    }
+}

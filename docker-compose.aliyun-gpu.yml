@@ -1,0 +1,144 @@
+# Deployment override for running the prebuilt GPU image from Aliyun ACR.
+#
+# Example:
+#   ACR_REGISTRY=crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com \
+#   ACR_NAMESPACE=cvat-ch \
+#   CVAT_HOST=192.168.0.10 \
+#   CVAT_HTTP_PORT=28080 \
+#   CVAT_DASHBOARD_PORT=28090 \
+#   CVAT_HTTP_BIND=0.0.0.0 \
+#   CVAT_DASHBOARD_BIND=127.0.0.1 \
+#   CVAT_DATA_ROOT=/data/cvat \
+#   CVAT_SHARE_ROOT=/data/cvat/share \
+#   docker compose -f docker-compose.yml -f docker-compose.aliyun-gpu.yml up -d
+#
+# Do not combine this file with docker-compose.gpu.yml on deployment hosts:
+# docker-compose.gpu.yml is for building the GPU image locally.
+
+x-cvat-acr-image: &cvat-acr-image
+  registry: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}
+  namespace: ${ACR_NAMESPACE:-cvat-ch}
+
+x-video-curation-share: &video-curation-share
+  type: bind
+  source: ${CVAT_SHARE_ROOT:-/data/cvat/share}
+  target: /home/django/share
+  bind:
+    create_host_path: true
+
+services:
+  cvat_db:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/postgres:15-alpine
+
+  cvat_redis_inmem:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/redis:7.2.11-alpine
+
+  cvat_redis_ondisk:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/kvrocks:2.15.0
+
+  cvat_server:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    gpus: all
+    environment:
+      NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
+      NVIDIA_DRIVER_CAPABILITIES: ${NVIDIA_DRIVER_CAPABILITIES:-compute,utility,video}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_utils:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_import:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_export:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_annotation:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_webhooks:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_quality_reports:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_chunks:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_worker_consensus:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
+    volumes:
+      - *video-curation-share
+
+  cvat_ui:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/ui:${CVAT_UI_TAG:-dev}
+
+  traefik:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/traefik:v3.6
+    ports: !override
+      - ${CVAT_HTTP_BIND:-0.0.0.0}:${CVAT_HTTP_PORT:-28080}:8080
+      - ${CVAT_DASHBOARD_BIND:-127.0.0.1}:${CVAT_DASHBOARD_PORT:-28090}:8090
+
+  cvat_opa:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/opa:1.12.2
+
+  cvat_clickhouse:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/clickhouse-server:23.11-alpine
+
+  cvat_vector:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/vector:0.26.0-alpine
+
+  cvat_grafana:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/grafana-oss:10.1.2
+
+volumes:
+  cvat_db:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/postgres
+  cvat_data:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/data
+  cvat_keys:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/keys
+  cvat_logs:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/logs
+  cvat_inmem_db:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/redis-inmem
+  cvat_events_db:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/clickhouse
+  cvat_cache_db:
+    driver_opts:
+      type: none
+      o: bind
+      device: ${CVAT_DATA_ROOT:-/data/cvat}/kvrocks

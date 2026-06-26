@@ -911,6 +911,9 @@ class StorageSerializer(serializers.ModelSerializer):
         new_cloud_storage_id = attrs.get("cloud_storage_id")
         new_location = attrs.get("location")
 
+        if new_cloud_storage_id or new_location == models.Location.CLOUD_STORAGE:
+            raise serializers.ValidationError("Cloud storage is disabled")
+
         if new_cloud_storage_id:
             if new_location and new_location != models.Location.CLOUD_STORAGE:
                 raise serializers.ValidationError(
@@ -2753,6 +2756,9 @@ class DataSerializer(serializers.ModelSerializer):
 
     # pylint: disable=no-self-use
     def validate(self, attrs):
+        if attrs.get("cloud_storage_id"):
+            raise serializers.ValidationError("Cloud storage is disabled")
+
         if (
             "start_frame" in attrs
             and "stop_frame" in attrs
@@ -3722,6 +3728,9 @@ class DataMetaWriteSerializer(serializers.ModelSerializer):
         fields = ("deleted_frames", "cloud_storage_id")
 
     def validate_cloud_storage_id(self, cloud_storage_id: int):
+        if cloud_storage_id:
+            raise serializers.ValidationError("Cloud storage is disabled")
+
         try:
             db_storage: models.CloudStorage = models.CloudStorage.objects.get(id=cloud_storage_id)
             storage = db_storage_to_storage_instance(db_storage)
@@ -4729,6 +4738,12 @@ def _configure_related_storages(validated_data: dict[str, Any]) -> dict[str, mod
 
     for i in storages:
         if storage_conf := validated_data.get(i):
+            if (
+                storage_conf.get("cloud_storage_id")
+                or storage_conf.get("location") == models.Location.CLOUD_STORAGE
+            ):
+                raise serializers.ValidationError("Cloud storage is disabled")
+
             if (
                 cloud_storage_id := storage_conf.get("cloud_storage_id")
             ) and not models.CloudStorage.objects.filter(id=cloud_storage_id).exists():

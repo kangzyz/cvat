@@ -444,18 +444,6 @@ function HeaderComponent(props: Props): JSX.Element {
                     {t('navigation.jobs')}
                 </Button>
                 <Button
-                    className={getButtonClassName('cloudstorages')}
-                    type='link'
-                    value='cloudstorages'
-                    href='/cloudstorages?page=1'
-                    onClick={(event: React.MouseEvent): void => {
-                        event.preventDefault();
-                        history.push('/cloudstorages');
-                    }}
-                >
-                    {t('navigation.cloudStorages')}
-                </Button>
-                <Button
                     className={getButtonClassName('requests')}
                     type='link'
                     value='requests'

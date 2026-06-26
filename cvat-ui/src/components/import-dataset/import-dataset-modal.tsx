@@ -726,7 +726,6 @@ function ImportDatasetModal(props: StateToProps): JSX.Element {
                 {!useDefaultSettings && (
                     <StorageField
                         locationName={['sourceStorage', 'location']}
-                        selectCloudStorageName={['sourceStorage', 'cloudStorageId']}
                         onChangeStorage={(value: StorageData) => {
                             dispatch(reducerActions.setSourceStorage(new Storage({
                                 location: value?.location || defaultStorageLocation,

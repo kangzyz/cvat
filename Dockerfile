@@ -35,20 +35,37 @@ FROM build-image-base AS build-image-av
 # Compile Openh264 and FFmpeg
 ARG PREFIX=/opt/ffmpeg
 ARG PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
+ARG FFMPEG_WITH_NVIDIA="no"
 
 ENV FFMPEG_VERSION=8.0 \
     OPENH264_VERSION=2.6.0
 
+RUN if [ "${FFMPEG_WITH_NVIDIA}" = "yes" ]; then \
+        git clone --depth=1 https://github.com/FFmpeg/nv-codec-headers.git /tmp/nv-codec-headers && \
+        make -C /tmp/nv-codec-headers install PREFIX=${PREFIX}; \
+    fi
+
 WORKDIR /tmp/openh264
-RUN curl -sL https://github.com/cisco/openh264/archive/v${OPENH264_VERSION}.tar.gz --output - | \
-    tar -zx --strip-components=1 && \
+RUN curl -fSL --retry 5 --retry-delay 5 --retry-all-errors \
+        "https://github.com/cisco/openh264/archive/v${OPENH264_VERSION}.tar.gz" \
+        -o /tmp/openh264.tar.gz && \
+    tar -xzf /tmp/openh264.tar.gz --strip-components=1 && \
+    rm /tmp/openh264.tar.gz && \
     make -j5 && make install-shared PREFIX=${PREFIX} && make clean
 
 WORKDIR /tmp/ffmpeg
-RUN curl -sL https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz --output - | \
-    tar -zx --strip-components=1 && \
+RUN curl -fSL --retry 5 --retry-delay 5 --retry-all-errors \
+        "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.gz" \
+        -o /tmp/ffmpeg.tar.gz && \
+    tar -xzf /tmp/ffmpeg.tar.gz --strip-components=1 && \
+    rm /tmp/ffmpeg.tar.gz && \
+    NVIDIA_FLAGS="" && \
+    if [ "${FFMPEG_WITH_NVIDIA}" = "yes" ]; then \
+        NVIDIA_FLAGS="--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --disable-nvenc"; \
+    fi && \
     ./configure --disable-nonfree --disable-gpl --enable-libopenh264 --enable-libmp3lame \
-        --enable-shared --disable-static --disable-doc --disable-programs --prefix="${PREFIX}" && \
+        ${NVIDIA_FLAGS} \
+        --enable-shared --disable-static --disable-doc --disable-ffplay --prefix="${PREFIX}" && \
     make -j5 && make install && make clean
 
 COPY utils/dataset_manifest/requirements.txt /tmp/utils/dataset_manifest/requirements.txt
@@ -152,7 +169,7 @@ COPY --from=build-smokescreen /tmp/smokescreen /usr/local/bin/smokescreen
 # Add a non-root user
 ENV USER=${USER}
 ENV HOME /home/${USER}
-RUN deluser --remove-home ubuntu && \
+RUN if id ubuntu >/dev/null 2>&1; then deluser --remove-home ubuntu; fi && \
     adduser --uid=1000 --shell /bin/bash --disabled-password --gecos "" ${USER}
 
 ARG CLAM_AV="no"
@@ -178,6 +195,8 @@ RUN --mount=type=bind,from=build-image,source=/tmp/wheelhouse,target=/mnt/wheelh
 
 ENV NUMPROCS=1
 COPY --from=build-image-av /opt/ffmpeg/lib /usr/lib
+COPY --from=build-image-av /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg
+COPY --from=build-image-av /opt/ffmpeg/bin/ffprobe /usr/local/bin/ffprobe
 
 # These variables are required for supervisord substitutions in files
 # This library allows remote python debugging with VS Code

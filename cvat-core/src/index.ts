@@ -76,6 +76,30 @@ export default interface CVATCore {
             name: string;
             type: enums.ShareFileType;
         }[]>;
+        prepareVideoDataset: (
+            ...args: Parameters<typeof serverProxy.server.prepareVideoDataset>
+        ) => Promise<{
+            sharePath: string;
+            outputDir: string;
+            totalVideos: number;
+            processedVideos: number;
+            failedVideos: number;
+            sampledFrames: number;
+            keptFrames: number;
+            duplicateFrames: number;
+            requestedBackend: string;
+            usedBackend: string;
+            videos: {
+                source: string;
+                saved: number;
+                duplicates: number;
+                sampled: number;
+                totalFrames: number | null;
+                backend: string;
+                error?: string;
+                fallbackError?: string;
+            }[];
+        }>;
         formats: () => Promise<AnnotationFormats>;
         userAgreements: typeof serverProxy.server.userAgreements,
         register: (
