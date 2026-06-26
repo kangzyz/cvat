@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT
 
 import './styles.scss';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +20,7 @@ import { useResourceQuery } from 'utils/hooks';
 import { selectionActions } from 'actions/selection-actions';
 import { MLModel, ModelProviders } from 'cvat-core-wrapper';
 import DeployedModelsList from './deployed-models-list';
+import DeployYoloModelModal from './deploy-yolo-model-modal';
 import EmptyListComponent from './empty-list';
 import TopBar from './top-bar';
 
@@ -35,6 +36,7 @@ function ModelsPageComponent(): JSX.Element {
     const history = useHistory();
     const dispatch = useDispatch();
     const { t } = useTranslation('qualityReviewModels');
+    const [deployYoloModalVisible, setDeployYoloModalVisible] = useState(false);
     const {
         fetching,
         query,
@@ -101,6 +103,7 @@ function ModelsPageComponent(): JSX.Element {
                 query={updatedQuery}
                 selectedCount={selectedCount}
                 onSelectAll={onSelectAll}
+                onDeployYolo={() => setDeployYoloModalVisible(true)}
                 onApplySearch={(search: string | null) => {
                     dispatch(
                         getModelsAsync({
@@ -134,6 +137,11 @@ function ModelsPageComponent(): JSX.Element {
                     <Spin size='large' className='cvat-spinner' />
                 </div>
             ) : content }
+            <DeployYoloModelModal
+                open={deployYoloModalVisible}
+                onClose={() => setDeployYoloModalVisible(false)}
+                onDeployed={() => dispatch(getModelsAsync(updatedQuery))}
+            />
         </div>
     );
 }

@@ -382,6 +382,13 @@ NUCLIO = {
 
 assert NUCLIO["INVOKE_METHOD"] in {"dashboard", "direct"}
 
+LOCAL_MODEL_DEPLOYMENT = {
+    "ENABLED": to_bool(os.getenv("CVAT_LOCAL_MODEL_DEPLOYMENT", False)),
+    "ROOT": BASE_DIR / "data" / "local-models",
+    "NUCTL_PATH": os.getenv("CVAT_NUCTL_PATH", "nuctl"),
+    "TIMEOUT": int(os.getenv("CVAT_LOCAL_MODEL_DEPLOYMENT_TIMEOUT", 1800)),
+}
+
 RQ_SHOW_ADMIN_LINK = True
 RQ_EXCEPTION_HANDLERS = [
     "cvat.apps.engine.views.rq_exception_handler",

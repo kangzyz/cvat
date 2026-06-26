@@ -4,7 +4,9 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { UploadOutlined } from '@ant-design/icons';
 import { Row, Col } from 'antd/lib/grid';
+import Button from 'antd/lib/button';
 import Input from 'antd/lib/input';
 import {
     SortingComponent,
@@ -31,11 +33,12 @@ interface VisibleTopBarProps {
     disabled?: boolean;
     selectedCount: number;
     onSelectAll: () => void;
+    onDeployYolo: () => void;
 }
 
 export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JSX.Element {
     const {
-        query, onApplyFilter, onApplySorting, onApplySearch, disabled, selectedCount, onSelectAll,
+        query, onApplyFilter, onApplySorting, onApplySearch, disabled, selectedCount, onSelectAll, onDeployYolo,
     } = props;
     const { t } = useTranslation('qualityReviewModels');
     const [visibility, setVisibility] = useState(defaultVisibility);
@@ -67,6 +70,9 @@ export default function TopBarComponent(props: Readonly<VisibleTopBarProps>): JS
                         <ResourceSelectionInfo selectedCount={selectedCount} onSelectAll={onSelectAll} />
                     </div>
                     <div>
+                        <Button type='primary' icon={<UploadOutlined />} onClick={onDeployYolo}>
+                            上传 YOLO 模型
+                        </Button>
                         <SortingComponent
                             disabled={disabled}
                             visible={visibility.sorting}

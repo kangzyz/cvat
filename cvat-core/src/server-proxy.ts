@@ -1942,6 +1942,41 @@ async function getLambdaFunctions(): Promise<SerializedModel[]> {
     }
 }
 
+async function deployLocalYoloModel(body: {
+    model: File;
+    name: string;
+    labels: string;
+    functionName?: string;
+}): Promise<{
+    id: string;
+    name: string;
+    function_root: string;
+    labels: { id: number; name: string; type: string }[];
+    stdout?: string;
+    stderr?: string;
+}> {
+    const { backendAPI } = config;
+    const form = new FormData();
+    form.append('model', body.model);
+    form.append('name', body.name);
+    form.append('labels', body.labels);
+    if (body.functionName) {
+        form.append('function_name', body.functionName);
+    }
+
+    try {
+        const response = await Axios.post(`${backendAPI}/lambda/functions/yolo/deploy`, form, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 async function runLambdaRequest(body): Promise<SerializedFunctionRequest> {
     const { backendAPI } = config;
 
@@ -2661,6 +2696,7 @@ export default Object.freeze({
 
     lambda: Object.freeze({
         list: getLambdaFunctions,
+        deployLocalYoloModel,
         status: getLambdaRequestStatus,
         requests: getLambdaRequests,
         run: runLambdaRequest,

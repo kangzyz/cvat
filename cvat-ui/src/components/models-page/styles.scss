@@ -216,3 +216,19 @@
     max-height: $grid-unit-size * 6;
     display: inline;
 }
+
+.cvat-deploy-yolo-model-modal {
+    .ant-alert {
+        margin-bottom: $grid-unit-size * 2;
+    }
+
+    .cvat-deploy-yolo-model-form {
+        .ant-upload-drag {
+            min-height: $grid-unit-size * 18;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+    }
+}

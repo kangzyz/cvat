@@ -44,6 +44,25 @@ docker exec -it cvat_server bash -ic 'python3 ~/manage.py createsuperuser'
 
 默认关闭公开注册，只允许管理员在 [http://localhost:8080/admin/](http://localhost:8080/admin/) 后台添加用户。若需要临时开放注册，可设置环境变量 `CVAT_REGISTRATION_ENABLED=true` 后重启后端服务。
 
+### 本地社区版可用化
+
+本地社区版默认启用质量控制后端和质量报告 worker，并将质量控制概览页替换为社区版可用视图。进入任务或项目的“质量控制”后，可以查看质量设置、最近一次质量报告摘要、验证帧与冲突统计；任务包含 Ground Truth 作业后，质量控制结果会在概览中展示。
+
+自动标注模型依赖 Nuclio serverless。若只启动基础服务，模型列表可以打开，但无法部署或调用模型。启用 serverless 组件：
+
+```bash
+docker compose -f docker-compose.yml -f components/serverless/docker-compose.serverless.yml up -d
+```
+
+本仓库为本地部署增加了 YOLO `.pt` 上传入口。启动 serverless 组件后，管理员可在“模型”页面点击“上传 YOLO 模型”，上传训练得到的 `.pt` 文件，并按训练类别顺序填写标签列表。系统会将模型封装为 Nuclio detector，部署成功后会自动出现在模型列表中，可用于自动标注。
+
+注意事项：
+
+- 该功能仅适合本地或可信内网部署，`components/serverless/docker-compose.serverless.yml` 会为 `cvat_server` 挂载 Docker socket 并开启 `CVAT_LOCAL_MODEL_DEPLOYMENT=1`。
+- `cvat_server` 镜像内置与 Nuclio Dashboard 匹配的 `nuctl 1.16.3`。
+- 首次部署 YOLO `.pt` 模型会构建函数镜像并下载 `ultralytics`/PyTorch 依赖，耗时取决于网络和机器性能。
+- 目前支持矩形检测类型，标签顺序必须与训练模型类别顺序一致。
+
 ## What is CVAT Community?
 
 **CVAT Community** is the free, self-hosted open-source edition of [CVAT](https://www.cvat.ai/) — one of

@@ -64,6 +64,7 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
     implementationMixin(cvat.actions.call, callAction);
 
     implementationMixin(cvat.lambda.list, lambdaManager.list.bind(lambdaManager));
+    implementationMixin(cvat.lambda.deployLocalYoloModel, lambdaManager.deployLocalYoloModel.bind(lambdaManager));
     implementationMixin(cvat.lambda.run, lambdaManager.run.bind(lambdaManager));
     implementationMixin(cvat.lambda.call, lambdaManager.call.bind(lambdaManager));
     implementationMixin(cvat.lambda.cancel, lambdaManager.cancel.bind(lambdaManager));

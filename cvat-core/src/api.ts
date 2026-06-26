@@ -260,6 +260,10 @@ function build(): CVATCore {
                 const result = await PluginRegistry.apiWrapper(cvat.lambda.list);
                 return result;
             },
+            async deployLocalYoloModel(data) {
+                const result = await PluginRegistry.apiWrapper(cvat.lambda.deployLocalYoloModel, data);
+                return result;
+            },
             async run(task, model, args) {
                 const result = await PluginRegistry.apiWrapper(cvat.lambda.run, task, model, args);
                 return result;

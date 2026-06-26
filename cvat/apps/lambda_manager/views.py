@@ -9,7 +9,11 @@ import base64
 import io
 import json
 import os
+import re
+import shutil
+import subprocess
 import textwrap
+from pathlib import Path
 from copy import deepcopy
 from datetime import timedelta
 from functools import wraps
@@ -33,7 +37,10 @@ from drf_spectacular.utils import (
 )
 from PIL import Image
 from rest_framework import serializers, status, viewsets
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 import cvat.apps.dataset_manager as dm
 from cvat.apps.dataset_manager.task import PatchAction
@@ -67,6 +74,195 @@ from cvat.apps.lambda_manager.utils import ROIHelper
 from cvat.utils.http import make_requests_session
 
 slogger = ServerLogManager(__name__)
+
+
+def _parse_yolo_labels(labels_payload: str) -> list[dict[str, Any]]:
+    labels_payload = labels_payload.strip()
+    if not labels_payload:
+        raise ValidationError("请填写模型标签列表", code=status.HTTP_400_BAD_REQUEST)
+
+    labels: list[str] = []
+    if labels_payload.startswith("["):
+        try:
+            parsed_labels = json.loads(labels_payload)
+        except json.JSONDecodeError as err:
+            raise ValidationError(
+                f"标签列表必须是有效 JSON 数组或普通文本列表：{err}",
+                code=status.HTTP_400_BAD_REQUEST,
+            ) from err
+
+        if not isinstance(parsed_labels, list):
+            raise ValidationError("标签 JSON 必须是数组", code=status.HTTP_400_BAD_REQUEST)
+
+        for item in parsed_labels:
+            if isinstance(item, str):
+                label = item.strip()
+            elif isinstance(item, dict):
+                label = str(item.get("name", "")).strip()
+            else:
+                label = ""
+
+            if label:
+                labels.append(label)
+    else:
+        for line in labels_payload.replace("\r", "\n").split("\n"):
+            labels.extend(label.strip() for label in line.split(",") if label.strip())
+
+    if not labels:
+        raise ValidationError("请至少填写一个模型标签", code=status.HTTP_400_BAD_REQUEST)
+
+    if len(labels) != len(set(labels)):
+        raise ValidationError("标签名称不能重复", code=status.HTTP_400_BAD_REQUEST)
+
+    return [
+        {
+            "id": index,
+            "name": label,
+            "type": "rectangle",
+        }
+        for index, label in enumerate(labels)
+    ]
+
+
+def _make_nuclio_function_name(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9-]+", "-", value.lower()).strip("-")
+    normalized = re.sub(r"-{2,}", "-", normalized)
+    if not normalized:
+        normalized = "model"
+
+    if not normalized.startswith("local-yolo-"):
+        normalized = f"local-yolo-{normalized}"
+
+    return normalized[:63].strip("-")
+
+
+def _yaml_quoted(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def _write_local_yolo_function(
+    *,
+    function_root: Path,
+    function_name: str,
+    display_name: str,
+    labels_spec: list[dict[str, Any]],
+) -> None:
+    labels_json = json.dumps(labels_spec, ensure_ascii=False, indent=2)
+    (function_root / "labels.json").write_text(labels_json, encoding="utf-8")
+
+    main_py = textwrap.dedent(
+        """
+        import base64
+        import io
+        import json
+        import os
+
+        from PIL import Image
+        from ultralytics import YOLO
+
+
+        def init_context(context):
+            context.logger.info("Loading local YOLO model")
+            with open("/opt/nuclio/labels.json", "r", encoding="utf-8") as labels_file:
+                labels = json.load(labels_file)
+
+            context.user_data.labels = {int(item["id"]): item["name"] for item in labels}
+            context.user_data.model = YOLO("/opt/nuclio/model.pt")
+            context.logger.info("Local YOLO model is ready")
+
+
+        def handler(context, event):
+            data = event.body
+            if isinstance(data, bytes):
+                data = json.loads(data.decode("utf-8"))
+
+            image_data = base64.b64decode(data["image"])
+            image = Image.open(io.BytesIO(image_data)).convert("RGB")
+            width, height = image.size
+            threshold = float(data.get("threshold") or os.getenv("CVAT_YOLO_DEFAULT_THRESHOLD", "0.25"))
+
+            predictions = context.user_data.model.predict(image, conf=threshold, verbose=False)
+            results = []
+            for prediction in predictions:
+                boxes = getattr(prediction, "boxes", None)
+                if boxes is None:
+                    continue
+
+                for box in boxes:
+                    cls_id = int(box.cls.item())
+                    confidence = float(box.conf.item())
+                    xtl, ytl, xbr, ybr = [float(value) for value in box.xyxy[0].tolist()]
+                    results.append({
+                        "confidence": f"{confidence:.6f}",
+                        "label": context.user_data.labels.get(cls_id, str(cls_id)),
+                        "points": [
+                            max(int(round(xtl)), 0),
+                            max(int(round(ytl)), 0),
+                            min(int(round(xbr)), width),
+                            min(int(round(ybr)), height),
+                        ],
+                        "type": "rectangle",
+                    })
+
+            return context.Response(
+                body=json.dumps(results),
+                headers={},
+                content_type="application/json",
+                status_code=200,
+            )
+        """
+    ).strip() + "\n"
+    (function_root / "main.py").write_text(main_py, encoding="utf-8")
+
+    indented_spec = textwrap.indent(labels_json, "        ")
+    function_yaml = (
+        f"metadata:\n"
+        f"  name: {function_name}\n"
+        f"  namespace: cvat\n"
+        f"  annotations:\n"
+        f"    name: {_yaml_quoted(display_name)}\n"
+        f"    type: detector\n"
+        f"    spec: |\n"
+        f"{indented_spec}\n"
+        f"spec:\n"
+        f"  description: {_yaml_quoted(f'Local YOLO PT detector: {display_name}')}\n"
+        f"  runtime: 'python:3.10'\n"
+        f"  handler: main:handler\n"
+        f"  eventTimeout: 60s\n"
+        f"  build:\n"
+        f"    image: cvat.local.yolo.{function_name.replace('-', '.')}\n"
+        f"    baseImage: python:3.10-slim\n"
+        f"    directives:\n"
+        f"      preCopy:\n"
+        f"        - kind: RUN\n"
+        f"          value: apt-get update && apt-get install --no-install-recommends -y libglib2.0-0 libgl1 && rm -rf /var/lib/apt/lists/*\n"
+        f"        - kind: RUN\n"
+        f"          value: pip install ultralytics opencv-python-headless pillow --no-cache-dir\n"
+        f"  triggers:\n"
+        f"    myHttpTrigger:\n"
+        f"      numWorkers: 1\n"
+        f"      kind: 'http'\n"
+        f"      workerAvailabilityTimeoutMilliseconds: 10000\n"
+        f"      attributes:\n"
+        f"        maxRequestBodySize: 33554432\n"
+        f"  platform:\n"
+        f"    attributes:\n"
+        f"      restartPolicy:\n"
+        f"        name: always\n"
+        f"        maximumRetryCount: 3\n"
+        f"      mountMode: volume\n"
+    )
+    (function_root / "function.yaml").write_text(function_yaml, encoding="utf-8")
+
+
+def _run_nuctl(command: list[str], *, timeout: int) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
 
 
 class LambdaGateway:
@@ -1293,6 +1489,179 @@ def return_response(success_code=status.HTTP_200_OK):
         return func_wrapper
 
     return wrap_response
+
+
+class LocalYoloDeploymentView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = (IsAdminUser,)
+
+    @extend_schema(
+        tags=["lambda"],
+        summary="上传本地 YOLO .pt 模型并部署为 Nuclio 检测器",
+        request=None,
+        responses={
+            "201": OpenApiResponse(description="Nuclio 函数已部署"),
+            "400": OpenApiResponse(description="上传内容无效"),
+            "403": OpenApiResponse(description="本地模型部署未启用"),
+            "503": OpenApiResponse(description="Nuclio、nuctl 或 Docker socket 不可用"),
+        },
+    )
+    def post(self, request):
+        deployment_settings = settings.LOCAL_MODEL_DEPLOYMENT
+        if not deployment_settings["ENABLED"]:
+            return Response(
+                {
+                    "detail": (
+                        "本地模型部署未启用，请在服务环境中设置 CVAT_LOCAL_MODEL_DEPLOYMENT=1。"
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        model_file = request.FILES.get("model")
+        if model_file is None:
+            return Response({"detail": "请上传 YOLO .pt 模型文件"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not model_file.name.lower().endswith(".pt"):
+            return Response(
+                {"detail": "当前仅支持 YOLO .pt 模型文件"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        display_name = str(request.data.get("name", "")).strip()
+        if not display_name:
+            display_name = Path(model_file.name).stem
+
+        try:
+            labels_spec = _parse_yolo_labels(str(request.data.get("labels", "")))
+        except ValidationError as err:
+            return Response({"detail": err.message}, status=err.code or status.HTTP_400_BAD_REQUEST)
+
+        function_name = _make_nuclio_function_name(
+            str(request.data.get("function_name") or display_name)
+        )
+
+        nuctl_path = deployment_settings["NUCTL_PATH"]
+        resolved_nuctl = nuctl_path if os.path.isabs(nuctl_path) else shutil.which(nuctl_path)
+        if not resolved_nuctl:
+            return Response(
+                {
+                    "detail": (
+                        f"未找到 nuctl 可执行文件 '{nuctl_path}'，请在 cvat_server 镜像中安装 nuctl "
+                        "或设置 CVAT_NUCTL_PATH。"
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        docker_socket = Path("/var/run/docker.sock")
+        if not docker_socket.exists():
+            return Response(
+                {
+                    "detail": (
+                        "Docker socket 未挂载，启用本地模型部署时需要为 cvat_server "
+                        "挂载 /var/run/docker.sock。"
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        try:
+            LambdaGateway()._http(url=LambdaGateway.NUCLIO_ROOT_URL)
+        except requests.RequestException as err:
+            return Response(
+                {
+                    "detail": (
+                        "CVAT 无法访问 Nuclio dashboard，请先启动 "
+                        "components/serverless/docker-compose.serverless.yml。"
+                    ),
+                    "error": str(err),
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        deployment_root = Path(deployment_settings["ROOT"])
+        deployment_root.mkdir(parents=True, exist_ok=True)
+        function_root = deployment_root / function_name
+
+        if function_root.exists():
+            shutil.rmtree(function_root)
+
+        function_root.mkdir(parents=True, exist_ok=False)
+        with (function_root / "model.pt").open("wb") as output_file:
+            for chunk in model_file.chunks():
+                output_file.write(chunk)
+
+        _write_local_yolo_function(
+            function_root=function_root,
+            function_name=function_name,
+            display_name=display_name,
+            labels_spec=labels_spec,
+        )
+
+        timeout = deployment_settings["TIMEOUT"]
+        network = os.getenv("CVAT_NUCLIO_DOCKER_NETWORK", "cvat_cvat")
+
+        create_project = _run_nuctl(
+            [resolved_nuctl, "create", "project", "cvat", "--platform", "local"],
+            timeout=timeout,
+        )
+        create_project_output = f"{create_project.stdout}\n{create_project.stderr}"
+        if create_project.returncode and "already exists" not in create_project_output.lower():
+            return Response(
+                {
+                    "detail": "无法创建 Nuclio 项目",
+                    "stdout": create_project.stdout,
+                    "stderr": create_project.stderr,
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        deploy = _run_nuctl(
+            [
+                resolved_nuctl,
+                "deploy",
+                "--project-name",
+                "cvat",
+                "--path",
+                str(function_root),
+                "--file",
+                str(function_root / "function.yaml"),
+                "--platform",
+                "local",
+                "--env",
+                "CVAT_FUNCTIONS_REDIS_HOST=cvat_redis_ondisk",
+                "--env",
+                "CVAT_FUNCTIONS_REDIS_PORT=6666",
+                "--platform-config",
+                json.dumps({"attributes": {"network": network}}),
+            ],
+            timeout=timeout,
+        )
+
+        if deploy.returncode:
+            return Response(
+                {
+                    "detail": "Nuclio 函数部署失败",
+                    "function_id": function_name,
+                    "function_root": str(function_root),
+                    "stdout": deploy.stdout,
+                    "stderr": deploy.stderr,
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response(
+            {
+                "id": function_name,
+                "name": display_name,
+                "function_root": str(function_root),
+                "labels": labels_spec,
+                "stdout": deploy.stdout,
+                "stderr": deploy.stderr,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 @extend_schema(tags=["lambda"])

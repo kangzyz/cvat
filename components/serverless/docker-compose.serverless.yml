@@ -22,6 +22,12 @@ services:
   cvat_server:
     environment:
       CVAT_SERVERLESS: 1
+      CVAT_LOCAL_MODEL_DEPLOYMENT: 1
+      CVAT_LOCAL_MODEL_DEPLOYMENT_TIMEOUT: 1800
+    group_add:
+      - "0"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

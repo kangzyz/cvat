@@ -324,7 +324,7 @@ export interface SerializedQualityConflictData {
 
 export interface APIQualityReportsFilter extends APICommonFilterParams {
     parent_id?: number;
-    peoject_id?: number;
+    project_id?: number;
     task_id?: number;
     job_id?: number;
     target?: string;

@@ -32,6 +32,13 @@ export interface TrackerResults {
     shapes: MinimalShape[];
 }
 
+export interface LocalYoloDeployData {
+    model: File;
+    name: string;
+    labels: string;
+    functionName?: string;
+}
+
 class LambdaManager {
     private listening: Record<number, {
         onUpdate: ((status: RQStatus, progress: number, message?: string) => void)[];
@@ -55,6 +62,10 @@ class LambdaManager {
         }
 
         return { models, count: lambdaFunctions.length };
+    }
+
+    async deployLocalYoloModel(data: LocalYoloDeployData): ReturnType<typeof serverProxy.lambda.deployLocalYoloModel> {
+        return serverProxy.lambda.deployLocalYoloModel(data);
     }
 
     async run(taskID: number, model: MLModel, args: any): Promise<SerializedFunctionRequest> {

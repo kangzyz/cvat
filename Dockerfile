@@ -107,6 +107,7 @@ ENV TERM=xterm \
 
 ARG USER="django"
 ARG CVAT_CONFIGURATION="production"
+ARG NUCTL_VERSION="1.16.3"
 ENV DJANGO_SETTINGS_MODULE="cvat.settings.${CVAT_CONFIGURATION}"
 
 # Install necessary apt packages
@@ -116,6 +117,7 @@ RUN apt-get update && \
         bzip2 \
         ca-certificates \
         curl \
+        docker.io \
         git \
         libgl1 \
         libgomp1 \
@@ -138,6 +140,11 @@ RUN apt-get update && \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL \
+        "https://github.com/nuclio/nuclio/releases/download/${NUCTL_VERSION}/nuctl-${NUCTL_VERSION}-linux-amd64" \
+        -o /usr/local/bin/nuctl && \
+    chmod +x /usr/local/bin/nuctl
 
 # Install smokescreen
 COPY --from=build-smokescreen /tmp/smokescreen /usr/local/bin/smokescreen
