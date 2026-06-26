@@ -188,6 +188,20 @@ docker compose -f docker-compose.yml -f components/serverless/docker-compose.ser
 - 本软件使用受 LGPL/GPL 约束的 FFmpeg 库，详见 Dockerfile 与
   [FFmpeg 法律信息](https://www.ffmpeg.org/legal.html)。
 
+## 致谢与来源
+
+本仓库 fork 自上游开源项目 [CVAT](https://github.com/cvat-ai/cvat)，在其基础上进行简体中文本地化与社区版适配改造。
+感谢原作者及社区的卓越工作。
+
+- **上游仓库**：https://github.com/cvat-ai/cvat
+- **原项目官网**：https://www.cvat.ai/
+- **许可证**：本项目与上游同样基于 [MIT License](https://github.com/kangzyz/cvat/blob/develop/LICENSE) 发布。
+- **版权**：原始代码版权归 CVAT.ai Corporation 及 Intel Corporation 等原始贡献者所有，相关版权与许可声明已按
+  MIT 协议要求予以保留；本仓库的修改部分版权归各自贡献者所有。
+
+依据 MIT 许可证，你可以自由使用、复制、修改、合并、发布、分发本软件，但须在软件的所有副本或重要部分中保留
+上述版权声明与许可声明。
+
   <!-- Badges -->
 
 [release-img]: https://img.shields.io/github/v/release/kangzyz/cvat?style=flat-square
