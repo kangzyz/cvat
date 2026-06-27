@@ -80,3 +80,9 @@
         padding-top: $grid-unit-size * 3;
     }
 }
+
+.cvat-video-curation-entry {
+    display: flex;
+    align-items: center;
+    min-height: $grid-unit-size * 5;
+}

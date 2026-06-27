@@ -112,6 +112,42 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
             })),
         };
     });
+    implementationMixin(cvat.server.startFrameExtraction, async (
+        ...args: Parameters<typeof serverProxy.server.startFrameExtraction>
+    ) => {
+        const result = await serverProxy.server.startFrameExtraction(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.listFrameExtractionSessions, async (
+        ...args: Parameters<typeof serverProxy.server.listFrameExtractionSessions>
+    ) => {
+        const result = await serverProxy.server.listFrameExtractionSessions(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.getFrameExtractionSession, async (
+        ...args: Parameters<typeof serverProxy.server.getFrameExtractionSession>
+    ) => {
+        const result = await serverProxy.server.getFrameExtractionSession(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.getFrameExtractionFrames, async (
+        ...args: Parameters<typeof serverProxy.server.getFrameExtractionFrames>
+    ) => {
+        const result = await serverProxy.server.getFrameExtractionFrames(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.updateFrameExtractionFrames, async (
+        ...args: Parameters<typeof serverProxy.server.updateFrameExtractionFrames>
+    ) => {
+        const result = await serverProxy.server.updateFrameExtractionFrames(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.saveFrameExtractionDataset, async (
+        ...args: Parameters<typeof serverProxy.server.saveFrameExtractionDataset>
+    ) => {
+        const result = await serverProxy.server.saveFrameExtractionDataset(...args);
+        return result;
+    });
     implementationMixin(cvat.server.formats, async () => {
         const result = await serverProxy.server.formats();
         return new AnnotationFormats(result);

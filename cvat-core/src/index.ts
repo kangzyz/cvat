@@ -100,6 +100,13 @@ export default interface CVATCore {
                 fallbackError?: string;
             }[];
         }>;
+        startFrameExtraction: typeof serverProxy.server.startFrameExtraction;
+        listFrameExtractionSessions: typeof serverProxy.server.listFrameExtractionSessions;
+        getFrameExtractionSession: typeof serverProxy.server.getFrameExtractionSession;
+        getFrameExtractionFrames: typeof serverProxy.server.getFrameExtractionFrames;
+        updateFrameExtractionFrames: typeof serverProxy.server.updateFrameExtractionFrames;
+        saveFrameExtractionDataset: typeof serverProxy.server.saveFrameExtractionDataset;
+        getFrameExtractionImageURL: typeof serverProxy.server.getFrameExtractionImageURL;
         formats: () => Promise<AnnotationFormats>;
         userAgreements: typeof serverProxy.server.userAgreements,
         register: (

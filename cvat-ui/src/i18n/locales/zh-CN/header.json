@@ -14,6 +14,7 @@
         "jobs": "作业",
         "cloudStorages": "云存储",
         "requests": "请求",
+        "frameExtraction": "抽帧筛选",
         "models": "模型",
         "analytics": "分析"
     },
@@ -116,4 +117,3 @@
         "defaultPolygonSimplificationDescription": "值越高，保留的多边形细节越多。用于无服务器交互器、OpenCV 剪刀和多边形简化"
     }
 }
-

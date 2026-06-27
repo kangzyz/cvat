@@ -1,0 +1,285 @@
+// Copyright (C) CVAT.ai Corporation
+//
+// SPDX-License-Identifier: MIT
+
+.cvat-frame-extraction-page {
+    min-height: 100%;
+    padding: 24px 32px;
+    background: #f5f7fa;
+
+    .ant-typography {
+        margin-bottom: 0;
+    }
+}
+
+.cvat-frame-extraction-header,
+.cvat-frame-extraction-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 1600px;
+    margin: 0 auto 16px;
+}
+
+.cvat-frame-extraction-header {
+    min-height: 40px;
+}
+
+.cvat-frame-extraction-control-band,
+.cvat-frame-extraction-grid-wrap,
+.cvat-frame-extraction-pagination {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.cvat-frame-extraction-panel {
+    min-height: 420px;
+    padding: 16px;
+    border: 1px solid #d9dde3;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.cvat-frame-extraction-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.cvat-frame-extraction-settings {
+    .ant-input-number,
+    .ant-select,
+    .ant-btn {
+        width: 100%;
+    }
+}
+
+.cvat-frame-extraction-history-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.cvat-frame-extraction-history-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+}
+
+.cvat-frame-extraction-history {
+    display: grid;
+    gap: 8px;
+    overflow: auto;
+    max-height: 520px;
+}
+
+.cvat-frame-extraction-history-item {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    gap: 5px;
+    padding: 9px 10px;
+    border: 1px solid #d9dde3;
+    border-radius: 6px;
+    background: #fbfcfd;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+
+    &:hover {
+        border-color: #7aa7d9;
+        background: #f7fbff;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #3478c7;
+        outline-offset: 2px;
+    }
+}
+
+.cvat-frame-extraction-history-item-active {
+    border-color: #2f7ed8;
+    background: #eef6ff;
+    box-shadow: 0 0 0 2px rgba(47, 126, 216, 0.18);
+}
+
+.cvat-frame-extraction-history-item-head,
+.cvat-frame-extraction-history-item-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 8px;
+}
+
+.cvat-frame-extraction-history-pagination {
+    margin-top: 12px;
+    text-align: center;
+}
+
+.cvat-frame-extraction-switch-row {
+    min-height: 32px;
+}
+
+.cvat-frame-extraction-status {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #edf0f4;
+
+    .ant-col {
+        display: grid;
+        gap: 2px;
+    }
+}
+
+.cvat-frame-extraction-save-actions,
+.cvat-frame-extraction-saved-path {
+    display: grid;
+    gap: 10px;
+}
+
+.cvat-frame-extraction-save-actions {
+    .ant-input {
+        width: 100%;
+    }
+
+    .ant-space {
+        width: 100%;
+    }
+
+    .ant-space-item {
+        flex: 1 1 180px;
+    }
+}
+
+.cvat-frame-extraction-saved-path {
+    .ant-alert-description {
+        word-break: break-all;
+    }
+}
+
+.cvat-frame-extraction-toolbar {
+    margin-top: 18px;
+    padding: 12px 0;
+}
+
+.cvat-frame-extraction-grid-wrap {
+    position: relative;
+    min-height: 260px;
+    padding: 16px;
+    border: 1px solid #d9dde3;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.cvat-frame-extraction-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.cvat-frame-extraction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+    gap: 12px;
+}
+
+.cvat-frame-extraction-frame {
+    position: relative;
+    display: grid;
+    grid-template-rows: 132px 44px;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #d9dde3;
+    border-radius: 6px;
+    background: #fbfcfd;
+    cursor: pointer;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+
+    &:hover {
+        border-color: #7aa7d9;
+        box-shadow: 0 2px 8px rgba(38, 75, 120, 0.16);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #3478c7;
+        outline-offset: 2px;
+    }
+
+    img {
+        width: 100%;
+        height: 132px;
+        object-fit: cover;
+        background: #e8ebef;
+    }
+}
+
+.cvat-frame-extraction-frame-selected {
+    border-color: #2f7ed8;
+    box-shadow: 0 0 0 2px rgba(47, 126, 216, 0.22);
+}
+
+.cvat-frame-extraction-frame-excluded {
+    opacity: 0.52;
+
+    img {
+        filter: grayscale(1);
+    }
+}
+
+.cvat-frame-extraction-frame-meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.cvat-frame-extraction-frame-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+
+    .ant-btn {
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.94);
+    }
+}
+
+.cvat-frame-extraction-frame:hover .cvat-frame-extraction-frame-actions,
+.cvat-frame-extraction-frame-selected .cvat-frame-extraction-frame-actions {
+    opacity: 1;
+}
+
+.cvat-frame-extraction-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0 8px;
+}
+
+@media screen and (max-width: 768px) {
+    .cvat-frame-extraction-page {
+        padding: 16px;
+    }
+
+    .cvat-frame-extraction-header,
+    .cvat-frame-extraction-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .cvat-frame-extraction-grid {
+        grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+    }
+}

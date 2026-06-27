@@ -481,6 +481,90 @@ export interface VideoCurationResponse {
     }[];
 }
 
+export type FrameExtractionStatus = 'queued' | 'started' | 'finished' | 'failed' | 'saved';
+
+export interface FrameExtractionRequest {
+    sharePaths: string[];
+    frameInterval?: number;
+    rotateAngle?: number;
+    deduplicate?: boolean;
+    duplicateThreshold?: number;
+    recursive?: boolean;
+    imageQuality?: number;
+    processingBackend?: 'auto' | 'cpu' | 'ffmpeg_gpu';
+}
+
+export interface FrameExtractionStartResponse {
+    sessionId: string;
+    rqId: string;
+}
+
+export interface FrameExtractionSession {
+    id: string;
+    status: FrameExtractionStatus;
+    rqId: string;
+    sourcePaths: string[];
+    frameInterval: number;
+    rotateAngle: number;
+    deduplicate: boolean;
+    duplicateThreshold: number;
+    recursive: boolean;
+    imageQuality: number;
+    processingBackend: 'auto' | 'cpu' | 'ffmpeg_gpu';
+    outputSharePath: string;
+    totalVideos: number;
+    processedVideos: number;
+    failedVideos: number;
+    sampledFrames: number;
+    keptFrames: number;
+    duplicateFrames: number;
+    excludedFrames: number;
+    usedBackend: string;
+    error: string;
+    progress: number;
+    createdDate: string;
+    updatedDate: string;
+    startedDate: string | null;
+    finishedDate: string | null;
+}
+
+export interface FrameExtractionFrame {
+    id: number;
+    order: number;
+    name: string;
+    sourcePath: string;
+    sourceFrame: number | null;
+    width: number | null;
+    height: number | null;
+    fileSize: number;
+    excluded: boolean;
+    createdDate: string;
+    updatedDate: string;
+}
+
+export interface FrameExtractionFramePage {
+    count: number;
+    page: number;
+    pageSize: number;
+    results: FrameExtractionFrame[];
+}
+
+export interface FrameExtractionSessionPage {
+    count: number;
+    page: number;
+    pageSize: number;
+    results: FrameExtractionSession[];
+}
+
+export interface FrameExtractionSaveRequest {
+    outputName?: string;
+}
+
+export interface FrameExtractionSaveResponse {
+    sharePath: string;
+    keptFrames: number;
+}
+
 async function prepareVideoDataset(payload: VideoCurationRequest): Promise<VideoCurationResponse> {
     const { backendAPI } = config;
     const formData = new FormData();
@@ -521,6 +605,180 @@ async function prepareVideoDataset(payload: VideoCurationRequest): Promise<Video
     } catch (errorData) {
         throw generateError(errorData);
     }
+}
+
+function deserializeFrameExtractionSession(data: any): FrameExtractionSession {
+    return {
+        id: data.id,
+        status: data.status,
+        rqId: data.rq_id,
+        sourcePaths: data.source_paths,
+        frameInterval: data.frame_interval,
+        rotateAngle: data.rotate_angle,
+        deduplicate: data.deduplicate,
+        duplicateThreshold: data.duplicate_threshold,
+        recursive: data.recursive,
+        imageQuality: data.image_quality,
+        processingBackend: data.processing_backend,
+        outputSharePath: data.output_share_path,
+        totalVideos: data.total_videos,
+        processedVideos: data.processed_videos,
+        failedVideos: data.failed_videos,
+        sampledFrames: data.sampled_frames,
+        keptFrames: data.kept_frames,
+        duplicateFrames: data.duplicate_frames,
+        excludedFrames: data.excluded_frames,
+        usedBackend: data.used_backend,
+        error: data.error,
+        progress: data.progress,
+        createdDate: data.created_date,
+        updatedDate: data.updated_date,
+        startedDate: data.started_date,
+        finishedDate: data.finished_date,
+    };
+}
+
+function deserializeFrameExtractionFrame(data: any): FrameExtractionFrame {
+    return {
+        id: data.id,
+        order: data.order,
+        name: data.name,
+        sourcePath: data.source_path,
+        sourceFrame: data.source_frame,
+        width: data.width,
+        height: data.height,
+        fileSize: data.file_size,
+        excluded: data.excluded,
+        createdDate: data.created_date,
+        updatedDate: data.updated_date,
+    };
+}
+
+async function startFrameExtraction(payload: FrameExtractionRequest): Promise<FrameExtractionStartResponse> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.post(`${backendAPI}/server/frame-extraction`, {
+            share_paths: payload.sharePaths,
+            frame_interval: payload.frameInterval,
+            rotate_angle: payload.rotateAngle,
+            deduplicate: payload.deduplicate,
+            duplicate_threshold: payload.duplicateThreshold,
+            recursive: payload.recursive,
+            image_quality: payload.imageQuality,
+            processing_backend: payload.processingBackend,
+        });
+
+        return {
+            sessionId: response.data.session_id,
+            rqId: response.data.rq_id,
+        };
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function listFrameExtractionSessions(
+    query: { page?: number; pageSize?: number; status?: FrameExtractionStatus } = {},
+): Promise<FrameExtractionSessionPage> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/frame-extraction`, {
+            params: {
+                page: query.page,
+                page_size: query.pageSize,
+                status: query.status,
+            },
+        });
+
+        return {
+            count: response.data.count,
+            page: response.data.page,
+            pageSize: response.data.page_size,
+            results: response.data.results.map(deserializeFrameExtractionSession),
+        };
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getFrameExtractionSession(sessionID: string): Promise<FrameExtractionSession> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/frame-extraction/${sessionID}`);
+        return deserializeFrameExtractionSession(response.data);
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getFrameExtractionFrames(
+    sessionID: string,
+    query: { page?: number; pageSize?: number; excluded?: 'all' | 'true' | 'false' } = {},
+): Promise<FrameExtractionFramePage> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/frame-extraction/${sessionID}/frames`, {
+            params: {
+                page: query.page,
+                page_size: query.pageSize,
+                excluded: query.excluded,
+            },
+        });
+
+        return {
+            count: response.data.count,
+            page: response.data.page,
+            pageSize: response.data.page_size,
+            results: response.data.results.map(deserializeFrameExtractionFrame),
+        };
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function updateFrameExtractionFrames(
+    sessionID: string,
+    payload: { exclude?: number[]; restore?: number[] },
+): Promise<FrameExtractionFramePage> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.patch(`${backendAPI}/server/frame-extraction/${sessionID}/frames`, payload);
+        return {
+            count: response.data.count,
+            page: response.data.page,
+            pageSize: response.data.page_size,
+            results: response.data.results.map(deserializeFrameExtractionFrame),
+        };
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function saveFrameExtractionDataset(
+    sessionID: string,
+    payload: FrameExtractionSaveRequest = {},
+): Promise<FrameExtractionSaveResponse> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.post(`${backendAPI}/server/frame-extraction/${sessionID}/save`, {
+            output_name: payload.outputName,
+        });
+        return {
+            sharePath: response.data.share_path,
+            keptFrames: response.data.kept_frames,
+        };
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+function getFrameExtractionImageURL(
+    sessionID: string,
+    frameID: number,
+    size: 'thumb' | 'full' = 'thumb',
+): string {
+    const { backendAPI } = config;
+    return `${backendAPI}/server/frame-extraction/${sessionID}/frames/${frameID}/image?size=${size}`;
 }
 
 async function formats(): Promise<SerializedAnnotationFormats> {
@@ -2681,6 +2939,13 @@ export default Object.freeze({
         about,
         share,
         prepareVideoDataset,
+        startFrameExtraction,
+        listFrameExtractionSessions,
+        getFrameExtractionSession,
+        getFrameExtractionFrames,
+        updateFrameExtractionFrames,
+        saveFrameExtractionDataset,
+        getFrameExtractionImageURL,
         formats,
         login,
         logout,

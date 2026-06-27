@@ -23,6 +23,7 @@ import {
     TeamOutlined,
     PlusOutlined,
     MailOutlined,
+    ScissorOutlined,
 } from '@ant-design/icons';
 import Layout from 'antd/lib/layout';
 import Button from 'antd/lib/button';
@@ -454,6 +455,19 @@ function HeaderComponent(props: Props): JSX.Element {
                     }}
                 >
                     {t('navigation.requests')}
+                </Button>
+                <Button
+                    className={getButtonClassName('frame-extraction')}
+                    type='link'
+                    value='frame-extraction'
+                    href='/frame-extraction'
+                    icon={<ScissorOutlined />}
+                    onClick={(event: React.MouseEvent): void => {
+                        event.preventDefault();
+                        history.push('/frame-extraction');
+                    }}
+                >
+                    {t('navigation.frameExtraction')}
                 </Button>
                 <Button
                     className={getButtonClassName('models')}

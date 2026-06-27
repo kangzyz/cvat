@@ -210,6 +210,14 @@ class JobFrameSelectionMethod(str, Enum):
         return self.value
 
 
+class FrameExtractionStatus(TextChoices):
+    QUEUED = "queued"
+    STARTED = "started"
+    FINISHED = "finished"
+    FAILED = "failed"
+    SAVED = "saved"
+
+
 class AbstractArrayField(models.TextField):
     separator = ","
     converter = staticmethod(lambda x: x)
@@ -1804,6 +1812,92 @@ class Asset(models.Model):
 
     def get_asset_dir(self) -> Path:
         return settings.ASSETS_ROOT / str(self.uuid)
+
+
+class FrameExtractionSession(TimestampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="frame_extraction_sessions",
+        related_query_name="frame_extraction_session",
+    )
+    organization = models.ForeignKey(
+        "organizations.Organization",
+        null=True,
+        default=None,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="frame_extraction_sessions",
+        related_query_name="frame_extraction_session",
+    )
+    status = models.CharField(
+        max_length=16,
+        choices=FrameExtractionStatus.choices,
+        default=FrameExtractionStatus.QUEUED,
+    )
+    rq_id = models.CharField(max_length=255, blank=True, default="")
+    source_paths = models.JSONField(default=list)
+    frame_interval = models.PositiveIntegerField(default=25)
+    rotate_angle = models.IntegerField(default=0)
+    deduplicate = models.BooleanField(default=True)
+    duplicate_threshold = models.PositiveSmallIntegerField(default=4)
+    recursive = models.BooleanField(default=True)
+    image_quality = models.PositiveSmallIntegerField(default=95)
+    processing_backend = models.CharField(max_length=16, default="auto")
+    work_share_path = models.CharField(max_length=1024, blank=True, default="")
+    output_share_path = models.CharField(max_length=1024, blank=True, default="")
+    total_videos = models.PositiveIntegerField(default=0)
+    processed_videos = models.PositiveIntegerField(default=0)
+    failed_videos = models.PositiveIntegerField(default=0)
+    sampled_frames = models.PositiveIntegerField(default=0)
+    kept_frames = models.PositiveIntegerField(default=0)
+    duplicate_frames = models.PositiveIntegerField(default=0)
+    used_backend = models.CharField(max_length=32, blank=True, default="")
+    error = models.TextField(blank=True, default="")
+    started_date = models.DateTimeField(null=True, blank=True)
+    finished_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        default_permissions = ()
+        indexes = [
+            models.Index(fields=["owner", "status"]),
+            models.Index(fields=["organization", "status"]),
+            models.Index(fields=["created_date"]),
+        ]
+
+
+class FrameExtractionFrame(TimestampedModel):
+    session = models.ForeignKey(
+        FrameExtractionSession,
+        on_delete=models.CASCADE,
+        related_name="frames",
+        related_query_name="frame",
+    )
+    order = models.PositiveIntegerField()
+    file_path = models.CharField(max_length=1024)
+    source_path = models.CharField(max_length=1024)
+    video_index = models.PositiveIntegerField(default=0)
+    source_frame = models.PositiveIntegerField(null=True, blank=True)
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
+    file_size = models.PositiveBigIntegerField(default=0)
+    excluded = models.BooleanField(default=False)
+
+    class Meta:
+        default_permissions = ()
+        ordering = ["order"]
+        indexes = [
+            models.Index(fields=["session", "excluded", "order"]),
+            models.Index(fields=["session", "order"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session", "order"], name="unique_frame_extraction_frame_order"
+            ),
+        ]
 
 
 class RequestAction(TextChoices):

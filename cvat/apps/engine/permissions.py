@@ -141,6 +141,13 @@ class ServerPermission(OpenPolicyAgentPermission):
                 ("plugins", "GET"): Scopes.VIEW,
                 ("share", "GET"): Scopes.LIST_CONTENT,
                 ("video_curation", "POST"): Scopes.LIST_CONTENT,
+                ("frame_extraction", "GET"): Scopes.LIST_CONTENT,
+                ("frame_extraction", "POST"): Scopes.LIST_CONTENT,
+                ("frame_extraction_detail", "GET"): Scopes.LIST_CONTENT,
+                ("frame_extraction_frames", "GET"): Scopes.LIST_CONTENT,
+                ("frame_extraction_frames", "PATCH"): Scopes.LIST_CONTENT,
+                ("frame_extraction_frame_image", "GET"): Scopes.LIST_CONTENT,
+                ("frame_extraction_save", "POST"): Scopes.LIST_CONTENT,
             }[(view.action, request.method)]
         ]
 

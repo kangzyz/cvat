@@ -184,10 +184,16 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
     }
 
     public componentDidMount(): void {
-        const { projectId } = this.props;
+        const { location, projectId } = this.props;
 
         if (projectId) {
             this.handleProjectIdChange(projectId);
+        }
+
+        const queryParams = new URLSearchParams(location.search);
+        const preparedSharePath = queryParams.get('share_path');
+        if (preparedSharePath) {
+            this.handlePreparedVideoDataset(preparedSharePath);
         }
 
         this.focusToForm();
@@ -742,6 +748,7 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
 
     private handlePreparedVideoDataset = (sharePath: string): void => {
         const normalizedSharePath = sharePath.endsWith('/') ? sharePath : `${sharePath}/`;
+        const suggestedTaskName = getFileNameFromPath(normalizedSharePath.slice(0, -1));
 
         this.fileManagerComponent?.selectShareFiles([normalizedSharePath]);
         this.setState((state) => ({
@@ -755,7 +762,14 @@ class CreateTaskContent extends React.PureComponent<Props & RouteComponentProps,
                 ...state.advanced,
                 sortingMethod: SortingMethod.NATURAL,
             },
-        }));
+        }), () => {
+            const { basic } = this.state;
+            const { many } = this.props;
+
+            if (!many && !basic.name && suggestedTaskName) {
+                this.basicConfigurationComponent.current?.setName(suggestedTaskName);
+            }
+        });
     };
 
     private getTaskName = (indexFile: number, fileManagerTabName: TabName, defaultFileName = ''): string => {

@@ -61,6 +61,48 @@ function build(): CVATCore {
                 const result = await PluginRegistry.apiWrapper(cvat.server.prepareVideoDataset, payload);
                 return result;
             },
+            async startFrameExtraction(payload) {
+                const result = await PluginRegistry.apiWrapper(cvat.server.startFrameExtraction, payload);
+                return result;
+            },
+            async listFrameExtractionSessions(query) {
+                const result = await PluginRegistry.apiWrapper(cvat.server.listFrameExtractionSessions, query);
+                return result;
+            },
+            async getFrameExtractionSession(sessionID) {
+                const result = await PluginRegistry.apiWrapper(
+                    cvat.server.getFrameExtractionSession,
+                    sessionID,
+                );
+                return result;
+            },
+            async getFrameExtractionFrames(sessionID, query) {
+                const result = await PluginRegistry.apiWrapper(
+                    cvat.server.getFrameExtractionFrames,
+                    sessionID,
+                    query,
+                );
+                return result;
+            },
+            async updateFrameExtractionFrames(sessionID, payload) {
+                const result = await PluginRegistry.apiWrapper(
+                    cvat.server.updateFrameExtractionFrames,
+                    sessionID,
+                    payload,
+                );
+                return result;
+            },
+            async saveFrameExtractionDataset(sessionID, payload) {
+                const result = await PluginRegistry.apiWrapper(
+                    cvat.server.saveFrameExtractionDataset,
+                    sessionID,
+                    payload,
+                );
+                return result;
+            },
+            getFrameExtractionImageURL(sessionID, frameID, size) {
+                return `${config.backendAPI}/server/frame-extraction/${sessionID}/frames/${frameID}/image?size=${size || 'thumb'}`;
+            },
             async formats() {
                 const result = await PluginRegistry.apiWrapper(cvat.server.formats);
                 return result;

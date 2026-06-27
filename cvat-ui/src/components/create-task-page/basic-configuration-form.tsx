@@ -65,6 +65,15 @@ export default class BasicConfigurationForm extends React.PureComponent<Props> {
         }
     }
 
+    public setName(name: string): void {
+        if (this.formRef.current) {
+            this.formRef.current.setFieldsValue({ name });
+        }
+
+        const { onChange } = this.props;
+        onChange({ name });
+    }
+
     public focus(): void {
         if (this.inputRef.current) {
             this.inputRef.current.focus();

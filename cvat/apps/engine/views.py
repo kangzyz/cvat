@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import itertools
+import io
 import os
 import os.path as osp
 import re
@@ -107,7 +108,7 @@ from cvat.apps.engine.permissions import (
     UserPermission,
     get_iam_context,
 )
-from cvat.apps.engine.rq import ImportRequestId, ImportRQMeta, RQMetaWithFailureInfo
+from cvat.apps.engine.rq import BaseRQMeta, ImportRequestId, ImportRQMeta, RQMetaWithFailureInfo
 from cvat.apps.engine.serializers import (
     AboutSerializer,
     AnnotationFileSerializer,
@@ -151,9 +152,19 @@ from cvat.apps.engine.tus import TusFile
 from cvat.apps.engine.types import ExtendedRequest
 from cvat.apps.engine.utils import parse_exception_message, sendfile
 from cvat.apps.engine.video_curation import (
+    FrameExtractionFrameSerializer,
+    FrameExtractionFramesPatchSerializer,
+    FrameExtractionRequestSerializer,
+    FrameExtractionSaveRequestSerializer,
+    FrameExtractionSaveResponseSerializer,
+    FrameExtractionSessionPageSerializer,
+    FrameExtractionSessionSerializer,
+    FrameExtractionStartResponseSerializer,
     VideoCurationRequestSerializer,
     VideoCurationResponseSerializer,
     prepare_video_dataset,
+    run_frame_extraction_session,
+    save_frame_extraction_dataset,
 )
 from cvat.apps.engine.view_utils import (
     get_410_response_for_export_api,
@@ -326,6 +337,281 @@ class ServerViewSet(viewsets.ViewSet):
         response_serializer = VideoCurationResponseSerializer(data=result)
         response_serializer.is_valid(raise_exception=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def _get_frame_extraction_session(
+        self, request: ExtendedRequest, session_id: str
+    ) -> models.FrameExtractionSession:
+        try:
+            session = models.FrameExtractionSession.objects.get(id=session_id)
+        except (ValueError, models.FrameExtractionSession.DoesNotExist):
+            raise NotFound("Frame extraction session was not found")
+
+        if session.owner_id != request.user.id:
+            raise PermissionDenied("You do not have access to this frame extraction session")
+
+        return session
+
+    @extend_schema(
+        summary="List or start async frame extraction sessions",
+        request=FrameExtractionRequestSerializer,
+        parameters=[
+            OpenApiParameter("page", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY),
+            OpenApiParameter("page_size", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY),
+            OpenApiParameter(
+                "status",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filter by frame extraction status",
+            ),
+        ],
+        responses={
+            "200": FrameExtractionSessionPageSerializer,
+            "202": FrameExtractionStartResponseSerializer,
+        },
+    )
+    @action(
+        detail=False,
+        methods=["GET", "POST"],
+        url_path="frame-extraction",
+        serializer_class=FrameExtractionRequestSerializer,
+    )
+    def frame_extraction(self, request: ExtendedRequest):
+        if request.method == "GET":
+            queryset = models.FrameExtractionSession.objects.filter(owner=request.user).order_by(
+                "-created_date", "-id"
+            )
+
+            status_filter = request.query_params.get("status")
+            if status_filter:
+                if status_filter not in models.FrameExtractionStatus.values:
+                    raise ValidationError("Unknown frame extraction status")
+                queryset = queryset.filter(status=status_filter)
+
+            try:
+                page = max(1, int(request.query_params.get("page", 1)))
+                page_size = min(100, max(1, int(request.query_params.get("page_size", 20))))
+            except ValueError:
+                raise ValidationError("The page and page_size parameters must be integers")
+
+            total = queryset.count()
+            offset = (page - 1) * page_size
+            serializer = FrameExtractionSessionSerializer(
+                queryset[offset : offset + page_size], many=True
+            )
+            return Response(
+                {
+                    "count": total,
+                    "page": page,
+                    "page_size": page_size,
+                    "results": serializer.data,
+                }
+            )
+
+        serializer = FrameExtractionRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        iam_context = getattr(request, "iam_context", {}) or {}
+
+        session = models.FrameExtractionSession.objects.create(
+            owner=request.user,
+            organization=iam_context.get("organization"),
+            source_paths=data["share_paths"],
+            frame_interval=data["frame_interval"],
+            rotate_angle=data["rotate_angle"],
+            deduplicate=data["deduplicate"],
+            duplicate_threshold=data["duplicate_threshold"],
+            recursive=data["recursive"],
+            image_quality=data["image_quality"],
+            processing_backend=data["processing_backend"],
+        )
+        session.work_share_path = f"video-curation/work/{session.id}/frames/"
+
+        rq_id = f"frame-extraction:{session.id}"
+        session.rq_id = rq_id
+        session.save(update_fields=["rq_id", "work_share_path"])
+
+        queue = django_rq.get_queue(settings.CVAT_QUEUES.IMPORT_DATA.value)
+        queue.enqueue_call(
+            func=run_frame_extraction_session,
+            args=(str(session.id),),
+            job_id=rq_id,
+            meta=BaseRQMeta.build(request=request, db_obj=None),
+        )
+
+        response_serializer = FrameExtractionStartResponseSerializer(
+            {"session_id": session.id, "rq_id": rq_id}
+        )
+        return Response(response_serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(
+        summary="Get a frame extraction session",
+        responses={"200": FrameExtractionSessionSerializer},
+    )
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path=r"frame-extraction/(?P<session_id>[^/.]+)",
+        serializer_class=FrameExtractionSessionSerializer,
+    )
+    def frame_extraction_detail(self, request: ExtendedRequest, session_id: str):
+        session = self._get_frame_extraction_session(request, session_id)
+        serializer = FrameExtractionSessionSerializer(session)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="List or update extracted frames",
+        request=FrameExtractionFramesPatchSerializer,
+        parameters=[
+            OpenApiParameter(
+                "excluded",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filter by exclusion state: false, true, or all",
+            ),
+            OpenApiParameter("page", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY),
+            OpenApiParameter("page_size", type=OpenApiTypes.INT, location=OpenApiParameter.QUERY),
+        ],
+        responses={"200": FrameExtractionFrameSerializer(many=True)},
+    )
+    @action(
+        detail=False,
+        methods=["GET", "PATCH"],
+        url_path=r"frame-extraction/(?P<session_id>[^/.]+)/frames",
+        serializer_class=FrameExtractionFrameSerializer,
+    )
+    def frame_extraction_frames(self, request: ExtendedRequest, session_id: str):
+        session = self._get_frame_extraction_session(request, session_id)
+
+        if request.method == "PATCH":
+            if session.status == models.FrameExtractionStatus.SAVED:
+                raise ValidationError("Saved frame extraction sessions cannot be edited")
+
+            serializer = FrameExtractionFramesPatchSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            exclude_ids = serializer.validated_data["exclude"]
+            restore_ids = serializer.validated_data["restore"]
+            requested_ids = set(exclude_ids).union(restore_ids)
+            known_ids = set(
+                session.frames.filter(id__in=requested_ids).values_list("id", flat=True)
+            )
+            unknown_ids = requested_ids.difference(known_ids)
+            if unknown_ids:
+                raise ValidationError(
+                    "Unknown extracted frames requested: {}".format(
+                        ", ".join(map(str, sorted(unknown_ids)))
+                    )
+                )
+
+            if exclude_ids:
+                session.frames.filter(id__in=exclude_ids).update(excluded=True)
+            if restore_ids:
+                session.frames.filter(id__in=restore_ids).update(excluded=False)
+
+        excluded = request.query_params.get("excluded", "false")
+        queryset = session.frames.all()
+        if excluded == "false":
+            queryset = queryset.filter(excluded=False)
+        elif excluded == "true":
+            queryset = queryset.filter(excluded=True)
+        elif excluded != "all":
+            raise ValidationError("The excluded filter must be one of: false, true, all")
+
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+            page_size = min(200, max(1, int(request.query_params.get("page_size", 60))))
+        except ValueError:
+            raise ValidationError("The page and page_size parameters must be integers")
+
+        total = queryset.count()
+        offset = (page - 1) * page_size
+        serializer = FrameExtractionFrameSerializer(queryset[offset : offset + page_size], many=True)
+        return Response(
+            {
+                "count": total,
+                "page": page,
+                "page_size": page_size,
+                "results": serializer.data,
+            }
+        )
+
+    @extend_schema(
+        summary="Get an extracted frame image",
+        parameters=[
+            OpenApiParameter(
+                "size",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Image size: thumb or full",
+            ),
+        ],
+        responses={"200": OpenApiResponse(description="Extracted frame image")},
+    )
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path=r"frame-extraction/(?P<session_id>[^/.]+)/frames/(?P<frame_id>[^/.]+)/image",
+        serializer_class=None,
+    )
+    def frame_extraction_frame_image(
+        self, request: ExtendedRequest, session_id: str, frame_id: str
+    ):
+        session = self._get_frame_extraction_session(request, session_id)
+        try:
+            frame = session.frames.get(id=frame_id)
+        except (ValueError, models.FrameExtractionFrame.DoesNotExist):
+            raise NotFound("Extracted frame was not found")
+
+        frame_path = join_untrusted_path(settings.SHARE_ROOT, frame.file_path)
+        if not frame_path.is_file():
+            raise NotFound("Extracted frame file was not found")
+
+        image_size = request.query_params.get("size", "thumb")
+        if image_size == "full":
+            return sendfile(
+                request,
+                frame_path,
+                attachment=False,
+                attachment_filename=False,
+                mimetype="image/jpeg",
+            )
+        if image_size != "thumb":
+            raise ValidationError("The size parameter must be one of: thumb, full")
+
+        from PIL import Image, ImageOps
+
+        with Image.open(frame_path) as image:
+            image = ImageOps.exif_transpose(image)
+            image.thumbnail((320, 240))
+            buffer = io.BytesIO()
+            image.convert("RGB").save(buffer, format="JPEG", quality=85)
+
+        return HttpResponse(buffer.getvalue(), content_type="image/jpeg")
+
+    @extend_schema(
+        summary="Save kept frames as a shared dataset directory",
+        request=FrameExtractionSaveRequestSerializer,
+        responses={"200": FrameExtractionSaveResponseSerializer},
+    )
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path=r"frame-extraction/(?P<session_id>[^/.]+)/save",
+        serializer_class=FrameExtractionSaveResponseSerializer,
+    )
+    def frame_extraction_save(self, request: ExtendedRequest, session_id: str):
+        session = self._get_frame_extraction_session(request, session_id)
+        request_serializer = FrameExtractionSaveRequestSerializer(data=request.data)
+        request_serializer.is_valid(raise_exception=True)
+        result = save_frame_extraction_dataset(
+            session,
+            output_name=request_serializer.validated_data.get("output_name"),
+        )
+        serializer = FrameExtractionSaveResponseSerializer(data=result)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
 
     @staticmethod
     @extend_schema(
