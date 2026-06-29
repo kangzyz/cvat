@@ -382,6 +382,10 @@ NUCLIO = {
 
 assert NUCLIO["INVOKE_METHOD"] in {"dashboard", "direct"}
 
+_LOCAL_MODEL_GPU_LIMIT_DEFAULT = 0
+if os.getenv("NVIDIA_VISIBLE_DEVICES", "").lower() not in {"", "none", "void", "no"}:
+    _LOCAL_MODEL_GPU_LIMIT_DEFAULT = 1
+
 LOCAL_MODEL_DEPLOYMENT = {
     "ENABLED": to_bool(os.getenv("CVAT_LOCAL_MODEL_DEPLOYMENT", False)),
     "ROOT": BASE_DIR / "data" / "local-models",
@@ -396,6 +400,16 @@ LOCAL_MODEL_DEPLOYMENT = {
     "PIP_TRUSTED_HOST": os.getenv("CVAT_LOCAL_MODEL_DEPLOYMENT_PIP_TRUSTED_HOST") or "",
     "INSTALL_DEPENDENCIES": to_bool(
         os.getenv("CVAT_LOCAL_MODEL_DEPLOYMENT_INSTALL_DEPENDENCIES", True)
+    ),
+    "GPU_LIMIT": max(
+        0,
+        int(
+            os.getenv(
+                "CVAT_LOCAL_MODEL_DEPLOYMENT_GPU_LIMIT",
+                _LOCAL_MODEL_GPU_LIMIT_DEFAULT,
+            )
+            or 0
+        ),
     ),
 }
 

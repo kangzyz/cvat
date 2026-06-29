@@ -26,7 +26,10 @@ Then set these values in the deployment `.env`:
 CVAT_LOCAL_MODEL_DEPLOYMENT_BASE_IMAGE=your-registry/local-yolo-runtime:py310-ultralytics
 CVAT_LOCAL_MODEL_DEPLOYMENT_INSTALL_DEPENDENCIES=0
 CVAT_LOCAL_MODEL_DEPLOYMENT_NO_BASE_IMAGES_PULL=1
+CVAT_LOCAL_MODEL_DEPLOYMENT_GPU_LIMIT=1
 ```
 
 With this mode enabled, uploading a model only stages `model.pt`, `main.py`, and
 `labels.json`; the generated Nuclio function does not run `pip install`.
+Set `CVAT_LOCAL_MODEL_DEPLOYMENT_GPU_LIMIT=1` only on hosts with NVIDIA Container
+Toolkit available; generated functions request one GPU and prefer `cuda:0`.

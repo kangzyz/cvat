@@ -5,12 +5,18 @@
 
 import React from 'react';
 import Dropdown from 'antd/lib/dropdown';
-import { MLModel } from 'cvat-core-wrapper';
+import Modal from 'antd/lib/modal';
+import notification from 'antd/lib/notification';
+import { DeleteOutlined } from '@ant-design/icons';
+import { getCore, MLModel } from 'cvat-core-wrapper';
 import { usePlugins } from 'utils/hooks';
 import { CombinedState } from 'reducers';
 import { MenuProps } from 'antd/lib/menu';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { shallowEqual } from 'utils/redux';
+import { getModelsAsync } from 'actions/models-actions';
+
+const core = getCore();
 
 interface ModelActionsProps {
     model: MLModel;
@@ -30,13 +36,16 @@ function ModelActionsComponent(props: Readonly<ModelActionsProps>): JSX.Element 
         trackers,
         reid,
         selectedIds,
+        query,
     } = useSelector((state: CombinedState) => ({
         interactors: state.models.interactors,
         detectors: state.models.detectors,
         trackers: state.models.trackers,
         reid: state.models.reid,
         selectedIds: state.models.selected,
+        query: state.models.query,
     }), shallowEqual);
+    const dispatch = useDispatch();
 
     const allModels = [
         ...interactors,
@@ -51,6 +60,40 @@ function ModelActionsComponent(props: Readonly<ModelActionsProps>): JSX.Element 
         { allModels, selectedIds },
     );
     const menuItems: [NonNullable<MenuProps['items']>[0], number][] = [];
+    if (model.isDeletable) {
+        menuItems.push([{
+            key: 'delete-model',
+            icon: <DeleteOutlined />,
+            label: '删除模型',
+            danger: true,
+            onClick: ({ domEvent }) => {
+                domEvent.stopPropagation();
+                Modal.confirm({
+                    title: '删除模型',
+                    content: `确定删除模型“${model.name}”吗？该操作会删除对应 Nuclio 函数和本地模型部署目录。`,
+                    okText: '删除',
+                    okButtonProps: { danger: true },
+                    cancelText: '取消',
+                    onOk: async () => {
+                        try {
+                            await core.lambda.deleteModel(model);
+                            notification.success({
+                                message: '模型已删除',
+                                description: model.name,
+                            });
+                            dispatch(getModelsAsync(query));
+                        } catch (error: unknown) {
+                            notification.error({
+                                message: '模型删除失败',
+                                description: error instanceof Error ? error.message : String(error),
+                                duration: null,
+                            });
+                        }
+                    },
+                });
+            },
+        }, 0]);
+    }
     menuItems.push(...menuPlugins
         .map(({ component, weight }): typeof menuItems[0] => [(
             component as (pluginProps?: any) => NonNullable<MenuProps['items']>[0]

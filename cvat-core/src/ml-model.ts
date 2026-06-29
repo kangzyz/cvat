@@ -86,6 +86,10 @@ export default class MLModel {
     }
 
     public get isDeletable(): boolean {
+        if (typeof this.serialized.is_deletable === 'boolean') {
+            return this.serialized.is_deletable;
+        }
+
         return this.provider !== ModelProviders.CVAT;
     }
 

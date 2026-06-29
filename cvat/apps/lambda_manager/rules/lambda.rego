@@ -6,7 +6,7 @@ import data.utils
 import data.organizations
 
 # input: {
-#     "scope": <"list"|"view"|"call:online"|"call:offline"|"list:offline"> or null,
+#     "scope": <"list"|"view"|"delete"|"call:online"|"call:offline"|"list:offline"> or null,
 #     "auth": {
 #         "user": {
 #             "id": <num>,

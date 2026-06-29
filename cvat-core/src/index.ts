@@ -61,6 +61,7 @@ export default interface CVATCore {
     lambda: {
         list: typeof lambdaManager.list;
         deployLocalYoloModel: typeof lambdaManager.deployLocalYoloModel;
+        deleteModel: typeof lambdaManager.deleteModel;
         run: typeof lambdaManager.run;
         call: typeof lambdaManager.call;
         cancel: typeof lambdaManager.cancel;

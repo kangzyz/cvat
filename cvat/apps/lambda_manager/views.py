@@ -153,6 +153,7 @@ def _write_local_yolo_function(
     pip_extra_index_url: str,
     pip_trusted_host: str,
     install_dependencies: bool,
+    gpu_limit: int,
 ) -> None:
     labels_json = json.dumps(labels_spec, ensure_ascii=False, indent=2)
     (function_root / "labels.json").write_text(labels_json, encoding="utf-8")
@@ -165,6 +166,7 @@ def _write_local_yolo_function(
         import os
 
         from PIL import Image
+        import torch
         from ultralytics import YOLO
 
 
@@ -175,7 +177,8 @@ def _write_local_yolo_function(
 
             context.user_data.labels = {int(item["id"]): item["name"] for item in labels}
             context.user_data.model = YOLO("/opt/nuclio/model.pt")
-            context.logger.info("Local YOLO model is ready")
+            context.user_data.device = 0 if torch.cuda.is_available() else "cpu"
+            context.logger.info(f"Local YOLO model is ready on {context.user_data.device}")
 
 
         def handler(context, event):
@@ -188,7 +191,12 @@ def _write_local_yolo_function(
             width, height = image.size
             threshold = float(data.get("threshold") or os.getenv("CVAT_YOLO_DEFAULT_THRESHOLD", "0.25"))
 
-            predictions = context.user_data.model.predict(image, conf=threshold, verbose=False)
+            predictions = context.user_data.model.predict(
+                image,
+                conf=threshold,
+                device=context.user_data.device,
+                verbose=False,
+            )
             results = []
             for prediction in predictions:
                 boxes = getattr(prediction, "boxes", None)
@@ -247,12 +255,22 @@ def _write_local_yolo_function(
             f"        - kind: RUN\n"
             f"          value: {pip_install_command}\n"
         )
+    resources_yaml = ""
+    if gpu_limit > 0:
+        resources_yaml = (
+            f"  resources:\n"
+            f"    limits:\n"
+            f"      nvidia.com/gpu: {gpu_limit}\n"
+        )
     function_yaml = (
         f"metadata:\n"
         f"  name: {function_name}\n"
         f"  namespace: cvat\n"
         f"  annotations:\n"
         f"    name: {_yaml_quoted(display_name)}\n"
+        f"    provider: local\n"
+        f"    deletable: \"true\"\n"
+        f"    local_yolo: \"true\"\n"
         f"    type: detector\n"
         f"    spec: |\n"
         f"{indented_spec}\n"
@@ -261,6 +279,7 @@ def _write_local_yolo_function(
         f"  runtime: 'python:3.10'\n"
         f"  handler: main:handler\n"
         f"  eventTimeout: 60s\n"
+        f"{resources_yaml}"
         f"  build:\n"
         f"    image: cvat.local.yolo.{function_name.replace('-', '.')}\n"
         f"    baseImage: {build_base_image}\n"
@@ -291,6 +310,35 @@ def _run_nuctl(command: list[str], *, timeout: int) -> subprocess.CompletedProce
         timeout=timeout,
         check=False,
     )
+
+
+def _resolve_nuctl_path() -> str | None:
+    nuctl_path = settings.LOCAL_MODEL_DEPLOYMENT["NUCTL_PATH"]
+    return nuctl_path if os.path.isabs(nuctl_path) else shutil.which(nuctl_path)
+
+
+def _is_local_yolo_function(func_id: str) -> bool:
+    function_root = Path(settings.LOCAL_MODEL_DEPLOYMENT["ROOT"]) / func_id
+    return func_id.startswith("local-yolo-") or function_root.exists()
+
+
+def _local_yolo_image_name(func_id: str) -> str:
+    return f"cvat.local.yolo.{func_id.replace('-', '.')}:latest"
+
+
+def _delete_local_yolo_artifacts(func_id: str) -> None:
+    function_root = Path(settings.LOCAL_MODEL_DEPLOYMENT["ROOT"]) / func_id
+    shutil.rmtree(function_root, ignore_errors=True)
+
+    docker = shutil.which("docker")
+    if docker:
+        subprocess.run(
+            [docker, "image", "rm", "-f", _local_yolo_image_name(func_id)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
 
 
 class LambdaGateway:
@@ -468,6 +516,13 @@ class LambdaFunction:
         self.deployment_state = data["status"].get("state", "")
         # display name for the function
         self.name = meta_anno.get("name", self.id)
+        self.provider = meta_anno.get(
+            "provider",
+            "local" if _is_local_yolo_function(self.id) else "cvat",
+        )
+        self.is_deletable = _is_local_yolo_function(self.id) or (
+            meta_anno.get("deletable", "").lower() == "true"
+        )
         self.min_pos_points = int(meta_anno.get("min_pos_points", 1))
         self.min_neg_points = int(meta_anno.get("min_neg_points", -1))
         self.startswith_box = bool(meta_anno.get("startswith_box", False))
@@ -502,6 +557,8 @@ class LambdaFunction:
             "name": self.name,
             "version": self.version,
             "deployment_state": self.deployment_state,
+            "provider": self.provider,
+            "is_deletable": self.is_deletable,
         }
 
         if self.kind is FunctionKind.INTERACTOR:
@@ -1573,7 +1630,7 @@ class LocalYoloDeploymentView(APIView):
         )
 
         nuctl_path = deployment_settings["NUCTL_PATH"]
-        resolved_nuctl = nuctl_path if os.path.isabs(nuctl_path) else shutil.which(nuctl_path)
+        resolved_nuctl = _resolve_nuctl_path()
         if not resolved_nuctl:
             return Response(
                 {
@@ -1634,6 +1691,7 @@ class LocalYoloDeploymentView(APIView):
             pip_extra_index_url=deployment_settings["PIP_EXTRA_INDEX_URL"],
             pip_trusted_host=deployment_settings["PIP_TRUSTED_HOST"],
             install_dependencies=deployment_settings["INSTALL_DEPENDENCIES"],
+            gpu_limit=deployment_settings["GPU_LIMIT"],
         )
 
         timeout = deployment_settings["TIMEOUT"]
@@ -1715,6 +1773,15 @@ class LocalYoloDeploymentView(APIView):
     list=extend_schema(
         operation_id="lambda_list_functions", summary="Method returns a list of functions"
     ),
+    destroy=extend_schema(
+        operation_id="lambda_delete_function",
+        summary="Delete a local uploaded model function",
+        responses={
+            "204": OpenApiResponse(description="Function deleted"),
+            "403": OpenApiResponse(description="Function is not deletable"),
+            "503": OpenApiResponse(description="Nuclio or nuctl is unavailable"),
+        },
+    ),
 )
 class FunctionViewSet(viewsets.ViewSet):
     lookup_value_regex = "[a-zA-Z0-9_.-]+"
@@ -1733,6 +1800,58 @@ class FunctionViewSet(viewsets.ViewSet):
         self.check_object_permissions(request, func_id)
         gateway = LambdaGateway()
         return gateway.get(func_id).to_dict()
+
+    def destroy(self, request, func_id):
+        self.check_object_permissions(request, func_id)
+        if not _is_local_yolo_function(func_id):
+            return Response(
+                {"detail": "Only locally uploaded YOLO models can be deleted"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        deployment_settings = settings.LOCAL_MODEL_DEPLOYMENT
+        resolved_nuctl = _resolve_nuctl_path()
+        if not resolved_nuctl:
+            return Response(
+                {
+                    "detail": (
+                        f"未找到 nuctl 可执行文件 '{deployment_settings['NUCTL_PATH']}'，"
+                        "无法删除 Nuclio 函数。"
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        delete = _run_nuctl(
+            [
+                resolved_nuctl,
+                "delete",
+                "function",
+                func_id,
+                "--platform",
+                "local",
+                "--namespace",
+                "nuclio",
+            ],
+            timeout=deployment_settings["TIMEOUT"],
+        )
+        delete_output = f"{delete.stdout}\n{delete.stderr}".lower()
+        function_missing = any(
+            marker in delete_output
+            for marker in ["not found", "not exist", "does not exist", "no such function"]
+        )
+        if delete.returncode and not function_missing:
+            return Response(
+                {
+                    "detail": "Nuclio 函数删除失败",
+                    "stdout": delete.stdout,
+                    "stderr": delete.stderr,
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        _delete_local_yolo_artifacts(func_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
         description=textwrap.dedent("""\

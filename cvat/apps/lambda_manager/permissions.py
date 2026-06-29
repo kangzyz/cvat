@@ -15,6 +15,7 @@ class LambdaPermission(OpenPolicyAgentPermission):
     class Scopes(StrEnum):
         LIST = "list"
         VIEW = "view"
+        DELETE = "delete"
         CALL_ONLINE = "call:online"
         CALL_OFFLINE = "call:offline"
         LIST_OFFLINE = "list:offline"
@@ -47,6 +48,7 @@ class LambdaPermission(OpenPolicyAgentPermission):
             {
                 ("lambda_function", "list"): Scopes.LIST,
                 ("lambda_function", "retrieve"): Scopes.VIEW,
+                ("lambda_function", "destroy"): Scopes.DELETE,
                 ("lambda_function", "call"): Scopes.CALL_ONLINE,
                 ("lambda_request", "create"): Scopes.CALL_OFFLINE,
                 ("lambda_request", "list"): Scopes.LIST_OFFLINE,

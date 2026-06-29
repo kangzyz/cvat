@@ -142,9 +142,12 @@ DOCKER_GID=<stat -c '%g' /var/run/docker.sock 的输出值>
 CVAT_LOCAL_MODEL_DEPLOYMENT_BASE_IMAGE=your-registry/local-yolo-runtime:py310-ultralytics
 CVAT_LOCAL_MODEL_DEPLOYMENT_INSTALL_DEPENDENCIES=0
 CVAT_LOCAL_MODEL_DEPLOYMENT_NO_BASE_IMAGES_PULL=1
+CVAT_LOCAL_MODEL_DEPLOYMENT_GPU_LIMIT=1
 ```
 
-其中 `DOCKER_GID` 应使用服务器实际 Docker socket 组 ID。先在服务器执行：
+其中 `CVAT_LOCAL_MODEL_DEPLOYMENT_GPU_LIMIT=1` 会让上传部署的 Nuclio YOLO 函数容器申请 1 张
+NVIDIA GPU，并在推理时优先使用 `cuda:0`；CPU-only 部署不要开启。`DOCKER_GID` 应使用服务器实际
+Docker socket 组 ID。先在服务器执行：
 
 ```bash
 stat -c '%g' /var/run/docker.sock

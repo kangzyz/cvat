@@ -2321,6 +2321,16 @@ async function deployLocalYoloModel(body: {
     }
 }
 
+async function deleteLambdaFunction(functionID: string | number): Promise<void> {
+    const { backendAPI } = config;
+
+    try {
+        await Axios.delete(`${backendAPI}/lambda/functions/${functionID}`);
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 async function runLambdaRequest(body): Promise<SerializedFunctionRequest> {
     const { backendAPI } = config;
 
@@ -3050,6 +3060,7 @@ export default Object.freeze({
     lambda: Object.freeze({
         list: getLambdaFunctions,
         deployLocalYoloModel,
+        delete: deleteLambdaFunction,
         status: getLambdaRequestStatus,
         requests: getLambdaRequests,
         run: runLambdaRequest,

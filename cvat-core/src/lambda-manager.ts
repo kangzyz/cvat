@@ -68,6 +68,20 @@ class LambdaManager {
         return serverProxy.lambda.deployLocalYoloModel(data);
     }
 
+    async deleteModel(model: MLModel): Promise<void> {
+        if (!(model instanceof MLModel)) {
+            throw new ArgumentError(
+                `Argument model is expected to be an instance of MLModel class, but got ${typeof model}`,
+            );
+        }
+
+        if (!model.isDeletable) {
+            throw new ArgumentError(`Model "${model.id}" cannot be deleted`);
+        }
+
+        await serverProxy.lambda.delete(model.id);
+    }
+
     async run(taskID: number, model: MLModel, args: any): Promise<SerializedFunctionRequest> {
         if (!Number.isInteger(taskID) || taskID < 0) {
             throw new ArgumentError(`Argument taskID must be a positive integer. Got "${taskID}"`);
