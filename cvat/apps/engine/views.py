@@ -570,13 +570,7 @@ class ServerViewSet(viewsets.ViewSet):
 
         image_size = request.query_params.get("size", "thumb")
         if image_size == "full":
-            return sendfile(
-                request,
-                frame_path,
-                attachment=False,
-                attachment_filename=False,
-                mimetype="image/jpeg",
-            )
+            return HttpResponse(frame_path.read_bytes(), content_type="image/jpeg")
         if image_size != "thumb":
             raise ValidationError("The size parameter must be one of: thumb, full")
 

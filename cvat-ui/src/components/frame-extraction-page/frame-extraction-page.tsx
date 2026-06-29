@@ -11,6 +11,7 @@ import Button from 'antd/lib/button';
 import Empty from 'antd/lib/empty';
 import Input from 'antd/lib/input';
 import InputNumber from 'antd/lib/input-number';
+import Modal from 'antd/lib/modal';
 import Pagination from 'antd/lib/pagination';
 import Progress from 'antd/lib/progress';
 import Radio from 'antd/lib/radio';
@@ -27,10 +28,13 @@ import { Col, Row } from 'antd/lib/grid';
 import {
     CopyOutlined,
     DeleteOutlined,
+    EyeOutlined,
     ExportOutlined,
     FolderOpenOutlined,
     HistoryOutlined,
+    LeftOutlined,
     ReloadOutlined,
+    RightOutlined,
     SaveOutlined,
     ScissorOutlined,
     UndoOutlined,
@@ -159,6 +163,8 @@ export default function FrameExtractionPage(): JSX.Element {
     const [loadingSessions, setLoadingSessions] = useState(false);
     const [loadingFrames, setLoadingFrames] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [previewFrameID, setPreviewFrameID] = useState<number | null>(null);
+    const [previewBusy, setPreviewBusy] = useState(false);
     const pollRef = useRef<number | null>(null);
     const selectedSessionRef = useRef<string | null>(null);
 
@@ -202,7 +208,7 @@ export default function FrameExtractionPage(): JSX.Element {
         id: string,
         nextPage = 1,
         nextFilter: ExcludedFilter = 'false',
-    ): Promise<void> => {
+    ): Promise<FramePage | null> => {
         setLoadingFrames(true);
         try {
             const framePage = await core.server.getFrameExtractionFrames(id, {
@@ -211,6 +217,13 @@ export default function FrameExtractionPage(): JSX.Element {
                 excluded: nextFilter,
             });
             setFrames(framePage);
+            return framePage;
+        } catch (error: any) {
+            notification.error({
+                message: '无法加载候选帧',
+                description: error.toString(),
+            });
+            return null;
         } finally {
             setLoadingFrames(false);
         }
@@ -222,6 +235,7 @@ export default function FrameExtractionPage(): JSX.Element {
         setPage(1);
         setExcludedFilter('false');
         setFrames(null);
+        setPreviewFrameID(null);
 
         try {
             const nextSession = await loadSession(id);
@@ -305,6 +319,7 @@ export default function FrameExtractionPage(): JSX.Element {
         setStarting(true);
         setSelected([]);
         setFrames(null);
+        setPreviewFrameID(null);
         try {
             const result = await core.server.startFrameExtraction({
                 sharePaths: selectedSharePaths,
@@ -331,19 +346,33 @@ export default function FrameExtractionPage(): JSX.Element {
         }
     };
 
-    const updateFrames = async (payload: { exclude?: number[]; restore?: number[] }): Promise<void> => {
-        if (!sessionID || !canEditFrames) return;
+    const updateFrames = async (
+        payload: { exclude?: number[]; restore?: number[] },
+        options: { keepPreview?: boolean } = {},
+    ): Promise<FramePage | null> => {
+        if (!sessionID || !canEditFrames) return null;
 
         try {
             await core.server.updateFrameExtractionFrames(sessionID, payload);
             setSelected([]);
             await loadSession(sessionID);
-            await loadFrames(sessionID, page, excludedFilter);
+            let nextPage = page;
+            let nextFramePage = await loadFrames(sessionID, nextPage, excludedFilter);
+            if (nextFramePage && !nextFramePage.results.length && nextFramePage.count > 0 && nextPage > 1) {
+                nextPage = Math.ceil(nextFramePage.count / nextFramePage.pageSize);
+                setPage(nextPage);
+                nextFramePage = await loadFrames(sessionID, nextPage, excludedFilter);
+            }
+            if (!options.keepPreview) {
+                setPreviewFrameID(null);
+            }
+            return nextFramePage;
         } catch (error: any) {
             notification.error({
                 message: '更新筛选状态失败',
                 description: error.toString(),
             });
+            return null;
         }
     };
 
@@ -397,6 +426,7 @@ export default function FrameExtractionPage(): JSX.Element {
         await loadSession(sessionID);
         await loadFrames(sessionID, page, excludedFilter);
         setSelected([]);
+        setPreviewFrameID(null);
     };
 
     const toggleSelected = (frameID: number): void => {
@@ -408,6 +438,76 @@ export default function FrameExtractionPage(): JSX.Element {
     const visibleFrameIDs = frames?.results.map((frame) => frame.id) || [];
     const allVisibleSelected = visibleFrameIDs.length > 0 &&
         visibleFrameIDs.every((frameID) => selected.includes(frameID));
+    const previewFrameIndex = frames?.results.findIndex((frame) => frame.id === previewFrameID) ?? -1;
+    const previewFrame = frames && previewFrameIndex >= 0 ? frames.results[previewFrameIndex] : null;
+    const lastPreviewPage = frames ? Math.max(1, Math.ceil(frames.count / frames.pageSize)) : 1;
+    const canPreviewPrevious = !!previewFrame && !!frames && (
+        previewFrameIndex > 0 || frames.page > 1
+    );
+    const canPreviewNext = !!previewFrame && !!frames && (
+        previewFrameIndex < frames.results.length - 1 || frames.page < lastPreviewPage
+    );
+
+    const openFramePreview = (frameID: number): void => {
+        setPreviewFrameID(frameID);
+    };
+
+    const navigatePreviewFrame = async (direction: -1 | 1): Promise<void> => {
+        if (!frames || !sessionID || previewFrameIndex < 0 || previewBusy) return;
+
+        const nextIndex = previewFrameIndex + direction;
+        if (nextIndex >= 0 && nextIndex < frames.results.length) {
+            setPreviewFrameID(frames.results[nextIndex].id);
+            return;
+        }
+
+        const nextPage = frames.page + direction;
+        if (nextPage < 1 || nextPage > lastPreviewPage) return;
+
+        setPreviewBusy(true);
+        try {
+            const nextFramePage = await loadFrames(sessionID, nextPage, excludedFilter);
+            if (nextFramePage?.results.length) {
+                setPage(nextPage);
+                const nextFrame = direction > 0 ?
+                    nextFramePage.results[0] :
+                    nextFramePage.results[nextFramePage.results.length - 1];
+                setPreviewFrameID(nextFrame.id);
+            }
+        } finally {
+            setPreviewBusy(false);
+        }
+    };
+
+    const togglePreviewFrameStatus = async (): Promise<void> => {
+        if (!previewFrame || previewBusy) return;
+
+        setPreviewBusy(true);
+        try {
+            const currentFrameID = previewFrame.id;
+            const currentFrameIndex = previewFrameIndex;
+            const nextFramePage = await updateFrames(
+                previewFrame.excluded ?
+                    { restore: [previewFrame.id] } :
+                    { exclude: [previewFrame.id] },
+                { keepPreview: true },
+            );
+
+            if (!nextFramePage) return;
+
+            if (excludedFilter === 'all') {
+                setPreviewFrameID(currentFrameID);
+                return;
+            }
+
+            const replacementFrame = nextFramePage.results[
+                Math.min(currentFrameIndex, nextFramePage.results.length - 1)
+            ];
+            setPreviewFrameID(replacementFrame?.id ?? null);
+        } finally {
+            setPreviewBusy(false);
+        }
+    };
 
     return (
         <div className='cvat-frame-extraction-page'>
@@ -675,6 +775,7 @@ export default function FrameExtractionPage(): JSX.Element {
                             setExcludedFilter(nextFilter);
                             setPage(1);
                             setSelected([]);
+                            setPreviewFrameID(null);
                             if (sessionID) await loadFrames(sessionID, 1, nextFilter);
                         }}
                     >
@@ -728,31 +829,40 @@ export default function FrameExtractionPage(): JSX.Element {
                             return (
                                 <div
                                     key={frame.id}
-                                    role='button'
-                                    tabIndex={0}
                                     className={[
                                         'cvat-frame-extraction-frame',
                                         frame.excluded ? 'cvat-frame-extraction-frame-excluded' : '',
                                         isSelected ? 'cvat-frame-extraction-frame-selected' : '',
                                     ].filter(Boolean).join(' ')}
-                                    onClick={() => toggleSelected(frame.id)}
-                                    onKeyDown={(event) => {
-                                        if (event.key === 'Enter' || event.key === ' ') {
-                                            event.preventDefault();
-                                            toggleSelected(frame.id);
-                                        }
-                                    }}
                                 >
-                                    <img
-                                        src={core.server.getFrameExtractionImageURL(sessionID as string, frame.id)}
-                                        alt={frame.name}
-                                    />
-                                    <div className='cvat-frame-extraction-frame-meta'>
-                                        <Text ellipsis title={frame.name}>{frame.name}</Text>
-                                        <Text type='secondary'>
+                                    <button
+                                        type='button'
+                                        className='cvat-frame-extraction-frame-preview-button'
+                                        aria-label={`查看 ${frame.name}`}
+                                        onClick={() => openFramePreview(frame.id)}
+                                    >
+                                        <img
+                                            src={core.server.getFrameExtractionImageURL(sessionID as string, frame.id)}
+                                            alt={frame.name}
+                                        />
+                                        <span className='cvat-frame-extraction-frame-preview-hint'>
+                                            <EyeOutlined />
+                                            查看
+                                        </span>
+                                    </button>
+                                    <button
+                                        type='button'
+                                        className='cvat-frame-extraction-frame-meta'
+                                        aria-pressed={isSelected}
+                                        onClick={() => toggleSelected(frame.id)}
+                                    >
+                                        <span className='cvat-frame-extraction-frame-name' title={frame.name}>
+                                            {frame.name}
+                                        </span>
+                                        <span className='cvat-frame-extraction-frame-number'>
                                             {frame.sourceFrame === null ? '-' : `#${frame.sourceFrame}`}
-                                        </Text>
-                                    </div>
+                                        </span>
+                                    </button>
                                     <div className='cvat-frame-extraction-frame-actions'>
                                         <Tooltip title={frame.excluded ? '恢复' : '删除'}>
                                             <Button
@@ -791,11 +901,100 @@ export default function FrameExtractionPage(): JSX.Element {
                         onChange={async (nextPage) => {
                             setPage(nextPage);
                             setSelected([]);
+                            setPreviewFrameID(null);
                             if (sessionID) await loadFrames(sessionID, nextPage, excludedFilter);
                         }}
                     />
                 </div>
             ) : null}
+            <Modal
+                className='cvat-frame-extraction-preview-modal'
+                title={previewFrame ? previewFrame.name : '查看图片'}
+                open={!!previewFrame}
+                width='calc(100vw - 96px)'
+                footer={null}
+                centered
+                destroyOnClose
+                onCancel={() => setPreviewFrameID(null)}
+            >
+                {previewFrame ? (
+                    <div className='cvat-frame-extraction-preview'>
+                        <div className='cvat-frame-extraction-preview-main'>
+                            <Tooltip title='上一张'>
+                                <Button
+                                    className='cvat-frame-extraction-preview-nav'
+                                    icon={<LeftOutlined />}
+                                    disabled={!canPreviewPrevious || previewBusy}
+                                    onClick={() => navigatePreviewFrame(-1)}
+                                />
+                            </Tooltip>
+                            <div className='cvat-frame-extraction-preview-image-wrap'>
+                                <img
+                                    src={core.server.getFrameExtractionImageURL(
+                                        sessionID as string,
+                                        previewFrame.id,
+                                        'full',
+                                    )}
+                                    alt={previewFrame.name}
+                                />
+                            </div>
+                            <Tooltip title='下一张'>
+                                <Button
+                                    className='cvat-frame-extraction-preview-nav'
+                                    icon={<RightOutlined />}
+                                    disabled={!canPreviewNext || previewBusy}
+                                    onClick={() => navigatePreviewFrame(1)}
+                                />
+                            </Tooltip>
+                        </div>
+                        <div className='cvat-frame-extraction-preview-footer'>
+                            <div className='cvat-frame-extraction-preview-info'>
+                                <Text strong ellipsis title={previewFrame.name}>
+                                    {previewFrame.name}
+                                </Text>
+                                <Space wrap size={[12, 4]}>
+                                    <Text type='secondary'>
+                                        {previewFrame.sourceFrame === null ? '帧号 -' : `帧号 #${previewFrame.sourceFrame}`}
+                                    </Text>
+                                    <Text type='secondary'>
+                                        {previewFrame.width && previewFrame.height ?
+                                            `${previewFrame.width}x${previewFrame.height}` :
+                                            '尺寸 -'}
+                                    </Text>
+                                    <Text type='secondary' ellipsis title={previewFrame.sourcePath}>
+                                        {previewFrame.sourcePath}
+                                    </Text>
+                                </Space>
+                            </div>
+                            <Space wrap className='cvat-frame-extraction-preview-actions'>
+                                <Button
+                                    icon={<LeftOutlined />}
+                                    disabled={!canPreviewPrevious || previewBusy}
+                                    onClick={() => navigatePreviewFrame(-1)}
+                                >
+                                    上一张
+                                </Button>
+                                <Button
+                                    icon={<RightOutlined />}
+                                    disabled={!canPreviewNext || previewBusy}
+                                    onClick={() => navigatePreviewFrame(1)}
+                                >
+                                    下一张
+                                </Button>
+                                <Button
+                                    danger={!previewFrame.excluded}
+                                    icon={previewFrame.excluded ? <UndoOutlined /> : <DeleteOutlined />}
+                                    disabled={!canEditFrames}
+                                    loading={previewBusy}
+                                    onClick={togglePreviewFrameStatus}
+                                >
+                                    {previewFrame.excluded ? '恢复' : '删除'}
+                                </Button>
+                            </Space>
+                        </div>
+                    </div>
+                ) : null}
+            </Modal>
         </div>
     );
 }
