@@ -105,6 +105,10 @@ export default interface CVATCore {
         listFrameExtractionSessions: typeof serverProxy.server.listFrameExtractionSessions;
         getFrameExtractionSession: typeof serverProxy.server.getFrameExtractionSession;
         deleteFrameExtractionSession: typeof serverProxy.server.deleteFrameExtractionSession;
+        getDataAnalyticsOverview: typeof serverProxy.server.getDataAnalyticsOverview;
+        getDataAnalyticsProjects: typeof serverProxy.server.getDataAnalyticsProjects;
+        getDataAnalyticsProject: typeof serverProxy.server.getDataAnalyticsProject;
+        getDataAnalyticsDataSources: typeof serverProxy.server.getDataAnalyticsDataSources;
         getFrameExtractionFrames: typeof serverProxy.server.getFrameExtractionFrames;
         updateFrameExtractionFrames: typeof serverProxy.server.updateFrameExtractionFrames;
         saveFrameExtractionDataset: typeof serverProxy.server.saveFrameExtractionDataset;

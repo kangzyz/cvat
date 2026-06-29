@@ -24,6 +24,7 @@ import {
     PlusOutlined,
     MailOutlined,
     ScissorOutlined,
+    BarChartOutlined,
 } from '@ant-design/icons';
 import Layout from 'antd/lib/layout';
 import Button from 'antd/lib/button';
@@ -481,6 +482,21 @@ function HeaderComponent(props: Props): JSX.Element {
                 >
                     {t('navigation.models')}
                 </Button>
+                {user.isStaff ? (
+                    <Button
+                        className={getButtonClassName('data-analytics')}
+                        type='link'
+                        value='data-analytics'
+                        href='/data-analytics'
+                        icon={<BarChartOutlined />}
+                        onClick={(event: React.MouseEvent): void => {
+                            event.preventDefault();
+                            history.push('/data-analytics');
+                        }}
+                    >
+                        {t('navigation.dataAnalytics')}
+                    </Button>
+                ) : null}
                 {isAnalyticsPluginActive && user.hasAnalyticsAccess ? (
                     <Button
                         className={getButtonClassName('analytics', false)}

@@ -83,6 +83,22 @@ function build(): CVATCore {
                 );
                 return result;
             },
+            async getDataAnalyticsOverview() {
+                const result = await PluginRegistry.apiWrapper(cvat.server.getDataAnalyticsOverview);
+                return result;
+            },
+            async getDataAnalyticsProjects(query) {
+                const result = await PluginRegistry.apiWrapper(cvat.server.getDataAnalyticsProjects, query);
+                return result;
+            },
+            async getDataAnalyticsProject(projectID) {
+                const result = await PluginRegistry.apiWrapper(cvat.server.getDataAnalyticsProject, projectID);
+                return result;
+            },
+            async getDataAnalyticsDataSources() {
+                const result = await PluginRegistry.apiWrapper(cvat.server.getDataAnalyticsDataSources);
+                return result;
+            },
             async getFrameExtractionFrames(sessionID, query) {
                 const result = await PluginRegistry.apiWrapper(
                     cvat.server.getFrameExtractionFrames,

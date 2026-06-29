@@ -137,6 +137,30 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
         const result = await serverProxy.server.deleteFrameExtractionSession(...args);
         return result;
     });
+    implementationMixin(cvat.server.getDataAnalyticsOverview, async (
+        ...args: Parameters<typeof serverProxy.server.getDataAnalyticsOverview>
+    ) => {
+        const result = await serverProxy.server.getDataAnalyticsOverview(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.getDataAnalyticsProjects, async (
+        ...args: Parameters<typeof serverProxy.server.getDataAnalyticsProjects>
+    ) => {
+        const result = await serverProxy.server.getDataAnalyticsProjects(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.getDataAnalyticsProject, async (
+        ...args: Parameters<typeof serverProxy.server.getDataAnalyticsProject>
+    ) => {
+        const result = await serverProxy.server.getDataAnalyticsProject(...args);
+        return result;
+    });
+    implementationMixin(cvat.server.getDataAnalyticsDataSources, async (
+        ...args: Parameters<typeof serverProxy.server.getDataAnalyticsDataSources>
+    ) => {
+        const result = await serverProxy.server.getDataAnalyticsDataSources(...args);
+        return result;
+    });
     implementationMixin(cvat.server.getFrameExtractionFrames, async (
         ...args: Parameters<typeof serverProxy.server.getFrameExtractionFrames>
     ) => {

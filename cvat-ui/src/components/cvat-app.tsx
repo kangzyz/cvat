@@ -55,6 +55,8 @@ import AnnotationGuidePage from 'components/md-guide/annotation-guide-page';
 
 import DocumentationPage from 'components/documentation-page/documentation-page';
 
+import DataAnalyticsPage from 'components/data-analytics-page/data-analytics-page';
+
 import InvitationsPage from 'components/invitations-page/invitations-page';
 
 import RequestsPage from 'components/requests-page/requests-page';
@@ -548,6 +550,8 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                                         <Route exact path='/profile' component={ProfilePageComponent} />
                                         <Route exact path='/documentation' component={DocumentationPage} />
                                         <Route exact path='/documentation/:slug' component={DocumentationPage} />
+                                        <Route exact path='/data-analytics' component={DataAnalyticsPage} />
+                                        <Route exact path='/data-analytics/projects/:pid' component={DataAnalyticsPage} />
                                         { routesToRender }
                                         <Route
                                             path='/models'

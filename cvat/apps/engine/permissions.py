@@ -149,6 +149,10 @@ class ServerPermission(OpenPolicyAgentPermission):
                 ("frame_extraction_frames", "PATCH"): Scopes.LIST_CONTENT,
                 ("frame_extraction_frame_image", "GET"): Scopes.LIST_CONTENT,
                 ("frame_extraction_save", "POST"): Scopes.LIST_CONTENT,
+                ("data_analytics_overview", "GET"): Scopes.LIST_CONTENT,
+                ("data_analytics_projects", "GET"): Scopes.LIST_CONTENT,
+                ("data_analytics_project_detail", "GET"): Scopes.LIST_CONTENT,
+                ("data_analytics_data_sources", "GET"): Scopes.LIST_CONTENT,
             }[(view.action, request.method)]
         ]
 

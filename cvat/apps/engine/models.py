@@ -983,6 +983,17 @@ class Task(TimestampedModel, AssignableModel, FileSystemRelatedModel):
     consensus_replicas = models.IntegerField(default=0)
     "Per job consensus replica count"
 
+    source_frame_extraction = models.ForeignKey(
+        "FrameExtractionSession",
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        related_name="tasks",
+        related_query_name="task",
+    )
+    "Frame extraction session this task's data was created from, if any"
+
     segment_set: models.manager.RelatedManager[Segment]
 
     user_can_view_task: MaybeUndefined[bool]

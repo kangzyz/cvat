@@ -720,6 +720,154 @@ async function deleteFrameExtractionSession(sessionID: string): Promise<void> {
     }
 }
 
+export interface DataAnalyticsOverview {
+    share_videos: number;
+    frame_extraction: {
+        total: number;
+        by_status: Record<string, number>;
+        saved_datasets: number;
+        kept_frames: number;
+        duplicate_frames: number;
+    };
+    projects: number;
+    tasks: number;
+    jobs: {
+        total: number;
+        completed: number;
+        completion_percent: number;
+        by_state: Record<string, number>;
+        by_stage: Record<string, number>;
+    };
+    annotations: { shapes: number; tracks: number; tags: number };
+}
+
+export interface DataAnalyticsProjectRow {
+    id: number;
+    name: string;
+    owner: string | null;
+    organization: string | null;
+    tasks_count: number;
+    jobs_count: number;
+    completed_jobs: number;
+    completion_percent: number;
+    labels_count: number;
+    annotations: number;
+}
+
+export interface DataAnalyticsProjectsPage {
+    count: number;
+    page: number;
+    page_size: number;
+    results: DataAnalyticsProjectRow[];
+}
+
+export interface DataAnalyticsProjectDetail {
+    id: number;
+    name: string;
+    owner: string | null;
+    organization: string | null;
+    jobs: {
+        total: number;
+        completed: number;
+        completion_percent: number;
+        by_state: Record<string, number>;
+        by_stage: Record<string, number>;
+    };
+    labels: { label: string; count: number }[];
+    shape_types: { type: string; count: number }[];
+    sources: { source: string; count: number }[];
+    tasks: {
+        id: number;
+        name: string;
+        media_type: string;
+        jobs_count: number;
+        completed_jobs: number;
+        completion_percent: number;
+        annotations: number;
+        source_frame_extraction: string | null;
+    }[];
+    frame_extraction_sessions: {
+        id: string; status: string; output_share_path: string; kept_frames: number;
+    }[];
+}
+
+export interface DataAnalyticsDataSources {
+    videos: {
+        total: number;
+        processed: number;
+        listed: number;
+        results: { path: string; size: number; processed: boolean }[];
+    };
+    frame_extraction_sessions: {
+        id: string;
+        status: string;
+        owner: string | null;
+        total_videos: number;
+        sampled_frames: number;
+        kept_frames: number;
+        duplicate_frames: number;
+        output_share_path: string;
+        saved: boolean;
+        started_date: string | null;
+        finished_date: string | null;
+        usage: {
+            task_id: number;
+            task_name: string;
+            project_id: number | null;
+            project_name: string | null;
+            linked: boolean;
+        }[];
+    }[];
+}
+
+async function getDataAnalyticsOverview(): Promise<DataAnalyticsOverview> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/data-analytics/overview`);
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getDataAnalyticsProjects(
+    query: { page?: number; pageSize?: number; search?: string } = {},
+): Promise<DataAnalyticsProjectsPage> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/data-analytics/projects`, {
+            params: {
+                page: query.page,
+                page_size: query.pageSize,
+                search: query.search || undefined,
+            },
+        });
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getDataAnalyticsProject(projectID: number): Promise<DataAnalyticsProjectDetail> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/data-analytics/projects/${projectID}`);
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getDataAnalyticsDataSources(): Promise<DataAnalyticsDataSources> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.get(`${backendAPI}/server/data-analytics/data-sources`);
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 async function getFrameExtractionFrames(
     sessionID: string,
     query: { page?: number; pageSize?: number; excluded?: 'all' | 'true' | 'false' } = {},
@@ -2966,6 +3114,10 @@ export default Object.freeze({
         updateFrameExtractionFrames,
         saveFrameExtractionDataset,
         getFrameExtractionImageURL,
+        getDataAnalyticsOverview,
+        getDataAnalyticsProjects,
+        getDataAnalyticsProject,
+        getDataAnalyticsDataSources,
         formats,
         login,
         logout,

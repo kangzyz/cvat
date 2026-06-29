@@ -49,6 +49,7 @@ import cvat.apps.dataset_manager as dm
 import cvat.apps.dataset_manager.views  # pylint: disable=unused-import
 from cvat.apps.dataset_manager.serializers import DatasetFormatsSerializer
 from cvat.apps.engine import backup
+from cvat.apps.engine import data_analytics
 from cvat.apps.engine.background import BackupImporter, DatasetImporter, TaskCreator
 from cvat.apps.engine.cache import (
     CacheTooLargeDataError,
@@ -614,6 +615,60 @@ class ServerViewSet(viewsets.ViewSet):
         serializer = FrameExtractionSaveResponseSerializer(data=result)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
+
+    @staticmethod
+    def _require_staff(request: ExtendedRequest) -> None:
+        if not request.user.is_staff:
+            raise PermissionDenied("Data analytics is available to administrators only")
+
+    @extend_schema(
+        summary="Global data analytics overview (admin only)",
+        responses={"200": OpenApiResponse(description="Aggregated overview metrics")},
+    )
+    @action(detail=False, methods=["GET"], url_path="data-analytics/overview")
+    def data_analytics_overview(self, request: ExtendedRequest):
+        self._require_staff(request)
+        return Response(data_analytics.build_overview())
+
+    @extend_schema(
+        summary="Per-project analytics list (admin only)",
+        responses={"200": OpenApiResponse(description="Project analytics rows")},
+    )
+    @action(detail=False, methods=["GET"], url_path="data-analytics/projects")
+    def data_analytics_projects(self, request: ExtendedRequest):
+        self._require_staff(request)
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+            page_size = min(100, max(1, int(request.query_params.get("page_size", 20))))
+        except ValueError:
+            raise ValidationError("The page and page_size parameters must be integers")
+        search = request.query_params.get("search", "").strip()
+        return Response(data_analytics.build_projects_list(search, page, page_size))
+
+    @extend_schema(
+        summary="Single project analytics detail (admin only)",
+        responses={"200": OpenApiResponse(description="Project analytics detail")},
+    )
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path=r"data-analytics/projects/(?P<project_id>\d+)",
+    )
+    def data_analytics_project_detail(self, request: ExtendedRequest, project_id: str):
+        self._require_staff(request)
+        project = models.Project.objects.filter(id=int(project_id)).first()
+        if project is None:
+            raise NotFound("Project not found")
+        return Response(data_analytics.build_project_detail(project))
+
+    @extend_schema(
+        summary="Share videos and frame-extraction data sources (admin only)",
+        responses={"200": OpenApiResponse(description="Data source analytics")},
+    )
+    @action(detail=False, methods=["GET"], url_path="data-analytics/data-sources")
+    def data_analytics_data_sources(self, request: ExtendedRequest):
+        self._require_staff(request)
+        return Response(data_analytics.build_data_sources())
 
     @staticmethod
     @extend_schema(

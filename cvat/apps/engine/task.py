@@ -26,7 +26,7 @@ from django.db import transaction
 from django.forms.models import model_to_dict
 from rest_framework.serializers import ValidationError
 
-from cvat.apps.engine import field_validation, models
+from cvat.apps.engine import data_analytics, field_validation, models
 from cvat.apps.engine.log import ServerLogManager
 from cvat.apps.engine.media_extractors import (
     MEDIA_TYPES,
@@ -2024,6 +2024,8 @@ def create_thread(
         db_task, job_file_mapping=job_file_mapping, update_status_callback=update_status
     )
     _create_validation_jobs(db_task, validation_params, images=images)
+
+    data_analytics.link_task_to_frame_extraction(db_task, data.get("server_files", []))
 
     db_task.save()
 

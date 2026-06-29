@@ -16,7 +16,8 @@
         "requests": "请求",
         "frameExtraction": "抽帧筛选",
         "models": "模型",
-        "analytics": "分析"
+        "analytics": "分析",
+        "dataAnalytics": "数据分析"
     },
     "shortcuts": {
         "showShortcutsName": "显示快捷键",
