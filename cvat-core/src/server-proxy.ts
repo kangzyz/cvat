@@ -711,6 +711,15 @@ async function getFrameExtractionSession(sessionID: string): Promise<FrameExtrac
     }
 }
 
+async function deleteFrameExtractionSession(sessionID: string): Promise<void> {
+    const { backendAPI } = config;
+    try {
+        await Axios.delete(`${backendAPI}/server/frame-extraction/${sessionID}`);
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 async function getFrameExtractionFrames(
     sessionID: string,
     query: { page?: number; pageSize?: number; excluded?: 'all' | 'true' | 'false' } = {},
@@ -2942,6 +2951,7 @@ export default Object.freeze({
         startFrameExtraction,
         listFrameExtractionSessions,
         getFrameExtractionSession,
+        deleteFrameExtractionSession,
         getFrameExtractionFrames,
         updateFrameExtractionFrames,
         saveFrameExtractionDataset,

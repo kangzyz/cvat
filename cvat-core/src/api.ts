@@ -76,6 +76,13 @@ function build(): CVATCore {
                 );
                 return result;
             },
+            async deleteFrameExtractionSession(sessionID) {
+                const result = await PluginRegistry.apiWrapper(
+                    cvat.server.deleteFrameExtractionSession,
+                    sessionID,
+                );
+                return result;
+            },
             async getFrameExtractionFrames(sessionID, query) {
                 const result = await PluginRegistry.apiWrapper(
                     cvat.server.getFrameExtractionFrames,

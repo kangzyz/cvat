@@ -162,6 +162,7 @@ from cvat.apps.engine.video_curation import (
     FrameExtractionStartResponseSerializer,
     VideoCurationRequestSerializer,
     VideoCurationResponseSerializer,
+    delete_frame_extraction_session,
     prepare_video_dataset,
     run_frame_extraction_session,
     save_frame_extraction_dataset,
@@ -445,17 +446,24 @@ class ServerViewSet(viewsets.ViewSet):
         return Response(response_serializer.data, status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(
-        summary="Get a frame extraction session",
-        responses={"200": FrameExtractionSessionSerializer},
+        summary="Get or delete a frame extraction session",
+        responses={
+            "200": FrameExtractionSessionSerializer,
+            "204": OpenApiResponse(description="Frame extraction session deleted"),
+        },
     )
     @action(
         detail=False,
-        methods=["GET"],
+        methods=["GET", "DELETE"],
         url_path=r"frame-extraction/(?P<session_id>[^/.]+)",
         serializer_class=FrameExtractionSessionSerializer,
     )
     def frame_extraction_detail(self, request: ExtendedRequest, session_id: str):
         session = self._get_frame_extraction_session(request, session_id)
+        if request.method == "DELETE":
+            delete_frame_extraction_session(session)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
         serializer = FrameExtractionSessionSerializer(session)
         return Response(serializer.data)
 

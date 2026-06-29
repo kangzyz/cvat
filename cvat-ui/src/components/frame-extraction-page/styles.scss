@@ -76,27 +76,49 @@
 }
 
 .cvat-frame-extraction-history-item {
-    display: grid;
+    display: flex;
+    align-items: flex-start;
     width: 100%;
     min-width: 0;
-    gap: 5px;
+    gap: 8px;
     padding: 9px 10px;
     border: 1px solid #d9dde3;
     border-radius: 6px;
     background: #fbfcfd;
-    text-align: left;
-    cursor: pointer;
     transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
 
     &:hover {
         border-color: #7aa7d9;
         background: #f7fbff;
     }
+}
+
+.cvat-frame-extraction-history-item-content {
+    display: grid;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 5px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
 
     &:focus-visible {
         outline: 2px solid #3478c7;
         outline-offset: 2px;
     }
+}
+
+.cvat-frame-extraction-history-item-delete {
+    flex: 0 0 auto;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.cvat-frame-extraction-history-item:hover .cvat-frame-extraction-history-item-delete,
+.cvat-frame-extraction-history-item:focus-within .cvat-frame-extraction-history-item-delete {
+    opacity: 1;
 }
 
 .cvat-frame-extraction-history-item-active {

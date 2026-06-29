@@ -163,6 +163,7 @@ export default function FrameExtractionPage(): JSX.Element {
     const [loadingSessions, setLoadingSessions] = useState(false);
     const [loadingFrames, setLoadingFrames] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [deletingSessionID, setDeletingSessionID] = useState<string | null>(null);
     const [previewFrameID, setPreviewFrameID] = useState<number | null>(null);
     const [previewBusy, setPreviewBusy] = useState(false);
     const pollRef = useRef<number | null>(null);
@@ -251,6 +252,17 @@ export default function FrameExtractionPage(): JSX.Element {
             });
         }
     }, [loadFrames, loadSession]);
+
+    const clearSelectedSession = useCallback((): void => {
+        setSessionID(null);
+        setSession(null);
+        setSelected([]);
+        setPage(1);
+        setExcludedFilter('false');
+        setFrames(null);
+        setPreviewFrameID(null);
+        setDatasetName('');
+    }, []);
 
     useEffect(() => {
         let disposed = false;
@@ -421,6 +433,46 @@ export default function FrameExtractionPage(): JSX.Element {
         }
     };
 
+    const canDeleteSession = (item: FrameExtractionSession): boolean => (
+        !item.outputSharePath && (item.status === 'finished' || item.status === 'failed')
+    );
+
+    const deleteSession = (item: FrameExtractionSession): void => {
+        Modal.confirm({
+            title: '删除抽帧记录',
+            content: '将删除该历史记录和未保存的抽帧结果，此操作不可恢复。',
+            okText: '删除',
+            okButtonProps: { danger: true },
+            cancelText: '取消',
+            onOk: async () => {
+                setDeletingSessionID(item.id);
+                try {
+                    await core.server.deleteFrameExtractionSession(item.id);
+                    notification.success({ message: '抽帧记录已删除' });
+
+                    const nextPage = sessions.length === 1 && sessionPage > 1 ?
+                        sessionPage - 1 :
+                        sessionPage;
+                    const nextSessions = await loadSessions(nextPage);
+                    if (sessionID === item.id) {
+                        if (nextSessions.length) {
+                            await openSession(nextSessions[0].id);
+                        } else {
+                            clearSelectedSession();
+                        }
+                    }
+                } catch (error: any) {
+                    notification.error({
+                        message: '删除抽帧记录失败',
+                        description: error.toString(),
+                    });
+                } finally {
+                    setDeletingSessionID(null);
+                }
+            },
+        });
+    };
+
     const refreshFrames = async (): Promise<void> => {
         if (!sessionID) return;
         await loadSession(sessionID);
@@ -542,36 +594,55 @@ export default function FrameExtractionPage(): JSX.Element {
                         ) : null}
                         {!loadingSessions && sessions.length ? (
                             <div className='cvat-frame-extraction-history'>
-                                {sessions.map((item) => (
-                                    <button
-                                        key={item.id}
-                                        type='button'
-                                        className={[
-                                            'cvat-frame-extraction-history-item',
-                                            item.id === sessionID ? 'cvat-frame-extraction-history-item-active' : '',
-                                        ].filter(Boolean).join(' ')}
-                                        onClick={() => openSession(item.id)}
-                                    >
-                                        <span className='cvat-frame-extraction-history-item-head'>
-                                            <Tag color={statusColor(item.status)}>
-                                                {statusLabel(item.status)}
-                                            </Tag>
-                                            <Text type='secondary'>{formatDateTime(item.createdDate)}</Text>
-                                        </span>
-                                        <Text ellipsis title={formatSourcePaths(item.sourcePaths)}>
-                                            {formatSourcePaths(item.sourcePaths)}
-                                        </Text>
-                                        <span className='cvat-frame-extraction-history-item-meta'>
-                                            <Text type='secondary'>{`保留 ${item.keptFrames}`}</Text>
-                                            <Text type='secondary'>{`排除 ${item.excludedFrames}`}</Text>
-                                        </span>
-                                        {item.outputSharePath ? (
-                                            <Text ellipsis type='secondary' title={item.outputSharePath}>
-                                                {item.outputSharePath}
-                                            </Text>
-                                        ) : null}
-                                    </button>
-                                ))}
+                                {sessions.map((item) => {
+                                    const deletable = canDeleteSession(item);
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className={[
+                                                'cvat-frame-extraction-history-item',
+                                                item.id === sessionID ? 'cvat-frame-extraction-history-item-active' : '',
+                                            ].filter(Boolean).join(' ')}
+                                        >
+                                            <button
+                                                type='button'
+                                                className='cvat-frame-extraction-history-item-content'
+                                                onClick={() => openSession(item.id)}
+                                            >
+                                                <span className='cvat-frame-extraction-history-item-head'>
+                                                    <Tag color={statusColor(item.status)}>
+                                                        {statusLabel(item.status)}
+                                                    </Tag>
+                                                    <Text type='secondary'>{formatDateTime(item.createdDate)}</Text>
+                                                </span>
+                                                <Text ellipsis title={formatSourcePaths(item.sourcePaths)}>
+                                                    {formatSourcePaths(item.sourcePaths)}
+                                                </Text>
+                                                <span className='cvat-frame-extraction-history-item-meta'>
+                                                    <Text type='secondary'>{`保留 ${item.keptFrames}`}</Text>
+                                                    <Text type='secondary'>{`排除 ${item.excludedFrames}`}</Text>
+                                                </span>
+                                                {item.outputSharePath ? (
+                                                    <Text ellipsis type='secondary' title={item.outputSharePath}>
+                                                        {item.outputSharePath}
+                                                    </Text>
+                                                ) : null}
+                                            </button>
+                                            {deletable ? (
+                                                <Tooltip title='删除记录'>
+                                                    <Button
+                                                        className='cvat-frame-extraction-history-item-delete'
+                                                        size='small'
+                                                        danger
+                                                        icon={<DeleteOutlined />}
+                                                        loading={deletingSessionID === item.id}
+                                                        onClick={() => deleteSession(item)}
+                                                    />
+                                                </Tooltip>
+                                            ) : null}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ) : null}
                         {!loadingSessions && !sessions.length ? (

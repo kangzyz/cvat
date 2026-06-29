@@ -1003,3 +1003,20 @@ def save_frame_extraction_dataset(
         "share_path": session.output_share_path,
         "kept_frames": len(kept_frames),
     }
+
+
+def delete_frame_extraction_session(session: models.FrameExtractionSession) -> None:
+    if session.output_share_path or session.status == models.FrameExtractionStatus.SAVED:
+        raise ValidationError("Saved frame extraction sessions cannot be deleted")
+
+    if session.status not in {
+        models.FrameExtractionStatus.FINISHED,
+        models.FrameExtractionStatus.FAILED,
+    }:
+        raise ValidationError("Only unsaved or failed frame extraction sessions can be deleted")
+
+    work_share_path = session.work_share_path or f"{OUTPUT_ROOT_NAME}/work/{session.id}/frames/"
+    work_dir = join_untrusted_path(settings.SHARE_ROOT, work_share_path)
+    cleanup_dir = work_dir.parent if work_dir.name == "frames" else work_dir
+    shutil.rmtree(cleanup_dir, ignore_errors=True)
+    session.delete()
