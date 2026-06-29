@@ -9,7 +9,12 @@ import dayjs from 'dayjs';
 import { Row, Col } from 'antd/lib/grid';
 import Tag from 'antd/lib/tag';
 import Text from 'antd/lib/typography/Text';
-import { MoreOutlined } from '@ant-design/icons';
+import {
+    CheckCircleOutlined,
+    CloseCircleOutlined,
+    LoadingOutlined,
+    MoreOutlined,
+} from '@ant-design/icons';
 import Modal from 'antd/lib/modal';
 import Title from 'antd/lib/typography/Title';
 import Meta from 'antd/lib/card/Meta';
@@ -38,6 +43,27 @@ const useCardHeight = useCardHeightHOC({
     numberOfRows: 3,
 });
 
+function deploymentStateTag(state?: string): JSX.Element | null {
+    const normalized = (state || '').toLowerCase();
+    if (!normalized) {
+        return null;
+    }
+
+    if (normalized === 'ready') {
+        return <Tag color='success' icon={<CheckCircleOutlined />}>已就绪</Tag>;
+    }
+
+    if (['building', 'provisioning', 'waiting'].includes(normalized)) {
+        return <Tag color='processing' icon={<LoadingOutlined />}>部署中</Tag>;
+    }
+
+    if (['error', 'unhealthy'].includes(normalized)) {
+        return <Tag color='error' icon={<CloseCircleOutlined />}>部署失败</Tag>;
+    }
+
+    return <Tag>{state}</Tag>;
+}
+
 function DeployedModelItem(props: Readonly<Props>): JSX.Element {
     const { model, selected, onClick } = props;
     const { t } = useTranslation('qualityReviewModels');
@@ -61,6 +87,7 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
     const modelDescription = !systemModel ?
         <Text type='secondary'>{t('models.added', { time: created })}</Text> :
         <Text type='secondary'>{t('models.systemModel')}</Text>;
+    const stateTag = deploymentStateTag(model.deploymentState);
 
     const topBarItems: [JSX.Element, number][] = [];
 
@@ -118,6 +145,12 @@ function DeployedModelItem(props: Readonly<Props>): JSX.Element {
                                 </>
                             )}
                             {modelDescription}
+                            {stateTag ? (
+                                <>
+                                    <br />
+                                    {stateTag}
+                                </>
+                            ) : null}
                         </Row>
                         {
                             (menuItems.length > 0) ? (

@@ -97,6 +97,10 @@ export default class MLModel {
         return this.serialized?.updated_date;
     }
 
+    public get deploymentState(): string | undefined {
+        return this.serialized?.deployment_state;
+    }
+
     public get url(): string | undefined {
         return this.serialized?.url;
     }

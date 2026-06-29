@@ -10,6 +10,7 @@ import io
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import textwrap
@@ -146,6 +147,12 @@ def _write_local_yolo_function(
     function_name: str,
     display_name: str,
     labels_spec: list[dict[str, Any]],
+    build_base_image: str,
+    no_base_images_pull: bool,
+    pip_index_url: str,
+    pip_extra_index_url: str,
+    pip_trusted_host: str,
+    install_dependencies: bool,
 ) -> None:
     labels_json = json.dumps(labels_spec, ensure_ascii=False, indent=2)
     (function_root / "labels.json").write_text(labels_json, encoding="utf-8")
@@ -215,6 +222,31 @@ def _write_local_yolo_function(
     (function_root / "main.py").write_text(main_py, encoding="utf-8")
 
     indented_spec = textwrap.indent(labels_json, "        ")
+    pip_install_parts = ["pip", "install"]
+    if pip_index_url:
+        pip_install_parts.extend(["-i", pip_index_url])
+    if pip_extra_index_url:
+        pip_install_parts.extend(["--extra-index-url", pip_extra_index_url])
+    for trusted_host in (host.strip() for host in pip_trusted_host.split(",")):
+        if trusted_host:
+            pip_install_parts.extend(["--trusted-host", trusted_host])
+    pip_install_parts.extend(
+        ["ultralytics", "opencv-python-headless", "pillow", "torch", "--no-cache-dir"]
+    )
+    pip_install_command = " ".join(shlex.quote(part) for part in pip_install_parts)
+    no_base_images_pull_yaml = (
+        f"    noBaseImagesPull: true\n" if no_base_images_pull else ""
+    )
+    dependency_directives_yaml = ""
+    if install_dependencies:
+        dependency_directives_yaml = (
+            f"    directives:\n"
+            f"      preCopy:\n"
+            f"        - kind: RUN\n"
+            f"          value: apt-get update && apt-get install --no-install-recommends -y libglib2.0-0 libgl1 && rm -rf /var/lib/apt/lists/*\n"
+            f"        - kind: RUN\n"
+            f"          value: {pip_install_command}\n"
+        )
     function_yaml = (
         f"metadata:\n"
         f"  name: {function_name}\n"
@@ -231,13 +263,9 @@ def _write_local_yolo_function(
         f"  eventTimeout: 60s\n"
         f"  build:\n"
         f"    image: cvat.local.yolo.{function_name.replace('-', '.')}\n"
-        f"    baseImage: python:3.10-slim\n"
-        f"    directives:\n"
-        f"      preCopy:\n"
-        f"        - kind: RUN\n"
-        f"          value: apt-get update && apt-get install --no-install-recommends -y libglib2.0-0 libgl1 && rm -rf /var/lib/apt/lists/*\n"
-        f"        - kind: RUN\n"
-        f"          value: pip install ultralytics opencv-python-headless pillow --no-cache-dir\n"
+        f"    baseImage: {build_base_image}\n"
+        f"{no_base_images_pull_yaml}"
+        f"{dependency_directives_yaml}"
         f"  triggers:\n"
         f"    myHttpTrigger:\n"
         f"      numWorkers: 1\n"
@@ -436,6 +464,8 @@ class LambdaFunction:
         self.description = data["spec"]["description"]
         # http port to access the serverless function
         self.port = data["status"].get("httpPort")
+        # Nuclio provisioning state, e.g. ready, building, error
+        self.deployment_state = data["status"].get("state", "")
         # display name for the function
         self.name = meta_anno.get("name", self.id)
         self.min_pos_points = int(meta_anno.get("min_pos_points", 1))
@@ -471,6 +501,7 @@ class LambdaFunction:
             "description": self.description,
             "name": self.name,
             "version": self.version,
+            "deployment_state": self.deployment_state,
         }
 
         if self.kind is FunctionKind.INTERACTOR:
@@ -1597,6 +1628,12 @@ class LocalYoloDeploymentView(APIView):
             function_name=function_name,
             display_name=display_name,
             labels_spec=labels_spec,
+            build_base_image=deployment_settings["BASE_IMAGE"],
+            no_base_images_pull=deployment_settings["NO_BASE_IMAGES_PULL"],
+            pip_index_url=deployment_settings["PIP_INDEX_URL"],
+            pip_extra_index_url=deployment_settings["PIP_EXTRA_INDEX_URL"],
+            pip_trusted_host=deployment_settings["PIP_TRUSTED_HOST"],
+            install_dependencies=deployment_settings["INSTALL_DEPENDENCIES"],
         )
 
         timeout = deployment_settings["TIMEOUT"]

@@ -121,8 +121,60 @@ Nuclio detector，部署成功后会自动出现在模型列表中，可用于�
 - 该功能仅适合本地或可信内网部署，`components/serverless/docker-compose.serverless.yml` 会为
   `cvat_server` 挂载 Docker socket 并开启 `CVAT_LOCAL_MODEL_DEPLOYMENT=1`。
 - `cvat_server` 镜像内置与 Nuclio Dashboard 匹配的 `nuctl 1.16.3`。
-- 首次部署 YOLO `.pt` 模型会构建函数镜像并下载 `ultralytics`/PyTorch 依赖，耗时取决于网络与机器性能。
+- 默认模式下，首次部署 YOLO `.pt` 模型会构建函数镜像并下载 `ultralytics`/PyTorch 依赖，耗时取决于网络与机器性能。
+- 生产环境建议使用预装依赖的 YOLO runtime 基础镜像，并关闭函数构建阶段的 `pip install`，避免每次上传模型都重新下载大依赖。
 - 目前支持矩形检测类型，标签顺序必须与训练模型类别顺序一致。
+
+预装 YOLO runtime 镜像的构建方式：
+
+```bash
+docker build -f components/serverless/local-yolo-runtime.Dockerfile \
+  --build-arg BASE_IMAGE=python:3.10-slim \
+  --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
+  -t your-registry/local-yolo-runtime:py310-ultralytics .
+docker push your-registry/local-yolo-runtime:py310-ultralytics
+```
+
+服务器 `.env` 中推荐使用：
+
+```bash
+DOCKER_GID=<stat -c '%g' /var/run/docker.sock 的输出值>
+CVAT_LOCAL_MODEL_DEPLOYMENT_BASE_IMAGE=your-registry/local-yolo-runtime:py310-ultralytics
+CVAT_LOCAL_MODEL_DEPLOYMENT_INSTALL_DEPENDENCIES=0
+CVAT_LOCAL_MODEL_DEPLOYMENT_NO_BASE_IMAGES_PULL=1
+```
+
+其中 `DOCKER_GID` 应使用服务器实际 Docker socket 组 ID。先在服务器执行：
+
+```bash
+stat -c '%g' /var/run/docker.sock
+```
+
+再把输出的数字写入 `.env`。`--env-file .env` 不会执行 `$(...)` 命令替换。
+
+如果暂时不使用预装 runtime 镜像，仍可保留默认的函数内安装依赖模式，并在 `.env` 中增加国内 PyPI 源：
+
+```bash
+CVAT_LOCAL_MODEL_DEPLOYMENT_INSTALL_DEPENDENCIES=1
+CVAT_LOCAL_MODEL_DEPLOYMENT_PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+启用 `CVAT_LOCAL_MODEL_DEPLOYMENT_NO_BASE_IMAGES_PULL=1` 后，Nuclio 构建时不会主动访问 `gcr.io`/`quay.io`
+拉取依赖镜像，需要先在服务器上预拉并打成本地原始标签：
+
+```bash
+docker pull m.daocloud.io/docker.io/library/alpine:3.20
+docker tag m.daocloud.io/docker.io/library/alpine:3.20 gcr.io/iguazio/alpine:3.20
+
+docker pull m.daocloud.io/gcr.io/iguazio/uhttpc:0.0.3-amd64
+docker tag m.daocloud.io/gcr.io/iguazio/uhttpc:0.0.3-amd64 gcr.io/iguazio/uhttpc:0.0.3-amd64
+
+docker pull m.daocloud.io/quay.io/nuclio/handler-builder-python-onbuild:1.16.3-amd64
+docker tag m.daocloud.io/quay.io/nuclio/handler-builder-python-onbuild:1.16.3-amd64 quay.io/nuclio/handler-builder-python-onbuild:1.16.3-amd64
+
+docker pull m.daocloud.io/docker.io/library/python:3.10-slim
+docker tag m.daocloud.io/docker.io/library/python:3.10-slim python:3.10-slim
+```
 
 ### 抽帧筛选工作台
 

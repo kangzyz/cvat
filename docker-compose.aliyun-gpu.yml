@@ -51,9 +51,13 @@ services:
       - *video-curation-share
 
   cvat_worker_import:
+    gpus: all
     image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}
     volumes:
       - *video-curation-share
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility,video
 
   cvat_worker_export:
     image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server:${CVAT_SERVER_TAG:-gpu}

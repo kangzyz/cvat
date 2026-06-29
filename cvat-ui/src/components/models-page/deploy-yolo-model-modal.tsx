@@ -16,13 +16,19 @@ import Upload from 'antd/lib/upload';
 import { RcFile, UploadFile } from 'antd/lib/upload/interface';
 
 import { getCore } from 'cvat-core-wrapper';
+import {
+    LocalYoloDeployment,
+    LocalYoloDeploymentRequest,
+    makeLocalYoloFunctionName,
+    parseLocalYoloLabels,
+} from './local-yolo-deployments';
 
 const core = getCore();
 
 interface Props {
     open: boolean;
     onClose: () => void;
-    onDeployed: () => void;
+    onDeploymentStarted: (deployment: LocalYoloDeployment, request: LocalYoloDeploymentRequest) => void;
 }
 
 interface FormValues {
@@ -47,13 +53,13 @@ function makeUploadFile(file: RcFile): UploadFile {
 }
 
 export default function DeployYoloModelModal(props: Readonly<Props>): JSX.Element {
-    const { open, onClose, onDeployed } = props;
+    const { open, onClose, onDeploymentStarted } = props;
     const [form] = Form.useForm<FormValues>();
     const [fileList, setFileList] = useState<UploadFile[]>([]);
-    const [deploying, setDeploying] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const resetAndClose = (): void => {
-        if (deploying) {
+        if (submitting) {
             return;
         }
 
@@ -73,31 +79,41 @@ export default function DeployYoloModelModal(props: Readonly<Props>): JSX.Elemen
             return;
         }
 
-        setDeploying(true);
+        setSubmitting(true);
         try {
-            const response = await core.lambda.deployLocalYoloModel({
+            const displayName = values.name.trim();
+            const functionName = makeLocalYoloFunctionName(values.functionName?.trim() || displayName);
+            const deployment: LocalYoloDeployment = {
+                localYoloDeployment: true,
+                id: functionName,
+                name: displayName,
+                labels: parseLocalYoloLabels(values.labels),
+                status: 'uploading',
+                createdAt: new Date().toISOString(),
+            };
+            const request = core.lambda.deployLocalYoloModel({
                 model: file,
-                name: values.name.trim(),
+                name: displayName,
                 labels: values.labels,
                 functionName: values.functionName?.trim() || undefined,
             });
 
-            notification.success({
-                message: '模型部署成功',
-                description: `已部署 ${response.name}，函数 ID：${response.id}`,
+            onDeploymentStarted(deployment, request);
+            notification.info({
+                message: '模型已提交部署',
+                description: `${displayName} 已加入模型列表，部署状态会自动同步。`,
             });
             form.resetFields();
             setFileList([]);
-            onDeployed();
             onClose();
         } catch (error: unknown) {
             notification.error({
-                message: '模型部署失败',
+                message: '模型提交失败',
                 description: error instanceof Error ? error.message : String(error),
                 duration: null,
             });
         } finally {
-            setDeploying(false);
+            setSubmitting(false);
         }
     };
 
@@ -110,8 +126,8 @@ export default function DeployYoloModelModal(props: Readonly<Props>): JSX.Elemen
             width={640}
             footer={(
                 <Space>
-                    <Button disabled={deploying} onClick={resetAndClose}>取消</Button>
-                    <Button type='primary' loading={deploying} onClick={onSubmit}>
+                    <Button disabled={submitting} onClick={resetAndClose}>取消</Button>
+                    <Button type='primary' loading={submitting} onClick={onSubmit}>
                         上传并部署
                     </Button>
                 </Space>
@@ -130,7 +146,7 @@ export default function DeployYoloModelModal(props: Readonly<Props>): JSX.Elemen
                         accept='.pt'
                         maxCount={1}
                         fileList={fileList}
-                        disabled={deploying}
+                        disabled={submitting}
                         beforeUpload={(file) => {
                             if (!file.name.toLowerCase().endsWith('.pt')) {
                                 notification.error({
@@ -165,10 +181,10 @@ export default function DeployYoloModelModal(props: Readonly<Props>): JSX.Elemen
                     name='name'
                     rules={[{ required: true, message: '请输入模型显示名称' }]}
                 >
-                    <Input placeholder='例如：车牌检测 YOLOv8' disabled={deploying} />
+                    <Input placeholder='例如：车牌检测 YOLOv8' disabled={submitting} />
                 </Form.Item>
                 <Form.Item label='函数名称' name='functionName'>
-                    <Input placeholder='可选；留空时根据显示名称自动生成' disabled={deploying} />
+                    <Input placeholder='可选；留空时根据显示名称自动生成' disabled={submitting} />
                 </Form.Item>
                 <Form.Item
                     label='标签列表'
@@ -179,7 +195,7 @@ export default function DeployYoloModelModal(props: Readonly<Props>): JSX.Elemen
                     <Input.TextArea
                         rows={6}
                         placeholder={'person\ncar\nlicense_plate'}
-                        disabled={deploying}
+                        disabled={submitting}
                     />
                 </Form.Item>
             </Form>

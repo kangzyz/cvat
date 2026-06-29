@@ -121,6 +121,18 @@
     }
 }
 
+.cvat-models-item-card-pending {
+    .cvat-models-item-pending-preview {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        min-height: $grid-unit-size * 18;
+        color: #8c8c8c;
+        font-size: $grid-unit-size * 8;
+    }
+}
+
 .cvat-model-item-loading-preview,
 .cvat-model-item-empty-preview {
     @extend .cvat-base-preview;
@@ -161,6 +173,15 @@
 
     &:hover {
         cursor: pointer;
+    }
+}
+
+.cvat-models-item-pending-description {
+    align-items: flex-start;
+
+    .ant-tag {
+        margin-right: 0;
+        white-space: nowrap;
     }
 }
 

@@ -14,10 +14,12 @@ import BulkWrapper from 'components/bulk-wrapper';
 import { ModelsQuery, SelectedResourceType } from 'reducers';
 
 import DeployedModelItem from './deployed-model-item';
+import PendingYoloModelItem from './pending-yolo-model-item';
+import { isLocalYoloDeployment, LocalYoloDeployment } from './local-yolo-deployments';
 
 interface Props {
     query: ModelsQuery;
-    models: MLModel[];
+    models: (MLModel | LocalYoloDeployment)[];
     totalCount: number;
 }
 
@@ -27,7 +29,9 @@ export default function DeployedModelsListComponent(props: Readonly<Props>): JSX
     const { page, pageSize } = query;
 
     const groupedModels = models.reduce(
-        (acc: MLModel[][], storage: MLModel, index: number): MLModel[][] => {
+        (acc: (MLModel | LocalYoloDeployment)[][], storage: MLModel | LocalYoloDeployment, index: number): (
+            MLModel | LocalYoloDeployment
+        )[][] => {
             if (index && index % 4) {
                 acc[acc.length - 1].push(storage);
             } else {
@@ -39,20 +43,33 @@ export default function DeployedModelsListComponent(props: Readonly<Props>): JSX
     );
 
     const modelIdToIndex = new Map<string | number, number>();
-    models.forEach((m, idx) => modelIdToIndex.set(m.id, idx));
+    models
+        .filter((model): model is MLModel => !isLocalYoloDeployment(model))
+        .forEach((m, idx) => modelIdToIndex.set(m.id, idx));
+    const selectableModelIds = models
+        .filter((model): model is MLModel => !isLocalYoloDeployment(model))
+        .map((m) => m.id);
 
     return (
         <>
             <Row justify='center' align='top' className='cvat-resource-list-wrapper'>
                 <Col {...dimensions} className='cvat-models-list'>
                     <BulkWrapper
-                        currentResourceIds={models.map((m) => m.id)}
+                        currentResourceIds={selectableModelIds}
                         resourceType={SelectedResourceType.MODELS}
                     >
                         {(selectProps) => {
-                            const renderModelRow = (instances: MLModel[]): JSX.Element => (
+                            const renderModelRow = (instances: (MLModel | LocalYoloDeployment)[]): JSX.Element => (
                                 <Row key={instances[0].id} className='cvat-models-list-row'>
-                                    {instances.map((model: MLModel) => {
+                                    {instances.map((model: MLModel | LocalYoloDeployment) => {
+                                        if (isLocalYoloDeployment(model)) {
+                                            return (
+                                                <Col span={6} key={model.id}>
+                                                    <PendingYoloModelItem deployment={model} />
+                                                </Col>
+                                            );
+                                        }
+
                                         const globalIdx = modelIdToIndex.get(model.id) ?? 0;
                                         return (
                                             <Col span={6} key={model.id}>
