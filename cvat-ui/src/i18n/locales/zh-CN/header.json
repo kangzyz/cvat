@@ -5,7 +5,6 @@
         "discord": "在 Discord 上找到我们",
         "serverVersion": "服务器版本：",
         "uiVersion": "UI 版本：",
-        "repositoryTooltip": "点击打开代码仓库",
         "guideTooltip": "点击打开指南"
     },
     "navigation": {

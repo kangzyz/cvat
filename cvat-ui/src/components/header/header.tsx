@@ -15,7 +15,6 @@ import {
     InfoCircleOutlined,
     LoadingOutlined,
     LogoutOutlined,
-    GithubOutlined,
     QuestionCircleOutlined,
     CaretDownOutlined,
     ControlOutlined,
@@ -179,7 +178,7 @@ function HeaderComponent(props: Props): JSX.Element {
     } = props;
 
     const {
-        CHANGELOG_URL, LICENSE_URL, GITHUB_URL, GUIDE_URL, DISCORD_URL,
+        CHANGELOG_URL, LICENSE_URL, GUIDE_URL, DISCORD_URL,
     } = config;
 
     const { t } = useTranslation('header');
@@ -512,19 +511,6 @@ function HeaderComponent(props: Props): JSX.Element {
                 ) : null}
             </div>
             <div className='cvat-right-header'>
-                <CVATTooltip overlay={t('about.repositoryTooltip')}>
-                    <Button
-                        icon={<GithubOutlined />}
-                        size='large'
-                        className='cvat-open-repository-button cvat-header-button'
-                        type='link'
-                        href={GITHUB_URL}
-                        onClick={(event: React.MouseEvent): void => {
-                            event.preventDefault();
-                            window.open(GITHUB_URL, '_blank');
-                        }}
-                    />
-                </CVATTooltip>
                 <CVATTooltip overlay={t('about.guideTooltip')}>
                     <Button
                         icon={<QuestionCircleOutlined />}
