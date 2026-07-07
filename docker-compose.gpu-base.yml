@@ -1,0 +1,23 @@
+# Stable GPU runtime base image for CVAT server.
+#
+# Build this image only when CUDA, FFmpeg/PyAV, Python requirements, OS packages,
+# or runtime build args change. Normal application releases should build
+# cvat/server from this base through CVAT_SERVER_BASE_IMAGE.
+#
+# Example:
+#   docker compose -f docker-compose.gpu-base.yml build cvat_server_base
+#   docker compose -f docker-compose.gpu-base.yml push cvat_server_base
+
+services:
+  cvat_server_base:
+    image: ${ACR_REGISTRY:-crpi-w25qc705jz1thhjj.cn-beijing.personal.cr.aliyuncs.com}/${ACR_NAMESPACE:-cvat-ch}/server-base-gpu:${CVAT_SERVER_BASE_TAG:-cuda12.6.3-ffmpeg8.0-py312}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: server-runtime-base
+      args:
+        BASE_IMAGE: ${CVAT_CUDA_BASE_IMAGE:-nvidia/cuda:12.6.3-devel-ubuntu24.04}
+        CLAM_AV: ${CLAM_AV:-no}
+        CVAT_CONFIGURATION: ${CVAT_CONFIGURATION:-production}
+        FFMPEG_WITH_NVIDIA: ${FFMPEG_WITH_NVIDIA:-yes}
+        TZ: ${TZ:-Etc/UTC}

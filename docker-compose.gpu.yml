@@ -11,6 +11,10 @@
 #
 # This file builds an NVIDIA FFmpeg-capable server image, passes the GPU into
 # cvat_server, and mounts a writable share path for video curation inputs/frames.
+#
+# By default the server image can still be built from scratch. For faster
+# application-only rebuilds, first build and push docker-compose.gpu-base.yml,
+# then set CVAT_SERVER_BASE_IMAGE to the pushed server-base-gpu image.
 
 x-video-curation-share: &video-curation-share
   type: bind
@@ -23,8 +27,10 @@ services:
   cvat_server:
     build:
       context: .
+      target: cvat-server
       args:
         BASE_IMAGE: ${CVAT_CUDA_BASE_IMAGE:-nvidia/cuda:12.6.3-devel-ubuntu24.04}
+        CVAT_SERVER_BASE_IMAGE: ${CVAT_SERVER_BASE_IMAGE:-server-runtime-base}
         FFMPEG_WITH_NVIDIA: ${FFMPEG_WITH_NVIDIA:-yes}
     gpus: all
     environment:

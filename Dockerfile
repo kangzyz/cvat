@@ -1,4 +1,5 @@
 ARG BASE_IMAGE=ubuntu:24.04
+ARG CVAT_SERVER_BASE_IMAGE=server-runtime-base
 
 FROM ${BASE_IMAGE} AS build-image-base
 
@@ -105,7 +106,7 @@ FROM golang:1.26.4 AS build-smokescreen
 RUN git clone --filter=blob:none --no-checkout https://github.com/stripe/smokescreen.git
 RUN cd smokescreen && git checkout eb1ac09 && go build -o /tmp/smokescreen
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} AS server-runtime-base
 
 ARG http_proxy
 ARG https_proxy
@@ -209,6 +210,8 @@ RUN if [ "${CVAT_DEBUG_ENABLED}" = 'yes' ]; then \
 # The vulnerability is dubious and we don't use pip at runtime, but some vulnerability scanners mark it as a high vulnerability,
 # and it was decided to remove pip from the final image
 RUN python -m pip uninstall -y pip
+
+FROM ${CVAT_SERVER_BASE_IMAGE} AS cvat-server
 
 # Install and initialize CVAT, copy all necessary files
 COPY cvat/nginx.conf /etc/nginx/nginx.conf
