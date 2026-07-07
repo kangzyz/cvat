@@ -26,7 +26,7 @@ from django.contrib.auth.models import User
 from django.core.files.storage import storages
 from django.db import IntegrityError, transaction
 from django.db.models.query import Prefetch, prefetch_related_objects
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -61,6 +61,7 @@ from cvat.apps.engine.cloud_provider import Status as CloudStorageStatus
 from cvat.apps.engine.cloud_provider import db_storage_to_storage_instance
 from cvat.apps.engine.exceptions import CloudStorageMissingError
 from cvat.apps.engine.media_extractors import get_mime, get_video_chapters
+from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.media_io.audio_provider import (
     IAudioProvider,
     JobAudioProvider,
@@ -318,6 +319,87 @@ class ServerViewSet(viewsets.ViewSet):
                 "{} is an invalid directory".format(directory_param),
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @staticmethod
+    @extend_schema(
+        summary="Preview a video file in the mounted share",
+        parameters=[
+            OpenApiParameter(
+                "path",
+                description="Relative path to a video file in the mounted share",
+                location=OpenApiParameter.QUERY,
+                type=OpenApiTypes.STR,
+                required=True,
+            ),
+        ],
+        responses={"200": OpenApiResponse(description="Shared video file")},
+    )
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="share/preview",
+        serializer_class=None,
+    )
+    def share_preview(request: ExtendedRequest):
+        share_path = request.query_params.get("path", "")
+        path_problem = problem_with_untrusted_path(share_path)
+        if path_problem:
+            raise ValidationError(f"The path parameter is invalid: {path_problem}")
+
+        try:
+            file_path = join_untrusted_path(settings.SHARE_ROOT, share_path)
+        except ValueError:
+            raise ValidationError("The path parameter points outside the mounted share")
+
+        if not file_path.exists():
+            raise NotFound("Shared file was not found")
+        if not file_path.is_file():
+            raise ValidationError("The path parameter must point to a file")
+        if get_mime(str(file_path)) != "video":
+            raise ValidationError("The path parameter must point to a video file")
+
+        try:
+            data_range = _parse_range_header(request.headers.get("Range"))
+        except _RangeHeaderSyntaxError:
+            return HttpResponse("Invalid Range header", status=status.HTTP_400_BAD_REQUEST)
+
+        content_size = file_path.stat().st_size
+        content_type = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
+        response_headers = {
+            "Accept-Ranges": "bytes",
+        }
+
+        if data_range is None:
+            response = FileResponse(open(file_path, "rb"), content_type=content_type)
+            response["Accept-Ranges"] = "bytes"
+            response["Content-Length"] = str(content_size)
+            return response
+
+        try:
+            start, end = _DataGetter._resolve_range(data_range, content_size)
+        except _RangeNotSatisfiableError:
+            return HttpResponse(
+                status=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE,
+                headers={
+                    **response_headers,
+                    "Content-Range": f"bytes */{content_size}",
+                },
+            )
+
+        with open(file_path, "rb") as video_file:
+            video_file.seek(start)
+            data = video_file.read(end - start + 1)
+
+        return HttpResponse(
+            data,
+            content_type=content_type,
+            status=status.HTTP_206_PARTIAL_CONTENT,
+            headers={
+                **response_headers,
+                "Content-Range": f"bytes {start}-{end}/{content_size}",
+                "Content-Length": str(len(data)),
+            },
+        )
 
     @staticmethod
     @extend_schema(

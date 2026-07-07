@@ -77,6 +77,7 @@ export default interface CVATCore {
             name: string;
             type: enums.ShareFileType;
         }[]>;
+        getShareFilePreviewURL: typeof serverProxy.server.getShareFilePreviewURL;
         prepareVideoDataset: (
             ...args: Parameters<typeof serverProxy.server.prepareVideoDataset>
         ) => Promise<{

@@ -7801,6 +7801,8 @@ class ServerShareAPITestCase(ApiTestBase):
         super().setUpClass()
         path = os.path.join(settings.SHARE_ROOT, "file0.txt")
         open(path, "w").write("test string")
+        path = os.path.join(settings.SHARE_ROOT, "video0.mp4")
+        open(path, "wb").write(b"0123456789")
         path = os.path.join(settings.SHARE_ROOT, "test1")
         os.makedirs(path)
         path = os.path.join(path, "file1.txt")
@@ -7817,6 +7819,8 @@ class ServerShareAPITestCase(ApiTestBase):
         super().tearDownClass()
         path = os.path.join(settings.SHARE_ROOT, "file0.txt")
         os.remove(path)
+        path = os.path.join(settings.SHARE_ROOT, "video0.mp4")
+        os.remove(path)
         path = os.path.join(settings.SHARE_ROOT, "test1")
         shutil.rmtree(path)
         path = os.path.join(settings.SHARE_ROOT, "test2")
@@ -7825,6 +7829,20 @@ class ServerShareAPITestCase(ApiTestBase):
     def _run_api_v2_server_share(self, user, directory):
         with ForceLogin(user, self.client):
             response = self.client.get("/api/server/share", query_params={"directory": directory})
+
+        return response
+
+    def _run_api_v2_server_share_preview(self, user, path, range_header=None):
+        extra = {}
+        if range_header:
+            extra["HTTP_RANGE"] = range_header
+
+        with ForceLogin(user, self.client):
+            response = self.client.get(
+                "/api/server/share/preview",
+                query_params={"path": path},
+                **extra,
+            )
 
         return response
 
@@ -7910,6 +7928,43 @@ class ServerShareAPITestCase(ApiTestBase):
         response = self._run_api_v2_server_share(self.admin, "../")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("is an invalid directory", response.content.decode("utf-8"))
+
+    def test_api_v2_server_share_preview_admin(self):
+        response = self._run_api_v2_server_share_preview(self.admin, "video0.mp4")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Accept-Ranges"], "bytes")
+        self.assertEqual(response["Content-Type"], "video/mp4")
+
+    def test_api_v2_server_share_preview_range(self):
+        response = self._run_api_v2_server_share_preview(self.admin, "video0.mp4", "bytes=2-5")
+        self.assertEqual(response.status_code, status.HTTP_206_PARTIAL_CONTENT)
+        self.assertEqual(response["Accept-Ranges"], "bytes")
+        self.assertEqual(response["Content-Range"], "bytes 2-5/10")
+        self.assertEqual(response.content, b"2345")
+
+    def test_api_v2_server_share_preview_assignee(self):
+        response = self._run_api_v2_server_share_preview(self.assignee, "video0.mp4")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_api_v2_server_share_preview_no_auth(self):
+        response = self._run_api_v2_server_share_preview(None, "video0.mp4")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_api_v2_server_share_preview_directory_traversal(self):
+        response = self._run_api_v2_server_share_preview(self.admin, "../video0.mp4")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_api_v2_server_share_preview_missing_file(self):
+        response = self._run_api_v2_server_share_preview(self.admin, "missing.mp4")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_api_v2_server_share_preview_directory(self):
+        response = self._run_api_v2_server_share_preview(self.admin, "test1")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_api_v2_server_share_preview_non_video(self):
+        response = self._run_api_v2_server_share_preview(self.admin, "file0.txt")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ServerShareDifferentTypesAPITestCase(ApiTestBase):

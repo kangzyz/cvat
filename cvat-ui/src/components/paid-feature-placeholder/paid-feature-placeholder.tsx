@@ -5,12 +5,10 @@
 import React from 'react';
 import Text from 'antd/lib/typography/Text';
 import Card from 'antd/es/card/Card';
-import Button from 'antd/lib/button';
 import { Row, Col } from 'antd/es/grid';
 
 import './styles.scss';
 import CVATMarkdown from 'components/common/cvat-markdown';
-import config from 'config';
 
 interface Props {
     featureDescription: string;
@@ -18,9 +16,6 @@ interface Props {
 
 function PaidFeaturePlaceholder(props: Readonly<Props>): JSX.Element | null {
     const { featureDescription } = props;
-
-    const { PAID_PLACEHOLDER_CONFIG } = config;
-    const { url } = PAID_PLACEHOLDER_CONFIG;
 
     return (
         <div className='cvat-paid-feature-placeholder-wrapper'>
@@ -33,7 +28,7 @@ function PaidFeaturePlaceholder(props: Readonly<Props>): JSX.Element | null {
                         <Row justify='center'>
                             <Col className='cvat-paid-feature-placeholder-title'>
                                 <Text>
-                                    你发现了一个高级功能</Text>
+                                    功能待开发</Text>
                             </Col>
                         </Row>
                         <Row justify='center'>
@@ -41,20 +36,6 @@ function PaidFeaturePlaceholder(props: Readonly<Props>): JSX.Element | null {
                                 <CVATMarkdown>
                                     {featureDescription}
                                 </CVATMarkdown>
-                            </Col>
-                        </Row>
-                    </Col>
-                    <Col span={24}>
-                        <Row justify='center'>
-                            <Col className='cvat-paid-feature-placeholder-pricing'>
-                                <Button
-                                    type='primary'
-                                    onClick={(event: React.MouseEvent): void => {
-                                        event.preventDefault();
-                                        window.open(url, '_blank');
-                                    }}
-                                >
-                                    查看价格</Button>
                             </Col>
                         </Row>
                     </Col>

@@ -446,6 +446,11 @@ async function share(directoryArg: string, searchPrefix?: string): Promise<Seria
     return response.data;
 }
 
+function getShareFilePreviewURL(path: string): string {
+    const { backendAPI } = config;
+    return `${backendAPI}/server/share/preview?path=${encodeURIComponent(path)}`;
+}
+
 export interface VideoCurationRequest {
     clientFiles?: File[];
     shareFiles?: string[];
@@ -3105,6 +3110,7 @@ export default Object.freeze({
     server: Object.freeze({
         about,
         share,
+        getShareFilePreviewURL,
         prepareVideoDataset,
         startFrameExtraction,
         listFrameExtractionSessions,

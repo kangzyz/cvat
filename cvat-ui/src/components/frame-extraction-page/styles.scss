@@ -184,6 +184,31 @@
     }
 }
 
+.cvat-frame-extraction-selected-videos {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #edf0f4;
+}
+
+.cvat-frame-extraction-selected-video-list {
+    display: grid;
+    gap: 8px;
+}
+
+.cvat-frame-extraction-selected-video {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid #d9dde3;
+    border-radius: 6px;
+    background: #fbfcfd;
+}
+
 .cvat-frame-extraction-toolbar {
     margin-top: 18px;
     padding: 12px 0;
@@ -448,6 +473,25 @@
     flex: 0 0 auto;
 }
 
+.cvat-frame-extraction-video-preview-modal {
+    .ant-modal-content {
+        overflow: hidden;
+        border-radius: 6px;
+    }
+}
+
+.cvat-frame-extraction-video-preview {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+
+    video {
+        width: 100%;
+        max-height: calc(90vh - 180px);
+        background: #101419;
+    }
+}
+
 @media screen and (max-width: 768px) {
     .cvat-frame-extraction-page {
         padding: 16px;
@@ -464,6 +508,11 @@
     }
 
     .cvat-frame-extraction-preview-modal {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px);
+    }
+
+    .cvat-frame-extraction-video-preview-modal {
         width: calc(100vw - 24px) !important;
         max-width: calc(100vw - 24px);
     }

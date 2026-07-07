@@ -33,6 +33,7 @@ import {
     FolderOpenOutlined,
     HistoryOutlined,
     LeftOutlined,
+    PlayCircleOutlined,
     ReloadOutlined,
     RightOutlined,
     SaveOutlined,
@@ -94,7 +95,8 @@ interface SessionPage {
 }
 
 const core = getCore();
-const PAGE_SIZE = 60;
+const DEFAULT_FRAME_PAGE_SIZE = 60;
+const FRAME_PAGE_SIZE_OPTIONS = [30, 60, 120, 240];
 const SESSION_PAGE_SIZE = 20;
 
 function statusLabel(status: SessionStatus | null): string {
@@ -144,8 +146,8 @@ export default function FrameExtractionPage(): JSX.Element {
     const [shareFiles, setShareFiles] = useState<RemoteFile[]>([]);
     const [frameInterval, setFrameInterval] = useState(25);
     const [rotateAngle, setRotateAngle] = useState(0);
-    const [duplicateThreshold, setDuplicateThreshold] = useState(4);
-    const [imageQuality, setImageQuality] = useState(95);
+    const [duplicateThreshold, setDuplicateThreshold] = useState(2);
+    const [imageQuality, setImageQuality] = useState(80);
     const [deduplicate, setDeduplicate] = useState(true);
     const [recursive, setRecursive] = useState(true);
     const [processingBackend, setProcessingBackend] = useState<ProcessingBackend>('auto');
@@ -157,6 +159,7 @@ export default function FrameExtractionPage(): JSX.Element {
     const [frames, setFrames] = useState<FramePage | null>(null);
     const [excludedFilter, setExcludedFilter] = useState<ExcludedFilter>('false');
     const [page, setPage] = useState(1);
+    const [framePageSize, setFramePageSize] = useState(DEFAULT_FRAME_PAGE_SIZE);
     const [datasetName, setDatasetName] = useState('');
     const [selected, setSelected] = useState<number[]>([]);
     const [starting, setStarting] = useState(false);
@@ -165,17 +168,30 @@ export default function FrameExtractionPage(): JSX.Element {
     const [saving, setSaving] = useState(false);
     const [deletingSessionID, setDeletingSessionID] = useState<string | null>(null);
     const [previewFrameID, setPreviewFrameID] = useState<number | null>(null);
+    const [previewVideo, setPreviewVideo] = useState<RemoteFile | null>(null);
     const [previewBusy, setPreviewBusy] = useState(false);
     const pollRef = useRef<number | null>(null);
     const selectedSessionRef = useRef<string | null>(null);
 
     const selectedSharePaths = useMemo(() => shareFiles.map((file) => file.key), [shareFiles]);
+    const selectedVideoFiles = useMemo(
+        () => shareFiles.filter((file) => file.type === 'REG' && (
+            file.mimeType === 'video' || file.mimeType.startsWith('video/')
+        )),
+        [shareFiles],
+    );
     const canEditFrames = session?.status === 'finished';
     const running = session?.status === 'queued' || session?.status === 'started';
 
     useEffect(() => {
         selectedSessionRef.current = sessionID;
     }, [sessionID]);
+
+    useEffect(() => {
+        if (previewVideo && !selectedVideoFiles.some((file) => file.key === previewVideo.key)) {
+            setPreviewVideo(null);
+        }
+    }, [previewVideo, selectedVideoFiles]);
 
     const loadSession = useCallback(async (id: string): Promise<FrameExtractionSession> => {
         const nextSession = await core.server.getFrameExtractionSession(id);
@@ -209,12 +225,13 @@ export default function FrameExtractionPage(): JSX.Element {
         id: string,
         nextPage = 1,
         nextFilter: ExcludedFilter = 'false',
+        nextPageSize = framePageSize,
     ): Promise<FramePage | null> => {
         setLoadingFrames(true);
         try {
             const framePage = await core.server.getFrameExtractionFrames(id, {
                 page: nextPage,
-                pageSize: PAGE_SIZE,
+                pageSize: nextPageSize,
                 excluded: nextFilter,
             });
             setFrames(framePage);
@@ -228,7 +245,7 @@ export default function FrameExtractionPage(): JSX.Element {
         } finally {
             setLoadingFrames(false);
         }
-    }, []);
+    }, [framePageSize]);
 
     const openSession = useCallback(async (id: string): Promise<void> => {
         setSessionID(id);
@@ -670,6 +687,25 @@ export default function FrameExtractionPage(): JSX.Element {
                             <Text strong>共享视频或目录</Text>
                         </div>
                         <RemoteBrowser resource='share' onSelectFiles={setShareFiles} />
+                        {selectedVideoFiles.length ? (
+                            <div className='cvat-frame-extraction-selected-videos'>
+                                <Text type='secondary'>已选择视频</Text>
+                                <div className='cvat-frame-extraction-selected-video-list'>
+                                    {selectedVideoFiles.map((file) => (
+                                        <div className='cvat-frame-extraction-selected-video' key={file.key}>
+                                            <Text ellipsis title={file.key}>{file.name}</Text>
+                                            <Button
+                                                size='small'
+                                                icon={<PlayCircleOutlined />}
+                                                onClick={() => setPreviewVideo(file)}
+                                            >
+                                                预览
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </Col>
                 <Col xs={24} xl={8}>
@@ -721,7 +757,7 @@ export default function FrameExtractionPage(): JSX.Element {
                                     min={1}
                                     max={100}
                                     value={imageQuality}
-                                    onChange={(value) => setImageQuality(value || 95)}
+                                    onChange={(value) => setImageQuality(value || 80)}
                                 />
                             </Col>
                             <Col xs={24} sm={12}>
@@ -968,12 +1004,16 @@ export default function FrameExtractionPage(): JSX.Element {
                         current={page}
                         pageSize={frames.pageSize}
                         total={frames.count}
-                        showSizeChanger={false}
-                        onChange={async (nextPage) => {
-                            setPage(nextPage);
+                        showSizeChanger
+                        pageSizeOptions={FRAME_PAGE_SIZE_OPTIONS.map((option) => option.toString())}
+                        onChange={async (nextPage, nextPageSize) => {
+                            const nextSize = nextPageSize || framePageSize;
+                            const normalizedPage = nextSize === framePageSize ? nextPage : 1;
+                            setFramePageSize(nextSize);
+                            setPage(normalizedPage);
                             setSelected([]);
                             setPreviewFrameID(null);
-                            if (sessionID) await loadFrames(sessionID, nextPage, excludedFilter);
+                            if (sessionID) await loadFrames(sessionID, normalizedPage, excludedFilter, nextSize);
                         }}
                     />
                 </div>
@@ -1063,6 +1103,32 @@ export default function FrameExtractionPage(): JSX.Element {
                                 </Button>
                             </Space>
                         </div>
+                    </div>
+                ) : null}
+            </Modal>
+            <Modal
+                className='cvat-frame-extraction-video-preview-modal'
+                title={previewVideo ? previewVideo.name : '预览视频'}
+                open={!!previewVideo}
+                width='calc(100vw - 160px)'
+                footer={null}
+                centered
+                destroyOnClose
+                onCancel={() => setPreviewVideo(null)}
+            >
+                {previewVideo ? (
+                    <div className='cvat-frame-extraction-video-preview'>
+                        <video
+                            key={previewVideo.key}
+                            src={core.server.getShareFilePreviewURL(previewVideo.key)}
+                            controls
+                            preload='metadata'
+                        >
+                            <track kind='captions' src='data:text/vtt,WEBVTT%0A' label='captions' />
+                        </video>
+                        <Text type='secondary' ellipsis title={previewVideo.key}>
+                            {previewVideo.key}
+                        </Text>
                     </div>
                 ) : null}
             </Modal>

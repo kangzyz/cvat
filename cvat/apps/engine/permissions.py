@@ -140,6 +140,7 @@ class ServerPermission(OpenPolicyAgentPermission):
                 ("about", "GET"): Scopes.VIEW,
                 ("plugins", "GET"): Scopes.VIEW,
                 ("share", "GET"): Scopes.LIST_CONTENT,
+                ("share_preview", "GET"): Scopes.LIST_CONTENT,
                 ("video_curation", "POST"): Scopes.LIST_CONTENT,
                 ("frame_extraction", "GET"): Scopes.LIST_CONTENT,
                 ("frame_extraction", "POST"): Scopes.LIST_CONTENT,

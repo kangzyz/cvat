@@ -57,6 +57,9 @@ function build(): CVATCore {
                 const result = await PluginRegistry.apiWrapper(cvat.server.share, directory, searchPrefix);
                 return result;
             },
+            getShareFilePreviewURL(path) {
+                return `${config.backendAPI}/server/share/preview?path=${encodeURIComponent(path)}`;
+            },
             async prepareVideoDataset(payload) {
                 const result = await PluginRegistry.apiWrapper(cvat.server.prepareVideoDataset, payload);
                 return result;
