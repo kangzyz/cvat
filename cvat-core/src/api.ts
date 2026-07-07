@@ -126,6 +126,13 @@ function build(): CVATCore {
                 );
                 return result;
             },
+            async revertFrameExtractionSave(sessionID) {
+                const result = await PluginRegistry.apiWrapper(
+                    cvat.server.revertFrameExtractionSave,
+                    sessionID,
+                );
+                return result;
+            },
             getFrameExtractionImageURL(sessionID, frameID, size) {
                 return `${config.backendAPI}/server/frame-extraction/${sessionID}/frames/${frameID}/image?size=${size || 'thumb'}`;
             },

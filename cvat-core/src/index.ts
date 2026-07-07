@@ -113,6 +113,7 @@ export default interface CVATCore {
         getFrameExtractionFrames: typeof serverProxy.server.getFrameExtractionFrames;
         updateFrameExtractionFrames: typeof serverProxy.server.updateFrameExtractionFrames;
         saveFrameExtractionDataset: typeof serverProxy.server.saveFrameExtractionDataset;
+        revertFrameExtractionSave: typeof serverProxy.server.revertFrameExtractionSave;
         getFrameExtractionImageURL: typeof serverProxy.server.getFrameExtractionImageURL;
         formats: () => Promise<AnnotationFormats>;
         userAgreements: typeof serverProxy.server.userAgreements,

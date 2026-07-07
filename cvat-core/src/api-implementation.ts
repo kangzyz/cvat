@@ -179,6 +179,12 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
         const result = await serverProxy.server.saveFrameExtractionDataset(...args);
         return result;
     });
+    implementationMixin(cvat.server.revertFrameExtractionSave, async (
+        ...args: Parameters<typeof serverProxy.server.revertFrameExtractionSave>
+    ) => {
+        const result = await serverProxy.server.revertFrameExtractionSave(...args);
+        return result;
+    });
     implementationMixin(cvat.server.formats, async () => {
         const result = await serverProxy.server.formats();
         return new AnnotationFormats(result);

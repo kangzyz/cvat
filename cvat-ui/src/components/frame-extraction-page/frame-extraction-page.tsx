@@ -166,6 +166,7 @@ export default function FrameExtractionPage(): JSX.Element {
     const [loadingSessions, setLoadingSessions] = useState(false);
     const [loadingFrames, setLoadingFrames] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [revertingSave, setRevertingSave] = useState(false);
     const [deletingSessionID, setDeletingSessionID] = useState<string | null>(null);
     const [previewFrameID, setPreviewFrameID] = useState<number | null>(null);
     const [previewVideo, setPreviewVideo] = useState<RemoteFile | null>(null);
@@ -448,6 +449,42 @@ export default function FrameExtractionPage(): JSX.Element {
         } finally {
             setSaving(false);
         }
+    };
+
+    const revertSavedDataset = (): void => {
+        if (!sessionID || !session?.outputSharePath) return;
+
+        Modal.confirm({
+            title: '撤回保存',
+            content: '撤回后将删除未被任务使用的共享目录，并恢复为待保存状态。',
+            okText: '撤回保存',
+            okButtonProps: { danger: true },
+            cancelText: '取消',
+            onOk: async () => {
+                setRevertingSave(true);
+                try {
+                    const nextSession = await core.server.revertFrameExtractionSave(sessionID);
+                    setSession(nextSession);
+                    setDatasetName(defaultDatasetName(sessionID));
+                    setPage(1);
+                    setSelected([]);
+                    setPreviewFrameID(null);
+                    await loadFrames(sessionID, 1, excludedFilter);
+                    await loadSessions(sessionPage);
+                    notification.success({
+                        message: '已撤回保存',
+                        description: '可以继续排除或恢复图片后重新保存。',
+                    });
+                } catch (error: any) {
+                    notification.error({
+                        message: '撤回保存失败',
+                        description: error instanceof Error ? error.message : String(error),
+                    });
+                } finally {
+                    setRevertingSave(false);
+                }
+            },
+        });
     };
 
     const canDeleteSession = (item: FrameExtractionSession): boolean => (
@@ -864,6 +901,14 @@ export default function FrameExtractionPage(): JSX.Element {
                                             onClick={() => openCreateTask(session.outputSharePath)}
                                         >
                                             创建任务
+                                        </Button>
+                                        <Button
+                                            danger
+                                            icon={<UndoOutlined />}
+                                            loading={revertingSave}
+                                            onClick={revertSavedDataset}
+                                        >
+                                            撤回保存
                                         </Button>
                                     </Space>
                                 </div>

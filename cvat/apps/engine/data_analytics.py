@@ -18,7 +18,7 @@ from django.conf import settings
 from django.db.models import Count, Q, Sum
 
 from cvat.apps.engine import models
-from cvat.apps.engine.video_curation import _is_video_file
+from cvat.apps.engine.video_curation import _is_video_file, get_frame_extraction_dataset_usage
 
 # A saved frame-extraction dataset can feed many tasks; cap the share scan and
 # session-usage probing so the live endpoint stays responsive on large shares.
@@ -163,32 +163,7 @@ def link_task_to_frame_extraction(task: models.Task, server_files: list[str]) ->
 
 
 def _session_usage(session: models.FrameExtractionSession) -> list[dict[str, Any]]:
-    usage: dict[int, dict[str, Any]] = {}
-
-    def add(task: models.Task, *, linked: bool) -> None:
-        usage[task.id] = {
-            "task_id": task.id,
-            "task_name": task.name,
-            "project_id": task.project_id,
-            "project_name": task.project.name if task.project_id else None,
-            "linked": linked,
-        }
-
-    for task in session.tasks.select_related("project").all():
-        add(task, linked=True)
-
-    prefix = _normalize_prefix(session.output_share_path)
-    if prefix:
-        inferred = (
-            models.Task.objects.filter(data__server_file__file__startswith=prefix)
-            .exclude(id__in=list(usage))
-            .select_related("project")
-            .distinct()
-        )
-        for task in inferred:
-            add(task, linked=False)
-
-    return list(usage.values())
+    return get_frame_extraction_dataset_usage(session)
 
 
 # --------------------------------------------------------------------------- #

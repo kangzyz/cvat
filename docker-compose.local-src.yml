@@ -1,0 +1,53 @@
+# Copyright (C) CVAT.ai Corporation
+#
+# SPDX-License-Identifier: MIT
+#
+# Local development override: run backend services from the checkout mounted
+# at /home/django, while keeping runtime data/log/share mounts in place.
+
+x-cvat-source-volumes: &cvat-source-volumes
+  - type: bind
+    source: .
+    target: /home/django
+  - type: volume
+    source: cvat_data
+    target: /home/django/data
+  - type: volume
+    source: cvat_keys
+    target: /home/django/keys
+  - type: volume
+    source: cvat_logs
+    target: /home/django/logs
+  - type: bind
+    source: ${CVAT_SHARE_ROOT:-./share}
+    target: /home/django/share
+    bind:
+      create_host_path: true
+
+services:
+  cvat_server:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_annotation:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_chunks:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_consensus:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_export:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_import:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_quality_reports:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_utils:
+    volumes: *cvat-source-volumes
+
+  cvat_worker_webhooks:
+    volumes: *cvat-source-volumes

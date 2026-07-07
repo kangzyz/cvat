@@ -934,6 +934,16 @@ async function saveFrameExtractionDataset(
     }
 }
 
+async function revertFrameExtractionSave(sessionID: string): Promise<FrameExtractionSession> {
+    const { backendAPI } = config;
+    try {
+        const response = await Axios.post(`${backendAPI}/server/frame-extraction/${sessionID}/unsave`);
+        return deserializeFrameExtractionSession(response.data);
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 function getFrameExtractionImageURL(
     sessionID: string,
     frameID: number,
@@ -3119,6 +3129,7 @@ export default Object.freeze({
         getFrameExtractionFrames,
         updateFrameExtractionFrames,
         saveFrameExtractionDataset,
+        revertFrameExtractionSave,
         getFrameExtractionImageURL,
         getDataAnalyticsOverview,
         getDataAnalyticsProjects,

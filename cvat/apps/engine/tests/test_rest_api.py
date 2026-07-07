@@ -59,11 +59,15 @@ from cvat.apps.engine.models import (
     CloudStorage,
     Data,
     DimensionType,
+    FrameExtractionFrame,
+    FrameExtractionSession,
+    FrameExtractionStatus,
     Job,
     Label,
     MediaType,
     Project,
     Segment,
+    ServerFile,
     SortingMethod,
     StageChoice,
     StatusChoice,
@@ -7789,6 +7793,121 @@ class TaskAnnotationAPITestCase(ExportApiTestBase, ImportApiTestBase, JobAnnotat
 
     def test_api_v2_tasks_id_annotations_upload_coco_user(self):
         self._run_coco_annotation_upload_test(self.user)
+
+
+class FrameExtractionSessionAPITestCase(ApiTestBase):
+    @classmethod
+    def setUpTestData(cls):
+        create_db_users(cls)
+
+    def _make_saved_session(self):
+        session = FrameExtractionSession.objects.create(
+            owner=self.owner,
+            status=FrameExtractionStatus.SAVED,
+            source_paths=["video0.mp4"],
+            kept_frames=1,
+        )
+        output_share_path = f"video-curation/datasets/test-{session.id}/"
+        output_dir = Path(settings.SHARE_ROOT) / output_share_path
+        output_dir.mkdir(parents=True)
+        (output_dir / "frame0.jpg").write_bytes(b"frame")
+        self.addCleanup(lambda: shutil.rmtree(output_dir, ignore_errors=True))
+
+        session.output_share_path = output_share_path
+        session.save(update_fields=["output_share_path"])
+        frame = FrameExtractionFrame.objects.create(
+            session=session,
+            order=0,
+            file_path=f"video-curation/work/{session.id}/frames/frame0.jpg",
+            source_path="video0.mp4",
+            file_size=5,
+        )
+        return session, output_dir, frame
+
+    def _run_api_v2_frame_extraction_unsave(self, user, session_id):
+        with ForceLogin(user, self.client):
+            response = self.client.post(f"/api/server/frame-extraction/{session_id}/unsave")
+
+        return response
+
+    def test_api_v2_frame_extraction_unsave_unused_saved_session(self):
+        session, output_dir, frame = self._make_saved_session()
+
+        response = self._run_api_v2_frame_extraction_unsave(self.owner, session.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], FrameExtractionStatus.FINISHED)
+        self.assertEqual(response.data["output_share_path"], "")
+        self.assertFalse(output_dir.exists())
+
+        session.refresh_from_db()
+        self.assertEqual(session.status, FrameExtractionStatus.FINISHED)
+        self.assertEqual(session.output_share_path, "")
+
+        with ForceLogin(self.owner, self.client):
+            response = self.client.patch(
+                f"/api/server/frame-extraction/{session.id}/frames",
+                data={"exclude": [frame.id]},
+                format="json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        frame.refresh_from_db()
+        self.assertTrue(frame.excluded)
+
+    def test_api_v2_frame_extraction_unsave_rejects_linked_task(self):
+        session, output_dir, _frame = self._make_saved_session()
+        Task.objects.create(
+            name="linked frame extraction task",
+            owner=self.owner,
+            source_frame_extraction=session,
+        )
+
+        response = self._run_api_v2_frame_extraction_unsave(self.owner, session.id)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("共享目录已被任务使用", response.content.decode("utf-8"))
+
+        session.refresh_from_db()
+        self.assertEqual(session.status, FrameExtractionStatus.SAVED)
+        self.assertEqual(session.output_share_path, f"video-curation/datasets/test-{session.id}/")
+        self.assertTrue(output_dir.exists())
+
+    def test_api_v2_frame_extraction_unsave_rejects_share_file_usage(self):
+        session, output_dir, _frame = self._make_saved_session()
+        data = Data.objects.create(image_quality=75, size=1)
+        Task.objects.create(name="share file task", owner=self.owner, data=data)
+        prefix = session.output_share_path.rstrip("/")
+        ServerFile.objects.create(data=data, file=f"{prefix}/frame0.jpg")
+
+        response = self._run_api_v2_frame_extraction_unsave(self.owner, session.id)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("共享目录已被任务使用", response.content.decode("utf-8"))
+        self.assertIn("share file task", response.content.decode("utf-8"))
+
+        session.refresh_from_db()
+        self.assertEqual(session.status, FrameExtractionStatus.SAVED)
+        self.assertTrue(output_dir.exists())
+
+    def test_api_v2_frame_extraction_unsave_ignores_similar_share_prefix(self):
+        session, output_dir, _frame = self._make_saved_session()
+        data = Data.objects.create(image_quality=75, size=1)
+        Task.objects.create(name="similar prefix task", owner=self.owner, data=data)
+        prefix = session.output_share_path.rstrip("/")
+        ServerFile.objects.create(data=data, file=f"{prefix}-other/frame0.jpg")
+
+        response = self._run_api_v2_frame_extraction_unsave(self.owner, session.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(output_dir.exists())
+
+    def test_api_v2_frame_extraction_unsave_no_auth(self):
+        session, _output_dir, _frame = self._make_saved_session()
+
+        response = self._run_api_v2_frame_extraction_unsave(None, session.id)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_api_v2_frame_extraction_unsave_other_user(self):
+        session, _output_dir, _frame = self._make_saved_session()
+
+        response = self._run_api_v2_frame_extraction_unsave(self.user, session.id)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class ServerShareAPITestCase(ApiTestBase):

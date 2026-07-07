@@ -166,6 +166,7 @@ from cvat.apps.engine.video_curation import (
     VideoCurationResponseSerializer,
     delete_frame_extraction_session,
     prepare_video_dataset,
+    revert_frame_extraction_save,
     run_frame_extraction_session,
     save_frame_extraction_dataset,
 )
@@ -696,6 +697,22 @@ class ServerViewSet(viewsets.ViewSet):
         )
         serializer = FrameExtractionSaveResponseSerializer(data=result)
         serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Revert a saved frame extraction dataset",
+        responses={"200": FrameExtractionSessionSerializer},
+    )
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path=r"frame-extraction/(?P<session_id>[^/.]+)/unsave",
+        serializer_class=FrameExtractionSessionSerializer,
+    )
+    def frame_extraction_unsave(self, request: ExtendedRequest, session_id: str):
+        session = self._get_frame_extraction_session(request, session_id)
+        session = revert_frame_extraction_save(session)
+        serializer = FrameExtractionSessionSerializer(session)
         return Response(serializer.data)
 
     @staticmethod

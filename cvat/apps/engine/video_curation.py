@@ -17,6 +17,7 @@ import cv2
 import numpy as np
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -1003,6 +1004,83 @@ def save_frame_extraction_dataset(
         "share_path": session.output_share_path,
         "kept_frames": len(kept_frames),
     }
+
+
+def _normalize_task_share_prefix(share_path: str) -> str:
+    return (share_path or "").strip().replace("\\", "/").lstrip("/").rstrip("/")
+
+
+def _task_share_file_filter(prefix: str) -> Q:
+    return Q(data__server_file__file=prefix) | Q(data__server_file__file__startswith=f"{prefix}/")
+
+
+def get_frame_extraction_dataset_usage(
+    session: models.FrameExtractionSession,
+) -> list[dict[str, Any]]:
+    usage: dict[int, dict[str, Any]] = {}
+
+    def add(task: models.Task, *, linked: bool) -> None:
+        usage[task.id] = {
+            "task_id": task.id,
+            "task_name": task.name,
+            "project_id": task.project_id,
+            "project_name": task.project.name if task.project_id else None,
+            "linked": linked,
+        }
+
+    for task in session.tasks.select_related("project").all():
+        add(task, linked=True)
+
+    prefix = _normalize_task_share_prefix(session.output_share_path)
+    if prefix:
+        inferred = (
+            models.Task.objects.filter(_task_share_file_filter(prefix))
+            .exclude(id__in=list(usage))
+            .select_related("project")
+            .distinct()
+        )
+        for task in inferred:
+            add(task, linked=False)
+
+    return list(usage.values())
+
+
+def _format_frame_extraction_usage(usage: list[dict[str, Any]]) -> str:
+    listed = "，".join(
+        f"{item['task_name']}（#{item['task_id']}）" for item in usage[:5]
+    )
+    if len(usage) > 5:
+        listed = f"{listed}，另有 {len(usage) - 5} 个任务"
+    return listed
+
+
+def revert_frame_extraction_save(
+    session: models.FrameExtractionSession,
+) -> models.FrameExtractionSession:
+    if session.status != models.FrameExtractionStatus.SAVED or not session.output_share_path:
+        raise ValidationError("Only saved frame extraction sessions can be reverted")
+
+    usage = get_frame_extraction_dataset_usage(session)
+    if usage:
+        used_by = _format_frame_extraction_usage(usage)
+        raise ValidationError(
+            f"保存后的共享目录已被任务使用，无法撤回保存：{used_by}"
+        )
+
+    output_share_path = _normalize_task_share_prefix(session.output_share_path)
+    expected_prefix = f"{OUTPUT_ROOT_NAME}/datasets/"
+    if not output_share_path.startswith(expected_prefix):
+        raise ValidationError("Saved dataset path is invalid")
+
+    output_dir = join_untrusted_path(settings.SHARE_ROOT, output_share_path)
+    if output_dir.exists() and not output_dir.is_dir():
+        raise ValidationError("Saved dataset path is not a directory")
+
+    shutil.rmtree(output_dir, ignore_errors=True)
+    session.output_share_path = ""
+    session.status = models.FrameExtractionStatus.FINISHED
+    session.save(update_fields=["output_share_path", "status", "updated_date"])
+    return session
 
 
 def delete_frame_extraction_session(session: models.FrameExtractionSession) -> None:
