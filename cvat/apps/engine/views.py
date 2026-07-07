@@ -611,7 +611,7 @@ class ServerViewSet(viewsets.ViewSet):
 
         try:
             page = max(1, int(request.query_params.get("page", 1)))
-            page_size = min(200, max(1, int(request.query_params.get("page_size", 60))))
+            page_size = min(240, max(1, int(request.query_params.get("page_size", 60))))
         except ValueError:
             raise ValidationError("The page and page_size parameters must be integers")
 
