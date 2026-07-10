@@ -14,6 +14,8 @@ import {
     Request, JobValidationLayout, QualitySettings, TaskValidationLayout, ObjectState,
     ConsensusSettings, AboutData, ShapeType, ObjectType, ApiToken, AudioIntervalState,
     Membership, AnnotationFormats, CloudStorage,
+    ResourceAnalyticsActivity, ResourceAnalyticsAnnotations, ResourceAnalyticsEvents,
+    ResourceAnalyticsOverview, ResourceAnalyticsType,
 } from 'cvat-core-wrapper';
 
 import type { IntelligentScissors, OpenCVTracker } from 'utils/opencv-wrapper/opencv-wrapper';
@@ -1192,6 +1194,25 @@ export interface NavigationState {
     prevLocation: string | null;
 }
 
+interface AnalyticsReportSection<T> {
+    data: T | null;
+    fetching: boolean;
+    error: string | null;
+}
+
+export interface AnalyticsReportState {
+    resourceType: ResourceAnalyticsType | null;
+    resourceID: number | null;
+    overview: AnalyticsReportSection<ResourceAnalyticsOverview>;
+    annotations: AnalyticsReportSection<ResourceAnalyticsAnnotations>;
+    activity: AnalyticsReportSection<ResourceAnalyticsActivity> & { requestKey: string | null };
+    events: AnalyticsReportSection<ResourceAnalyticsEvents> & { requestKey: string | null };
+    export: {
+        fetching: boolean;
+        error: string | null;
+    };
+}
+
 export interface CombinedState {
     auth: AuthState;
     projects: ProjectsState;
@@ -1219,6 +1240,7 @@ export interface CombinedState {
     bulkActions: BulkActionsState;
     serverAPI: ServerAPIState;
     navigation: NavigationState;
+    analyticsReport: AnalyticsReportState;
 }
 
 export interface Indexable {

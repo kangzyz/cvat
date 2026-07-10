@@ -30,6 +30,7 @@ import requestsReducer from './requests-reducer';
 import serverAPIReducer from './server-api-reducer';
 import navigationReducer from './navigation-reducer';
 import bulkActionsReducer from './bulk-actions-reducer';
+import analyticsReportReducer from './analytics-report-reducer';
 
 export default function createRootReducer(): Reducer {
     return combineReducers({
@@ -59,5 +60,6 @@ export default function createRootReducer(): Reducer {
         serverAPI: serverAPIReducer,
         navigation: navigationReducer,
         bulkActions: bulkActionsReducer,
+        analyticsReport: analyticsReportReducer,
     });
 }

@@ -52,6 +52,16 @@ import {
     ArgumentError, DataError, Exception, ScriptingError, ServerError,
 } from './exceptions';
 import { PaginatedResource } from './core-types';
+import {
+    ResourceAnalyticsActivity,
+    ResourceAnalyticsActivityFilter,
+    ResourceAnalyticsAnnotations,
+    ResourceAnalyticsEvents,
+    ResourceAnalyticsEventsFilter,
+    ResourceAnalyticsExportFilter,
+    ResourceAnalyticsOverview,
+    ResourceAnalyticsType,
+} from './resource-analytics';
 
 export default interface CVATCore {
     plugins: {
@@ -201,6 +211,31 @@ export default interface CVATCore {
         };
     }
     analytics: {
+        resources: {
+            overview: (
+                resourceType: ResourceAnalyticsType,
+                resourceID: number,
+            ) => Promise<ResourceAnalyticsOverview>;
+            annotations: (
+                resourceType: ResourceAnalyticsType,
+                resourceID: number,
+            ) => Promise<ResourceAnalyticsAnnotations>;
+            activity: (
+                resourceType: ResourceAnalyticsType,
+                resourceID: number,
+                filter?: ResourceAnalyticsActivityFilter,
+            ) => Promise<ResourceAnalyticsActivity>;
+            events: (
+                resourceType: ResourceAnalyticsType,
+                resourceID: number,
+                filter?: ResourceAnalyticsEventsFilter,
+            ) => Promise<ResourceAnalyticsEvents>;
+            exportEvents: (
+                resourceType: ResourceAnalyticsType,
+                resourceID: number,
+                filter?: ResourceAnalyticsExportFilter,
+            ) => Promise<string>;
+        };
         quality: {
             reports: (filter: QualityReportsFilter, aggregate?: boolean) => Promise<PaginatedResource<QualityReport>>;
             conflicts: (filter: QualityConflictsFilter) => Promise<QualityConflict[]>;

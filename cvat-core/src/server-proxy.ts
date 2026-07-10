@@ -21,6 +21,7 @@ import {
     SerializedRequest, SerializedJobValidationLayout, SerializedTaskValidationLayout, SerializedConsensusSettingsData,
     SerializedApiToken, APIApiTokensFilter,
 } from './server-response-types';
+import { APIResourceAnalyticsFilter, ResourceAnalyticsType } from './resource-analytics';
 import { APIApiTokenModifiableFields } from './server-request-types';
 import { PaginatedResource, SerializedModel, UpdateStatusData } from './core-types';
 import { Storage } from './storage';
@@ -3128,6 +3129,81 @@ async function getQualityReports(
     return response.data.results;
 }
 
+function getResourceAnalyticsEndpoint(resourceType: ResourceAnalyticsType, resourceID: number): string {
+    return `${config.backendAPI}/${resourceType}s/${resourceID}/analytics`;
+}
+
+async function getResourceAnalyticsOverview(
+    resourceType: ResourceAnalyticsType,
+    resourceID: number,
+): Promise<Record<string, unknown>> {
+    try {
+        const response = await Axios.get(`${getResourceAnalyticsEndpoint(resourceType, resourceID)}/overview`);
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getResourceAnalyticsAnnotations(
+    resourceType: ResourceAnalyticsType,
+    resourceID: number,
+): Promise<Record<string, unknown>> {
+    try {
+        const response = await Axios.get(`${getResourceAnalyticsEndpoint(resourceType, resourceID)}/annotations`);
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getResourceAnalyticsActivity(
+    resourceType: ResourceAnalyticsType,
+    resourceID: number,
+    filter: APIResourceAnalyticsFilter,
+): Promise<Record<string, unknown>> {
+    try {
+        const response = await Axios.get(`${getResourceAnalyticsEndpoint(resourceType, resourceID)}/activity`, {
+            params: filter,
+        });
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function getResourceAnalyticsEvents(
+    resourceType: ResourceAnalyticsType,
+    resourceID: number,
+    filter: APIResourceAnalyticsFilter,
+): Promise<Record<string, unknown>> {
+    try {
+        const response = await Axios.get(`${getResourceAnalyticsEndpoint(resourceType, resourceID)}/events`, {
+            params: filter,
+        });
+        return response.data;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
+async function exportResourceAnalyticsEvents(
+    resourceType: ResourceAnalyticsType,
+    resourceID: number,
+    filter: APIResourceAnalyticsFilter,
+): Promise<string> {
+    try {
+        const response = await Axios.post(
+            `${getResourceAnalyticsEndpoint(resourceType, resourceID)}/events/export`,
+            null,
+            { params: filter },
+        );
+        return response.data.rq_id;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 export default Object.freeze({
     server: Object.freeze({
         about,
@@ -3305,6 +3381,13 @@ export default Object.freeze({
     }),
 
     analytics: Object.freeze({
+        resources: Object.freeze({
+            overview: getResourceAnalyticsOverview,
+            annotations: getResourceAnalyticsAnnotations,
+            activity: getResourceAnalyticsActivity,
+            events: getResourceAnalyticsEvents,
+            exportEvents: exportResourceAnalyticsEvents,
+        }),
         quality: Object.freeze({
             reports: getQualityReports,
             conflicts: getQualityConflicts,

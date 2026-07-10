@@ -110,6 +110,7 @@ from cvat.apps.engine.permissions import (
     UserPermission,
     get_iam_context,
 )
+from cvat.apps.engine.resource_analytics import ResourceAnalyticsMixin
 from cvat.apps.engine.rq import BaseRQMeta, ImportRequestId, ImportRQMeta, RQMetaWithFailureInfo
 from cvat.apps.engine.serializers import (
     AboutSerializer,
@@ -836,6 +837,7 @@ class ServerViewSet(viewsets.ViewSet):
     ),
 )
 class ProjectViewSet(
+    ResourceAnalyticsMixin,
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -1586,6 +1588,7 @@ class _JobDataGetter(_DataGetter):
     ),
 )
 class TaskViewSet(
+    ResourceAnalyticsMixin,
     AnnotationGetThrottleMixin,
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
@@ -2680,6 +2683,7 @@ class TaskViewSet(
     ),
 )
 class JobViewSet(
+    ResourceAnalyticsMixin,
     AnnotationGetThrottleMixin,
     viewsets.GenericViewSet,
     mixins.ListModelMixin,

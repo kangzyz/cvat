@@ -54,6 +54,22 @@ import { ImageProcessing, BaseImageFilter, SerializedImageFilter } from 'cvat-co
 import AboutData from 'cvat-core/src/about';
 import { MinimalShape, TrackerResults, InteractorResults } from 'cvat-core/src/lambda-manager';
 import { fetchAndAssembleAudio } from 'cvat-core/src/audio';
+import {
+    ResourceAnalyticsActivity,
+    ResourceAnalyticsActivityFilter,
+    ResourceAnalyticsAnnotations,
+    ResourceAnalyticsAvailability,
+    ResourceAnalyticsBucket,
+    ResourceAnalyticsChild,
+    ResourceAnalyticsContributorScope,
+    ResourceAnalyticsEvent,
+    ResourceAnalyticsEvents,
+    ResourceAnalyticsEventsFilter,
+    ResourceAnalyticsExportFilter,
+    ResourceAnalyticsOverview,
+    ResourceAnalyticsRange,
+    ResourceAnalyticsType,
+} from 'cvat-core/src/resource-analytics';
 
 const cvat: CVATCore = _cvat;
 
@@ -160,4 +176,18 @@ export type {
     ImageProcessing,
     SerializedImageFilter,
     SerializedInterval,
+    ResourceAnalyticsActivity,
+    ResourceAnalyticsActivityFilter,
+    ResourceAnalyticsAnnotations,
+    ResourceAnalyticsAvailability,
+    ResourceAnalyticsBucket,
+    ResourceAnalyticsChild,
+    ResourceAnalyticsContributorScope,
+    ResourceAnalyticsEvent,
+    ResourceAnalyticsEvents,
+    ResourceAnalyticsEventsFilter,
+    ResourceAnalyticsExportFilter,
+    ResourceAnalyticsOverview,
+    ResourceAnalyticsRange,
+    ResourceAnalyticsType,
 };
