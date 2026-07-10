@@ -52,3 +52,71 @@
 .cvat-data-analytics-usage-tag {
     margin: 2px;
 }
+
+.cvat-data-analytics-task-sources {
+    display: flex;
+    align-items: center;
+    gap: calc($grid-unit-size / 2);
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.cvat-data-analytics-task-source-tag {
+    display: inline-flex;
+    align-items: center;
+    max-width: 280px;
+    min-width: 0;
+    margin: 0;
+
+    &.cvat-data-analytics-task-source-tag-compact {
+        max-width: 140px;
+    }
+}
+
+.cvat-data-analytics-task-source-value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cvat-data-analytics-task-sources-more {
+    flex: 0 0 auto;
+    height: 22px;
+    padding: 0 calc($grid-unit-size / 2);
+    line-height: 22px;
+}
+
+.cvat-data-analytics-task-sources-popover {
+    max-width: 520px;
+
+    .cvat-data-analytics-task-source-list {
+        width: min(460px, calc(100vw - 64px));
+        max-height: 280px;
+        overflow-y: auto;
+    }
+
+    .cvat-data-analytics-task-source-list-item {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: $grid-unit-size;
+        align-items: start;
+        padding: $grid-unit-size 0;
+
+        & + .cvat-data-analytics-task-source-list-item {
+            border-top: 1px solid $border-color-1;
+        }
+    }
+
+    .cvat-data-analytics-task-source-kind {
+        color: $text-color-secondary;
+        font-size: 12px;
+        line-height: 20px;
+    }
+
+    .cvat-data-analytics-task-source-full-value {
+        line-height: 20px;
+        overflow-wrap: anywhere;
+    }
+}

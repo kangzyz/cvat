@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Row, Col } from 'antd/lib/grid';
 import Card from 'antd/lib/card';
 import Table from 'antd/lib/table';
@@ -11,6 +12,7 @@ import Button from 'antd/lib/button';
 import Progress from 'antd/lib/progress';
 import Tag from 'antd/lib/tag';
 import Empty from 'antd/lib/empty';
+import Popover from 'antd/lib/popover';
 import Title from 'antd/lib/typography/Title';
 import notification from 'antd/lib/notification';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -25,35 +27,20 @@ const CHART_COLORS = [
     '#13c2c2', '#eb2f96', '#fa8c16', '#a0d911', '#2f54eb',
 ];
 
-interface ProjectDetail {
-    id: number;
-    name: string;
-    owner: string | null;
-    organization: string | null;
-    jobs: {
-        total: number;
-        completed: number;
-        completion_percent: number;
-        by_state: Record<string, number>;
-        by_stage: Record<string, number>;
-    };
-    labels: { label: string; count: number }[];
-    shape_types: { type: string; count: number }[];
-    sources: { source: string; count: number }[];
-    tasks: {
-        id: number;
-        name: string;
-        media_type: string;
-        jobs_count: number;
-        completed_jobs: number;
-        completion_percent: number;
-        annotations: number;
-        source_frame_extraction: string | null;
-    }[];
-    frame_extraction_sessions: {
-        id: string; status: string; output_share_path: string; kept_frames: number;
-    }[];
-}
+type ProjectDetail = Awaited<ReturnType<typeof core.server.getDataAnalyticsProject>>;
+type TaskDataSource = ProjectDetail['tasks'][number]['original_data_sources'][number];
+
+const MAX_VISIBLE_TASK_SOURCES = 2;
+const TASK_SOURCE_LABELS: Record<TaskDataSource['kind'], string> = {
+    frame_extraction_dataset: '抽帧目录',
+    client_file: '上传文件',
+    server_file: '共享目录/文件',
+    remote_file: '远程地址',
+};
+const TASK_SOURCE_COLORS: Partial<Record<TaskDataSource['kind'], string>> = {
+    frame_extraction_dataset: 'purple',
+    remote_file: 'blue',
+};
 
 function toChart(data: Record<string, number>): { labels: string[]; values: number[] } {
     const entries = Object.entries(data).filter(([, value]) => value > 0);
@@ -65,7 +52,82 @@ interface Props {
     onBack: () => void;
 }
 
+interface TaskDataSourceTagProps {
+    source: TaskDataSource;
+    compact: boolean;
+}
+
+function TaskDataSourceTag({ source, compact }: TaskDataSourceTagProps): JSX.Element {
+    const className = compact ?
+        'cvat-data-analytics-task-source-tag cvat-data-analytics-task-source-tag-compact' :
+        'cvat-data-analytics-task-source-tag';
+
+    return (
+        <Tag color={TASK_SOURCE_COLORS[source.kind]} className={className} title={source.value}>
+            <span className='cvat-data-analytics-task-source-value'>{source.value}</span>
+        </Tag>
+    );
+}
+
+interface TaskDataSourcesProps {
+    sources: TaskDataSource[];
+    title: string;
+}
+
+function TaskDataSources({ sources, title }: TaskDataSourcesProps): JSX.Element {
+    if (!sources.length) {
+        return <>—</>;
+    }
+
+    const visibleSources = sources.slice(0, MAX_VISIBLE_TASK_SOURCES);
+    const remainingCount = sources.length - visibleSources.length;
+    const compact = sources.length > 1;
+    const popoverContent = (
+        <div className='cvat-data-analytics-task-source-list'>
+            {sources.map((source) => (
+                <div className='cvat-data-analytics-task-source-list-item' key={`${source.kind}:${source.value}`}>
+                    <span className='cvat-data-analytics-task-source-kind'>
+                        {TASK_SOURCE_LABELS[source.kind]}
+                    </span>
+                    <span className='cvat-data-analytics-task-source-full-value'>{source.value}</span>
+                </div>
+            ))}
+        </div>
+    );
+
+    return (
+        <div className='cvat-data-analytics-task-sources'>
+            {visibleSources.map((source) => (
+                <TaskDataSourceTag
+                    source={source}
+                    compact={compact}
+                    key={`${source.kind}:${source.value}`}
+                />
+            ))}
+            {remainingCount > 0 ? (
+                <Popover
+                    content={popoverContent}
+                    title={`${title}（${sources.length}）`}
+                    trigger='click'
+                    placement='bottomRight'
+                    overlayClassName='cvat-data-analytics-task-sources-popover'
+                >
+                    <Button
+                        type='link'
+                        size='small'
+                        className='cvat-data-analytics-task-sources-more'
+                        aria-label={`查看其余 ${remainingCount} 项来源`}
+                    >
+                        {`+${remainingCount}`}
+                    </Button>
+                </Popover>
+            ) : null}
+        </div>
+    );
+}
+
 function ProjectAnalyticsDetail({ projectID, onBack }: Props): JSX.Element {
+    const { t } = useTranslation('resources');
     const [detail, setDetail] = useState<ProjectDetail | null>(null);
     const [fetching, setFetching] = useState(true);
 
@@ -239,6 +301,18 @@ function ProjectAnalyticsDetail({ projectID, onBack }: Props): JSX.Element {
                         width: 120,
                         render: (value: string | null) => (
                             value ? <Tag color='green'>抽帧</Tag> : <Tag>—</Tag>
+                        ),
+                    },
+                    {
+                        title: t('fields.originalDataSources'),
+                        dataIndex: 'original_data_sources',
+                        key: 'original_data_sources',
+                        width: 360,
+                        render: (value: TaskDataSource[] | undefined) => (
+                            <TaskDataSources
+                                sources={value || []}
+                                title={t('fields.originalDataSources')}
+                            />
                         ),
                     },
                 ]}

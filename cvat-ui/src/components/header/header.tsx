@@ -293,6 +293,7 @@ function HeaderComponent(props: Props): JSX.Element {
     };
 
     const plugins = usePlugins((state: CombinedState) => state.plugins.components.header.userMenu.items, props);
+    const canAccessDataAnalytics = user.isStaff || user.isSuperuser;
 
     const menuItems: [NonNullable<MenuProps['items']>[0], number][] = [];
     if (user.isStaff) {
@@ -481,7 +482,7 @@ function HeaderComponent(props: Props): JSX.Element {
                 >
                     {t('navigation.models')}
                 </Button>
-                {user.isStaff ? (
+                {canAccessDataAnalytics ? (
                     <Button
                         className={getButtonClassName('data-analytics')}
                         type='link'
