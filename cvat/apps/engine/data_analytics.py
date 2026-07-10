@@ -65,10 +65,9 @@ def _scan_share_videos() -> list[Path]:
 
 def _processed_video_basenames() -> set[str]:
     """Basenames of source videos that actually produced extracted frames."""
-    source_paths = (
-        models.FrameExtractionFrame.objects.values_list("source_path", flat=True)
-        .distinct()
-    )
+    source_paths = models.FrameExtractionFrame.objects.values_list(
+        "source_path", flat=True
+    ).distinct()
     return {Path(path).name for path in source_paths if path}
 
 
@@ -81,26 +80,32 @@ def _source_item_name(path: str) -> str:
     return normalized_path.rsplit("/", maxsplit=1)[-1] if normalized_path else ""
 
 
-def _original_data_sources(task: models.Task) -> list[dict[str, str]]:
+def _saved_frame_extraction_dataset_prefixes() -> tuple[str, ...]:
+    output_paths = (
+        models.FrameExtractionSession.objects.filter(
+            status=models.FrameExtractionStatus.SAVED.value,
+        )
+        .exclude(output_share_path="")
+        .values_list("output_share_path", flat=True)
+    )
+    prefixes = {_normalize_prefix(path) for path in output_paths}
+    return tuple(
+        sorted(
+            (prefix for prefix in prefixes if prefix),
+            key=lambda value: (-len(value), value),
+        )
+    )
+
+
+def _original_data_sources(
+    task: models.Task,
+    saved_dataset_prefixes: tuple[str, ...],
+) -> list[dict[str, str]]:
     """Return task creation sources in their most useful display form.
 
-    A saved frame-extraction directory is the canonical source for a linked task,
-    so it takes precedence over the files stored on the task's Data object.
+    Saved frame-extraction directories are canonical sources and are listed first,
+    but they do not hide other directories selected for the same task.
     """
-    if task.source_frame_extraction_id:
-        output_share_path = (
-            task.source_frame_extraction.output_share_path.strip()
-            .replace("\\", "/")
-            .lstrip("/")
-        )
-        if output_share_path:
-            if not output_share_path.endswith("/"):
-                output_share_path += "/"
-            return [{"kind": "frame_extraction_dataset", "value": output_share_path}]
-
-    if not task.data_id:
-        return []
-
     sources: list[dict[str, str]] = []
     seen: set[tuple[str, str]] = set()
 
@@ -110,10 +115,52 @@ def _original_data_sources(task: models.Task) -> list[dict[str, str]]:
             seen.add(key)
             sources.append({"kind": kind, "value": value})
 
+    linked_dataset_prefix = ""
+    if task.source_frame_extraction_id:
+        linked_dataset_prefix = _normalize_prefix(
+            task.source_frame_extraction.output_share_path
+        )
+        if linked_dataset_prefix:
+            append_source("frame_extraction_dataset", f"{linked_dataset_prefix}/")
+
+    if not task.data_id:
+        return sources
+
+    dataset_prefixes = set(saved_dataset_prefixes)
+    if linked_dataset_prefix:
+        dataset_prefixes.add(linked_dataset_prefix)
+    ordered_dataset_prefixes = sorted(
+        dataset_prefixes,
+        key=lambda value: (-len(value), value),
+    )
+
+    matched_dataset_prefixes: set[str] = set()
+    ordinary_server_files: list[tuple[str, str]] = []
+    for server_file in task.data.server_files.all():
+        normalized_path = _normalize_prefix(server_file.file)
+        matched_dataset = next(
+            (
+                prefix
+                for prefix in ordered_dataset_prefixes
+                if normalized_path == prefix or normalized_path.startswith(f"{prefix}/")
+            ),
+            None,
+        )
+        if matched_dataset:
+            matched_dataset_prefixes.add(matched_dataset)
+            append_source("frame_extraction_dataset", f"{matched_dataset}/")
+        else:
+            ordinary_server_files.append((server_file.file, normalized_path))
+
     for client_file in task.data.client_files.all():
         append_source("client_file", _source_item_name(client_file.file.name))
-    for server_file in task.data.server_files.all():
-        append_source("server_file", _source_item_name(server_file.file))
+    for server_file, normalized_path in ordinary_server_files:
+        if server_file.endswith(("/", "\\")) and any(
+            prefix.startswith(f"{normalized_path}/")
+            for prefix in matched_dataset_prefixes
+        ):
+            continue
+        append_source("server_file", _source_item_name(server_file))
     for remote_file in task.data.remote_files.all():
         append_source("remote_file", remote_file.file.strip())
 
@@ -224,7 +271,9 @@ def link_task_to_frame_extraction(task: models.Task, server_files: list[str]) ->
     )
     for session in saved:
         prefix = _normalize_prefix(session.output_share_path)
-        if prefix and any(f == prefix or f.startswith(prefix + "/") for f in candidates):
+        if prefix and any(
+            f == prefix or f.startswith(prefix + "/") for f in candidates
+        ):
             task.source_frame_extraction_id = session.id
             return
 
@@ -242,7 +291,9 @@ def build_overview() -> dict[str, Any]:
         row["status"]: row["count"]
         for row in sessions.values("status").annotate(count=Count("id"))
     }
-    frame_totals = sessions.aggregate(kept=Sum("kept_frames"), duplicate=Sum("duplicate_frames"))
+    frame_totals = sessions.aggregate(
+        kept=Sum("kept_frames"), duplicate=Sum("duplicate_frames")
+    )
 
     jobs = models.Job.objects
     job_state = {
@@ -261,7 +312,9 @@ def build_overview() -> dict[str, Any]:
         "frame_extraction": {
             "total": sessions.count(),
             "by_status": session_status,
-            "saved_datasets": session_status.get(models.FrameExtractionStatus.SAVED.value, 0),
+            "saved_datasets": session_status.get(
+                models.FrameExtractionStatus.SAVED.value, 0
+            ),
             "kept_frames": frame_totals["kept"] or 0,
             "duplicate_frames": frame_totals["duplicate"] or 0,
         },
@@ -282,7 +335,9 @@ def build_overview() -> dict[str, Any]:
     }
 
 
-def build_projects_list(search: str = "", page: int = 1, page_size: int = 20) -> dict[str, Any]:
+def build_projects_list(
+    search: str = "", page: int = 1, page_size: int = 20
+) -> dict[str, Any]:
     queryset = models.Project.objects.select_related("owner", "organization")
     if search:
         queryset = queryset.filter(name__icontains=search)
@@ -301,7 +356,7 @@ def build_projects_list(search: str = "", page: int = 1, page_size: int = 20) ->
 
     total = queryset.count()
     start = max(page - 1, 0) * page_size
-    page_items = list(queryset[start:start + page_size])
+    page_items = list(queryset[start : start + page_size])
     annotation_totals = _annotation_totals_by_project()
 
     results = [
@@ -309,11 +364,15 @@ def build_projects_list(search: str = "", page: int = 1, page_size: int = 20) ->
             "id": project.id,
             "name": project.name,
             "owner": project.owner.username if project.owner_id else None,
-            "organization": project.organization.slug if project.organization_id else None,
+            "organization": project.organization.slug
+            if project.organization_id
+            else None,
             "tasks_count": project.tasks_count,
             "jobs_count": project.jobs_count,
             "completed_jobs": project.completed_jobs,
-            "completion_percent": _completion_percent(project.completed_jobs, project.jobs_count),
+            "completion_percent": _completion_percent(
+                project.completed_jobs, project.jobs_count
+            ),
             "labels_count": project.labels_count,
             "annotations": annotation_totals.get(project.id, 0),
         }
@@ -335,6 +394,7 @@ def build_project_detail(project: models.Project) -> dict[str, Any]:
         .order_by("-id")
     )
     task_annotations = _annotation_totals_by_task(project.id)
+    saved_dataset_prefixes = _saved_frame_extraction_dataset_prefixes()
 
     task_rows = [
         {
@@ -352,7 +412,9 @@ def build_project_detail(project: models.Project) -> dict[str, Any]:
                 if task.source_frame_extraction_id
                 else None
             ),
-            "original_data_sources": _original_data_sources(task),
+            "original_data_sources": _original_data_sources(
+                task, saved_dataset_prefixes
+            ),
         }
         for task in tasks
     ]
@@ -369,10 +431,9 @@ def build_project_detail(project: models.Project) -> dict[str, Any]:
     total_jobs = sum(job_state.values())
     completed_jobs = jobs.filter(state=_COMPLETED, stage=_ACCEPTANCE).count()
 
-    linked_sessions = (
-        models.FrameExtractionSession.objects.filter(task__project_id=project.id)
-        .distinct()
-    )
+    linked_sessions = models.FrameExtractionSession.objects.filter(
+        task__project_id=project.id
+    ).distinct()
     sessions = [
         {
             "id": str(session.id),
@@ -414,16 +475,17 @@ def build_data_sources() -> dict[str, Any]:
             size = path.stat().st_size
         except OSError:
             size = 0
-        video_rows.append({
-            "path": path.relative_to(root).as_posix(),
-            "size": size,
-            "processed": path.name in processed,
-        })
+        video_rows.append(
+            {
+                "path": path.relative_to(root).as_posix(),
+                "size": size,
+                "processed": path.name in processed,
+            }
+        )
 
-    sessions = (
-        models.FrameExtractionSession.objects.select_related("owner")
-        .order_by("-started_date", "-id")[:MAX_SESSIONS_LISTED]
-    )
+    sessions = models.FrameExtractionSession.objects.select_related("owner").order_by(
+        "-started_date", "-id"
+    )[:MAX_SESSIONS_LISTED]
     session_rows = [
         {
             "id": str(session.id),
