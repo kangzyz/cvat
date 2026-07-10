@@ -7823,11 +7823,27 @@ class DataAnalyticsAPITestCase(ApiTestBase):
             status=FrameExtractionStatus.SAVED,
             output_share_path="video-curation/datasets/frames-8d09f177/",
         )
+        cls.secondary_source_session = FrameExtractionSession.objects.create(
+            owner=cls.owner,
+            source_paths=["incoming/source-video-2.mp4"],
+            status=FrameExtractionStatus.SAVED,
+            output_share_path="video-curation/datasets/frames-secondary/",
+        )
         extraction_data = Data.objects.create()
         ServerFile.objects.create(
             data=extraction_data,
-            file="incoming/source-video.mp4",
+            file="video-curation/datasets/",
         )
+        ServerFile.objects.create(
+            data=extraction_data,
+            file="video-curation/datasets/frames-8d09f177/",
+        )
+        ServerFile.objects.create(
+            data=extraction_data,
+            file="video-curation/datasets/frames-secondary/frame-000001.jpg",
+        )
+        ServerFile.objects.create(data=extraction_data, file="incoming/extra-folder/")
+        ServerFile.objects.create(data=extraction_data, file="incoming/extra-folder-2/")
         Task.objects.create(
             name="frame extraction task",
             owner=cls.owner,
@@ -7844,6 +7860,7 @@ class DataAnalyticsAPITestCase(ApiTestBase):
         )
         ServerFile.objects.create(data=direct_data, file="incoming/videos/selected-video.mkv")
         ServerFile.objects.create(data=direct_data, file="incoming/datasets/batch-b/")
+        ServerFile.objects.create(data=direct_data, file="incoming/datasets/batch-c/")
         RemoteFile.objects.create(
             data=direct_data,
             file="https://example.com/media/source.mp4?token=abc",
@@ -7882,7 +7899,13 @@ class DataAnalyticsAPITestCase(ApiTestBase):
                 {
                     "kind": "frame_extraction_dataset",
                     "value": "video-curation/datasets/frames-8d09f177/",
-                }
+                },
+                {
+                    "kind": "frame_extraction_dataset",
+                    "value": "video-curation/datasets/frames-secondary/",
+                },
+                {"kind": "server_file", "value": "extra-folder"},
+                {"kind": "server_file", "value": "extra-folder-2"},
             ],
         )
         self.assertEqual(
@@ -7891,6 +7914,7 @@ class DataAnalyticsAPITestCase(ApiTestBase):
                 {"kind": "client_file", "value": "uploaded-bundle.zip"},
                 {"kind": "server_file", "value": "selected-video.mkv"},
                 {"kind": "server_file", "value": "batch-b"},
+                {"kind": "server_file", "value": "batch-c"},
                 {
                     "kind": "remote_file",
                     "value": "https://example.com/media/source.mp4?token=abc",
@@ -7898,6 +7922,21 @@ class DataAnalyticsAPITestCase(ApiTestBase):
             ],
         )
         self.assertEqual(tasks["empty task"]["original_data_sources"], [])
+
+        linked_usage = data_analytics._session_usage(self.source_session)
+        inferred_usage = data_analytics._session_usage(self.secondary_source_session)
+        self.assertTrue(
+            any(
+                item["task_name"] == "frame extraction task" and item["linked"]
+                for item in linked_usage
+            )
+        )
+        self.assertTrue(
+            any(
+                item["task_name"] == "frame extraction task" and not item["linked"]
+                for item in inferred_usage
+            )
+        )
 
     def test_api_v2_data_analytics_regular_user_does_not_have_access(self):
         response = self._get_project_detail(self.owner)
