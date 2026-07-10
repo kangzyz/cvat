@@ -766,6 +766,17 @@ export interface DataAnalyticsProjectsPage {
     results: DataAnalyticsProjectRow[];
 }
 
+export type DataAnalyticsTaskSourceKind =
+    | 'frame_extraction_dataset'
+    | 'client_file'
+    | 'server_file'
+    | 'remote_file';
+
+export interface DataAnalyticsTaskSource {
+    kind: DataAnalyticsTaskSourceKind;
+    value: string;
+}
+
 export interface DataAnalyticsProjectDetail {
     id: number;
     name: string;
@@ -790,6 +801,7 @@ export interface DataAnalyticsProjectDetail {
         completion_percent: number;
         annotations: number;
         source_frame_extraction: string | null;
+        original_data_sources: DataAnalyticsTaskSource[];
     }[];
     frame_extraction_sessions: {
         id: string; status: string; output_share_path: string; kept_frames: number;

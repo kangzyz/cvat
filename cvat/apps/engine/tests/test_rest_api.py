@@ -35,6 +35,7 @@ from azure.core.exceptions import HttpResponseError, ServiceRequestError
 from botocore.exceptions import ClientError, EndpointConnectionError
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.core.cache import cache as django_cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import CommandError, call_command
 from django.http import FileResponse, HttpResponse
@@ -49,6 +50,7 @@ from rq.queue import Queue as RQQueue
 
 from cvat.apps.dataset_manager.tests.utils import TestDir
 from cvat.apps.dataset_manager.util import current_function_name
+from cvat.apps.engine import data_analytics
 from cvat.apps.engine.cache import MediaCache
 from cvat.apps.engine.cloud_provider import AzureBlobCloudStorage, S3CloudStorage, Status
 from cvat.apps.engine.media_extractors import ValidateDimension, sort
@@ -56,6 +58,7 @@ from cvat.apps.engine.models import (
     AnnotationGuide,
     AttributeSpec,
     AttributeType,
+    ClientFile,
     CloudStorage,
     Data,
     DimensionType,
@@ -66,6 +69,7 @@ from cvat.apps.engine.models import (
     Label,
     MediaType,
     Project,
+    RemoteFile,
     Segment,
     ServerFile,
     SortingMethod,
@@ -7793,6 +7797,146 @@ class TaskAnnotationAPITestCase(ExportApiTestBase, ImportApiTestBase, JobAnnotat
 
     def test_api_v2_tasks_id_annotations_upload_coco_user(self):
         self._run_coco_annotation_upload_test(self.user)
+
+
+class DataAnalyticsAPITestCase(ApiTestBase):
+    @classmethod
+    def setUpTestData(cls):
+        create_db_users(cls)
+        cls.staff_only = User.objects.create_user(
+            username="staff_only",
+            password="staff_only",
+            is_staff=True,
+            is_superuser=False,
+        )
+        cls.superuser_only = User.objects.create_user(
+            username="superuser_only",
+            password="superuser_only",
+            is_staff=False,
+            is_superuser=True,
+        )
+
+        cls.project = Project.objects.create(name="analytics project", owner=cls.owner)
+        cls.source_session = FrameExtractionSession.objects.create(
+            owner=cls.owner,
+            source_paths=["incoming/batch-a", "incoming/source-video.mp4"],
+            status=FrameExtractionStatus.SAVED,
+            output_share_path="video-curation/datasets/frames-8d09f177/",
+        )
+        extraction_data = Data.objects.create()
+        ServerFile.objects.create(
+            data=extraction_data,
+            file="incoming/source-video.mp4",
+        )
+        Task.objects.create(
+            name="frame extraction task",
+            owner=cls.owner,
+            project=cls.project,
+            media_type=MediaType.IMAGE,
+            data=extraction_data,
+            source_frame_extraction=cls.source_session,
+        )
+
+        direct_data = Data.objects.create()
+        ClientFile.objects.create(
+            data=direct_data,
+            file="data/42/raw/uploaded-bundle.zip",
+        )
+        ServerFile.objects.create(data=direct_data, file="incoming/videos/selected-video.mkv")
+        ServerFile.objects.create(data=direct_data, file="incoming/datasets/batch-b/")
+        RemoteFile.objects.create(
+            data=direct_data,
+            file="https://example.com/media/source.mp4?token=abc",
+        )
+        Task.objects.create(
+            name="direct task",
+            owner=cls.owner,
+            project=cls.project,
+            media_type=MediaType.IMAGE,
+            data=direct_data,
+        )
+        Task.objects.create(
+            name="empty task",
+            owner=cls.owner,
+            project=cls.project,
+            media_type=MediaType.IMAGE,
+        )
+
+    def _get_project_detail(self, user):
+        with ForceLogin(user, self.client):
+            return self.client.get(f"/api/server/data-analytics/projects/{self.project.id}")
+
+    def test_api_v2_data_analytics_staff_user_has_access(self):
+        response = self._get_project_detail(self.staff_only)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_api_v2_data_analytics_superuser_without_staff_status_has_access(self):
+        response = self._get_project_detail(self.superuser_only)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        tasks = {task["name"]: task for task in response.data["tasks"]}
+        self.assertEqual(
+            tasks["frame extraction task"]["original_data_sources"],
+            [
+                {
+                    "kind": "frame_extraction_dataset",
+                    "value": "video-curation/datasets/frames-8d09f177/",
+                }
+            ],
+        )
+        self.assertEqual(
+            tasks["direct task"]["original_data_sources"],
+            [
+                {"kind": "client_file", "value": "uploaded-bundle.zip"},
+                {"kind": "server_file", "value": "selected-video.mkv"},
+                {"kind": "server_file", "value": "batch-b"},
+                {
+                    "kind": "remote_file",
+                    "value": "https://example.com/media/source.mp4?token=abc",
+                },
+            ],
+        )
+        self.assertEqual(tasks["empty task"]["original_data_sources"], [])
+
+    def test_api_v2_data_analytics_regular_user_does_not_have_access(self):
+        response = self._get_project_detail(self.owner)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_share_video_scan_filters_by_extension_and_reuses_cache(self):
+        with tempfile.TemporaryDirectory() as temp_dir, override_settings(
+            SHARE_ROOT=Path(temp_dir)
+        ):
+            share_root = Path(temp_dir)
+            nested_dir = share_root / "nested"
+            nested_dir.mkdir()
+            (nested_dir / "source.MP4").write_bytes(b"video")
+            (nested_dir / "frame.jpg").write_bytes(b"image")
+
+            cache_key = data_analytics._share_video_cache_key(share_root)
+            django_cache.delete(cache_key)
+            self.addCleanup(django_cache.delete, cache_key)
+
+            videos = data_analytics._scan_share_videos()
+            self.assertEqual(
+                [path.relative_to(share_root).as_posix() for path in videos],
+                ["nested/source.MP4"],
+            )
+
+            (nested_dir / "new.webm").write_bytes(b"video")
+            videos = data_analytics._scan_share_videos()
+            self.assertEqual(
+                [path.relative_to(share_root).as_posix() for path in videos],
+                ["nested/source.MP4"],
+            )
+
+            django_cache.delete(cache_key)
+            videos = data_analytics._scan_share_videos()
+            self.assertEqual(
+                [path.relative_to(share_root).as_posix() for path in videos],
+                ["nested/new.webm", "nested/source.MP4"],
+            )
 
 
 class FrameExtractionSessionAPITestCase(ApiTestBase):

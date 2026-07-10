@@ -19,6 +19,7 @@
         "data": "数据",
         "subset": "子集",
         "mode": "模式",
+        "originalDataSources": "原始数据来源",
         "updatedDate": "更新日期"
     },
     "jobState": {

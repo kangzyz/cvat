@@ -106,6 +106,7 @@ function DataAnalyticsPage(): JSX.Element {
     const history = useHistory();
     const { pid } = useParams<{ pid?: string }>();
     const user = useSelector((state: CombinedState) => state.auth.user);
+    const canAccessDataAnalytics = Boolean(user && (user.isStaff || user.isSuperuser));
 
     const [overview, setOverview] = useState<Overview | null>(null);
     const [projects, setProjects] = useState<ProjectRow[]>([]);
@@ -117,10 +118,11 @@ function DataAnalyticsPage(): JSX.Element {
         Promise.all([
             core.server.getDataAnalyticsOverview(),
             core.server.getDataAnalyticsProjects({ pageSize: 100 }),
-            core.server.getDataAnalyticsDataSources(),
-        ]).then(([overviewResult, projectsResult, dataSourcesResult]) => {
+        ]).then(([overviewResult, projectsResult]) => {
             setOverview(overviewResult);
             setProjects(projectsResult.results);
+            return core.server.getDataAnalyticsDataSources();
+        }).then((dataSourcesResult) => {
             setDataSources(dataSourcesResult);
         }).catch((error: unknown) => {
             notification.error({
@@ -133,12 +135,12 @@ function DataAnalyticsPage(): JSX.Element {
     }, []);
 
     useEffect(() => {
-        if (user?.isStaff && !pid) {
+        if (canAccessDataAnalytics && !pid) {
             load();
         }
-    }, [pid]);
+    }, [canAccessDataAnalytics, load, pid]);
 
-    if (!user || !user.isStaff) {
+    if (!canAccessDataAnalytics) {
         return <Redirect to='/tasks' />;
     }
 

@@ -2,28 +2,34 @@
 #
 # SPDX-License-Identifier: MIT
 
-"""Real-time aggregation helpers for the admin-only Data Analytics dashboard.
+"""Real-time aggregation helpers for the privileged Data Analytics dashboard.
 
 All statistics are computed live with ORM aggregation (no cache tables).
-The dashboard is global / staff-only; querysets are intentionally not scoped
-to a single organization.
+The dashboard is global / staff-or-superuser; querysets are intentionally not
+scoped to a single organization.
 """
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Count, Q, Sum
 
 from cvat.apps.engine import models
-from cvat.apps.engine.video_curation import _is_video_file, get_frame_extraction_dataset_usage
+from cvat.apps.engine.video_curation import (
+    VIDEO_EXTENSIONS,
+    get_frame_extraction_dataset_usage,
+)
 
 # A saved frame-extraction dataset can feed many tasks; cap the share scan and
 # session-usage probing so the live endpoint stays responsive on large shares.
 MAX_SHARE_VIDEOS_LISTED = 500
 MAX_SESSIONS_LISTED = 200
+SHARE_VIDEOS_CACHE_TTL = 5 * 60
 
 _COMPLETED = models.StateChoice.COMPLETED.value
 _ACCEPTANCE = models.StageChoice.ACCEPTANCE.value
@@ -33,11 +39,28 @@ _ANNOTATION_MODELS = (models.LabeledShape, models.LabeledTrack, models.LabeledIm
 # --------------------------------------------------------------------------- #
 # Share / video helpers
 # --------------------------------------------------------------------------- #
+def _share_video_cache_key(root: Path) -> str:
+    return f"data-analytics:share-videos:v1:{root.as_posix()}"
+
+
 def _scan_share_videos() -> list[Path]:
     root = Path(settings.SHARE_ROOT)
     if not root.exists():
         return []
-    return sorted(path for path in root.rglob("*") if _is_video_file(path))
+
+    cache_key = _share_video_cache_key(root)
+    relative_paths = cache.get(cache_key)
+    if relative_paths is None:
+        videos: list[Path] = []
+        for directory, _directories, filenames in os.walk(root):
+            for filename in filenames:
+                if os.path.splitext(filename)[1].lower() in VIDEO_EXTENSIONS:
+                    videos.append(Path(directory, filename))
+
+        relative_paths = sorted(path.relative_to(root).as_posix() for path in videos)
+        cache.set(cache_key, relative_paths, SHARE_VIDEOS_CACHE_TTL)
+
+    return [root / relative_path for relative_path in relative_paths]
 
 
 def _processed_video_basenames() -> set[str]:
@@ -51,6 +74,50 @@ def _processed_video_basenames() -> set[str]:
 
 def _normalize_prefix(share_path: str) -> str:
     return (share_path or "").strip().replace("\\", "/").lstrip("/").rstrip("/")
+
+
+def _source_item_name(path: str) -> str:
+    normalized_path = (path or "").strip().replace("\\", "/").rstrip("/")
+    return normalized_path.rsplit("/", maxsplit=1)[-1] if normalized_path else ""
+
+
+def _original_data_sources(task: models.Task) -> list[dict[str, str]]:
+    """Return task creation sources in their most useful display form.
+
+    A saved frame-extraction directory is the canonical source for a linked task,
+    so it takes precedence over the files stored on the task's Data object.
+    """
+    if task.source_frame_extraction_id:
+        output_share_path = (
+            task.source_frame_extraction.output_share_path.strip()
+            .replace("\\", "/")
+            .lstrip("/")
+        )
+        if output_share_path:
+            if not output_share_path.endswith("/"):
+                output_share_path += "/"
+            return [{"kind": "frame_extraction_dataset", "value": output_share_path}]
+
+    if not task.data_id:
+        return []
+
+    sources: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    def append_source(kind: str, value: str) -> None:
+        key = (kind, value)
+        if value and key not in seen:
+            seen.add(key)
+            sources.append({"kind": kind, "value": value})
+
+    for client_file in task.data.client_files.all():
+        append_source("client_file", _source_item_name(client_file.file.name))
+    for server_file in task.data.server_files.all():
+        append_source("server_file", _source_item_name(server_file.file))
+    for remote_file in task.data.remote_files.all():
+        append_source("remote_file", remote_file.file.strip())
+
+    return sources
 
 
 # --------------------------------------------------------------------------- #
@@ -259,7 +326,12 @@ def build_project_detail(project: models.Project) -> dict[str, Any]:
     tasks = list(
         models.Task.objects.filter(project_id=project.id)
         .with_job_summary()
-        .select_related("source_frame_extraction")
+        .select_related("source_frame_extraction", "data")
+        .prefetch_related(
+            "data__client_files",
+            "data__server_files",
+            "data__remote_files",
+        )
         .order_by("-id")
     )
     task_annotations = _annotation_totals_by_task(project.id)
@@ -280,6 +352,7 @@ def build_project_detail(project: models.Project) -> dict[str, Any]:
                 if task.source_frame_extraction_id
                 else None
             ),
+            "original_data_sources": _original_data_sources(task),
         }
         for task in tasks
     ]

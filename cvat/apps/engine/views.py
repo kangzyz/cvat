@@ -716,26 +716,26 @@ class ServerViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     @staticmethod
-    def _require_staff(request: ExtendedRequest) -> None:
-        if not request.user.is_staff:
-            raise PermissionDenied("Data analytics is available to administrators only")
+    def _require_data_analytics_access(request: ExtendedRequest) -> None:
+        if not (request.user.is_staff or request.user.is_superuser):
+            raise PermissionDenied("Data analytics is available to staff and superusers only")
 
     @extend_schema(
-        summary="Global data analytics overview (admin only)",
+        summary="Global data analytics overview (staff or superuser)",
         responses={"200": OpenApiResponse(description="Aggregated overview metrics")},
     )
     @action(detail=False, methods=["GET"], url_path="data-analytics/overview")
     def data_analytics_overview(self, request: ExtendedRequest):
-        self._require_staff(request)
+        self._require_data_analytics_access(request)
         return Response(data_analytics.build_overview())
 
     @extend_schema(
-        summary="Per-project analytics list (admin only)",
+        summary="Per-project analytics list (staff or superuser)",
         responses={"200": OpenApiResponse(description="Project analytics rows")},
     )
     @action(detail=False, methods=["GET"], url_path="data-analytics/projects")
     def data_analytics_projects(self, request: ExtendedRequest):
-        self._require_staff(request)
+        self._require_data_analytics_access(request)
         try:
             page = max(1, int(request.query_params.get("page", 1)))
             page_size = min(100, max(1, int(request.query_params.get("page_size", 20))))
@@ -745,7 +745,7 @@ class ServerViewSet(viewsets.ViewSet):
         return Response(data_analytics.build_projects_list(search, page, page_size))
 
     @extend_schema(
-        summary="Single project analytics detail (admin only)",
+        summary="Single project analytics detail (staff or superuser)",
         responses={"200": OpenApiResponse(description="Project analytics detail")},
     )
     @action(
@@ -754,19 +754,19 @@ class ServerViewSet(viewsets.ViewSet):
         url_path=r"data-analytics/projects/(?P<project_id>\d+)",
     )
     def data_analytics_project_detail(self, request: ExtendedRequest, project_id: str):
-        self._require_staff(request)
+        self._require_data_analytics_access(request)
         project = models.Project.objects.filter(id=int(project_id)).first()
         if project is None:
             raise NotFound("Project not found")
         return Response(data_analytics.build_project_detail(project))
 
     @extend_schema(
-        summary="Share videos and frame-extraction data sources (admin only)",
+        summary="Share videos and frame-extraction data sources (staff or superuser)",
         responses={"200": OpenApiResponse(description="Data source analytics")},
     )
     @action(detail=False, methods=["GET"], url_path="data-analytics/data-sources")
     def data_analytics_data_sources(self, request: ExtendedRequest):
-        self._require_staff(request)
+        self._require_data_analytics_access(request)
         return Response(data_analytics.build_data_sources())
 
     @staticmethod
