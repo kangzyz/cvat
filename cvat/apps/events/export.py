@@ -90,8 +90,10 @@ class EventsExporter(BaseResourceExporter):
         self,
         *,
         request: ExtendedRequest,
+        filter_override: dict[str, int] | None = None,
     ) -> None:
         super().__init__(request=request)
+        self.filter_override = dict(filter_override) if filter_override else None
 
         # temporary arg
         if query_id := self.request.query_params.get("query_id"):
@@ -117,8 +119,19 @@ class EventsExporter(BaseResourceExporter):
 
     def init_request_args(self):
         super().init_request_args()
-        perm = EventsPermission.create_scope_list(self.request)
-        self.filter_query = perm.filter(self.request.query_params)
+        if self.filter_override is None:
+            perm = EventsPermission.create_scope_list(self.request)
+            self.filter_query = perm.filter(self.request.query_params)
+            return
+
+        # Resource analytics authorizes the target object through its owning
+        # viewset and computes contributor visibility server-side. Preserve the
+        # requested time range, but never let client resource/user parameters
+        # widen the forced filter.
+        self.filter_query = dict(self.request.query_params.items())
+        for key in ("org_id", "project_id", "task_id", "job_id", "user_id"):
+            self.filter_query.pop(key, None)
+        self.filter_query.update(self.filter_override)
 
     def _init_callback_with_params(self):
         self.callback = _create_csv

@@ -5,26 +5,381 @@
 @import 'base';
 
 .cvat-analytics-page {
+    height: 100%;
     overflow: auto;
+    background: $background-color-2;
 }
 
-.cvat-analytics-page, .cvat-analytics-wrapper {
-    height: 100%;
+.cvat-analytics-wrapper {
+    min-height: 100%;
 }
 
 .cvat-analytics-inner {
     @include cvat-management-page-inner;
+
+    min-height: calc(100vh - $header-height - $grid-unit-size * 9);
+    height: auto !important;
+    margin-bottom: $grid-unit-size * 4;
+    padding: 0 $grid-unit-size * 4 $grid-unit-size * 5;
 }
 
 .cvat-analytics-inner-wrapper {
     @include cvat-management-page-inner-wrapper;
+
+    height: auto !important;
 }
 
 .cvat-analytics-header {
-    @include cvat-management-page-header;
+    height: auto;
+    margin: $grid-unit-size * 3 0 $grid-unit-size * 2;
+
+    h4 {
+        margin: 0 0 $grid-unit-size * 0.5;
+    }
 }
 
-.cvat-analytics-export-button {
-    margin-left: $grid-unit-size * 2;
-    padding: 0;
+.cvat-analytics-tabs {
+    .ant-tabs-nav {
+        margin-bottom: $grid-unit-size * 3;
+    }
+
+    .ant-tabs-tab {
+        padding: $grid-unit-size * 1.5 $grid-unit-size * 0.5;
+    }
+
+    .ant-tabs-ink-bar {
+        height: 2px !important;
+    }
+}
+
+.cvat-analytics-section-state {
+    min-height: $grid-unit-size * 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cvat-analytics-inline-alert {
+    margin-bottom: $grid-unit-size * 2;
+}
+
+.cvat-analytics-metric-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax($grid-unit-size * 18, 1fr));
+    border-top: 1px solid $border-color-1;
+    border-bottom: 1px solid $border-color-1;
+    background: #fafafa;
+}
+
+.cvat-analytics-metric {
+    min-height: $grid-unit-size * 14;
+    padding: $grid-unit-size * 2.25 $grid-unit-size * 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid $border-color-1;
+
+    &:last-child {
+        border-right: 0;
+    }
+
+    > .ant-typography:last-child {
+        line-height: 1.35;
+    }
+}
+
+.cvat-analytics-metric-label {
+    color: $text-color-secondary;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+}
+
+.cvat-analytics-metric-value {
+    margin: $grid-unit-size * 0.5 0;
+    color: $text-color;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.cvat-analytics-section {
+    margin-top: $grid-unit-size * 4;
+
+    > h5 {
+        margin-bottom: $grid-unit-size * 1.5;
+    }
+
+    .ant-table-cell {
+        font-variant-numeric: tabular-nums;
+    }
+
+    .ant-table-thead > tr > th {
+        color: rgba(0, 0, 0, 65%);
+        background: #fafafa;
+        font-weight: 500;
+    }
+}
+
+.cvat-analytics-section-heading {
+    margin-bottom: $grid-unit-size * 1.5;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: $grid-unit-size * 2;
+
+    h5 {
+        margin: 0 0 $grid-unit-size * 0.5;
+    }
+}
+
+.cvat-analytics-section-copy {
+    display: block;
+    margin: -$grid-unit-size 0 $grid-unit-size * 1.5;
+}
+
+.cvat-analytics-progress-section {
+    padding-bottom: $grid-unit-size * 2;
+    border-bottom: 1px solid $border-color-1;
+}
+
+.cvat-analytics-distribution-row {
+    margin-top: $grid-unit-size;
+    display: flex;
+    flex-wrap: wrap;
+    gap: $grid-unit-size $grid-unit-size * 3;
+    font-variant-numeric: tabular-nums;
+}
+
+.cvat-analytics-workflow-cell,
+.cvat-analytics-event-resource {
+    display: inline-flex;
+    align-items: center;
+    gap: $grid-unit-size;
+}
+
+.cvat-analytics-workflow-cell {
+    white-space: nowrap;
+}
+
+.cvat-analytics-event-workflow {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+}
+
+.cvat-analytics-facts {
+    padding-top: $grid-unit-size * 2;
+    border-top: 1px solid $border-color-1;
+}
+
+.cvat-analytics-fact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        gap: $grid-unit-size * 0.5;
+
+        strong {
+            font-size: 18px;
+            font-variant-numeric: tabular-nums;
+        }
+    }
+}
+
+.cvat-analytics-freshness {
+    display: block;
+    margin-top: $grid-unit-size * 3;
+}
+
+.cvat-analytics-definition {
+    margin-top: $grid-unit-size * 2;
+    padding-left: $grid-unit-size * 1.5;
+    display: flex;
+    flex-direction: column;
+    gap: $grid-unit-size * 0.5;
+    border-left: 2px solid #91caff;
+}
+
+.cvat-analytics-split-section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $grid-unit-size * 5;
+}
+
+.cvat-analytics-ranked-list {
+    margin-top: $grid-unit-size;
+
+    > div {
+        min-height: $grid-unit-size * 4.5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $grid-unit-size * 2;
+        border-bottom: 1px solid $border-color-1;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+.cvat-analytics-density-list {
+    border-top: 1px solid $border-color-1;
+}
+
+.cvat-analytics-density-row {
+    min-height: $grid-unit-size * 7;
+    display: grid;
+    grid-template-columns: $grid-unit-size * 18 minmax($grid-unit-size * 20, 1fr) $grid-unit-size * 32;
+    align-items: center;
+    gap: $grid-unit-size * 2;
+    border-bottom: 1px solid $border-color-1;
+}
+
+.cvat-analytics-density-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.cvat-analytics-density-track {
+    height: $grid-unit-size;
+    overflow: hidden;
+    background: #f0f0f0;
+    border-radius: 2px;
+
+    > span {
+        height: 100%;
+        display: block;
+        background: #69b1ff;
+    }
+}
+
+.cvat-analytics-density-values {
+    display: flex;
+    justify-content: flex-end;
+    gap: $grid-unit-size * 2;
+    color: $text-color-secondary;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.cvat-analytics-toolbar {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    margin: -$grid-unit-size 0 $grid-unit-size * 3;
+    padding: $grid-unit-size 0 $grid-unit-size * 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $grid-unit-size * 2;
+    background: rgba(255, 255, 255, 96%);
+    border-bottom: 1px solid $border-color-1;
+}
+
+.cvat-analytics-preset-select {
+    width: $grid-unit-size * 14;
+}
+
+.cvat-analytics-bar-chart {
+    height: $grid-unit-size * 18;
+    margin: $grid-unit-size * 2 0;
+    padding: $grid-unit-size 0;
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    border-bottom: 1px solid #d9d9d9;
+
+    > span {
+        min-width: 2px;
+        flex: 1;
+        background: #69b1ff;
+        border-radius: 1px 1px 0 0;
+
+        &:hover {
+            background: #1677ff;
+        }
+    }
+}
+
+.cvat-analytics-workflow-section .cvat-analytics-split-section {
+    margin-bottom: $grid-unit-size * 2;
+}
+
+.cvat-analytics-events-section {
+    padding-top: $grid-unit-size * 2;
+    border-top: 1px solid $border-color-1;
+}
+
+.cvat-analytics-event-payload {
+    max-height: $grid-unit-size * 30;
+    margin: 0;
+    padding: $grid-unit-size * 1.5;
+    overflow: auto;
+    color: $text-color;
+    background: #fafafa;
+    border: 1px solid $border-color-1;
+    border-radius: 4px;
+    font-family: $monospaced-fonts-stack;
+    white-space: pre-wrap;
+}
+
+@media screen and (max-width: 992px) {
+    .cvat-analytics-inner {
+        padding-right: $grid-unit-size * 2;
+        padding-left: $grid-unit-size * 2;
+    }
+
+    .cvat-analytics-metric-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cvat-analytics-metric:nth-child(2n) {
+        border-right: 0;
+    }
+
+    .cvat-analytics-toolbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cvat-analytics-density-row {
+        grid-template-columns: $grid-unit-size * 14 1fr;
+    }
+
+    .cvat-analytics-density-values {
+        grid-column: 1 / -1;
+        padding-bottom: $grid-unit-size;
+        justify-content: flex-start;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .cvat-analytics-metric-strip,
+    .cvat-analytics-split-section,
+    .cvat-analytics-fact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cvat-analytics-metric {
+        min-height: auto;
+        border-right: 0;
+        border-bottom: 1px solid $border-color-1;
+    }
+
+    .cvat-analytics-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cvat-analytics-density-row {
+        grid-template-columns: 1fr;
+        padding: $grid-unit-size 0;
+    }
+
+    .cvat-analytics-density-values {
+        grid-column: auto;
+        flex-wrap: wrap;
+    }
 }

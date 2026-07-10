@@ -20,6 +20,7 @@ import {
     checkObjectType,
     filterFieldsToSnakeCase,
     fieldsToSnakeCase,
+    checkInEnum,
 } from './common';
 
 import User from './user';
@@ -47,6 +48,14 @@ import {
 import { convertDescriptions, getServerAPISchema } from './server-schema';
 import { JobType } from './enums';
 import { PaginatedResource } from './core-types';
+import {
+    camelizeResourceAnalytics,
+    ResourceAnalyticsActivity,
+    ResourceAnalyticsAnnotations,
+    ResourceAnalyticsEvents,
+    ResourceAnalyticsOverview,
+    ResourceAnalyticsType,
+} from './resource-analytics';
 import CVATCore from '.';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -534,6 +543,71 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
         const descriptions = convertDescriptions(schema.components.schemas.ConsensusSettings.properties);
 
         return new ConsensusSettings({ ...settings, descriptions });
+    });
+
+    const validateResourceAnalyticsTarget = (resourceType: ResourceAnalyticsType, resourceID: number): void => {
+        checkInEnum('resourceType', resourceType, ['project', 'task', 'job']);
+        if (!isInteger(resourceID) || resourceID < 1) {
+            throw new ArgumentError('Resource analytics expects a positive integer resource ID');
+        }
+    };
+
+    implementationMixin(cvat.analytics.resources.overview, async (resourceType, resourceID) => {
+        validateResourceAnalyticsTarget(resourceType, resourceID);
+        const response = await serverProxy.analytics.resources.overview(resourceType, resourceID);
+        return camelizeResourceAnalytics<ResourceAnalyticsOverview>(response);
+    });
+    implementationMixin(cvat.analytics.resources.annotations, async (resourceType, resourceID) => {
+        validateResourceAnalyticsTarget(resourceType, resourceID);
+        const response = await serverProxy.analytics.resources.annotations(resourceType, resourceID);
+        return camelizeResourceAnalytics<ResourceAnalyticsAnnotations>(response);
+    });
+    implementationMixin(cvat.analytics.resources.activity, async (resourceType, resourceID, filter = {}) => {
+        validateResourceAnalyticsTarget(resourceType, resourceID);
+        checkFilter(filter, {
+            from: isString,
+            to: isString,
+            bucket: (value: string) => ['auto', 'hour', 'day', 'week', 'month'].includes(value),
+            userId: isInteger,
+            refresh: isBoolean,
+        });
+        const response = await serverProxy.analytics.resources.activity(
+            resourceType,
+            resourceID,
+            fieldsToSnakeCase(filter),
+        );
+        return camelizeResourceAnalytics<ResourceAnalyticsActivity>(response);
+    });
+    implementationMixin(cvat.analytics.resources.events, async (resourceType, resourceID, filter = {}) => {
+        validateResourceAnalyticsTarget(resourceType, resourceID);
+        checkFilter(filter, {
+            from: isString,
+            to: isString,
+            bucket: (value: string) => ['auto', 'hour', 'day', 'week', 'month'].includes(value),
+            userId: isInteger,
+            page: isInteger,
+            pageSize: isInteger,
+        });
+        const response = await serverProxy.analytics.resources.events(
+            resourceType,
+            resourceID,
+            fieldsToSnakeCase(filter),
+        );
+        return camelizeResourceAnalytics<ResourceAnalyticsEvents>(response);
+    });
+    implementationMixin(cvat.analytics.resources.exportEvents, async (resourceType, resourceID, filter = {}) => {
+        validateResourceAnalyticsTarget(resourceType, resourceID);
+        checkFilter(filter, {
+            from: isString,
+            to: isString,
+            userId: isInteger,
+            filename: isString,
+        });
+        return serverProxy.analytics.resources.exportEvents(
+            resourceType,
+            resourceID,
+            fieldsToSnakeCase(filter),
+        );
     });
 
     implementationMixin(cvat.analytics.quality.reports, async (

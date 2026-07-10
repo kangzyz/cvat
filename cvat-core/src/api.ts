@@ -494,6 +494,46 @@ function build(): CVATCore {
             },
         },
         analytics: {
+            resources: {
+                async overview(resourceType, resourceID) {
+                    return PluginRegistry.apiWrapper(
+                        cvat.analytics.resources.overview,
+                        resourceType,
+                        resourceID,
+                    );
+                },
+                async annotations(resourceType, resourceID) {
+                    return PluginRegistry.apiWrapper(
+                        cvat.analytics.resources.annotations,
+                        resourceType,
+                        resourceID,
+                    );
+                },
+                async activity(resourceType, resourceID, filter = {}) {
+                    return PluginRegistry.apiWrapper(
+                        cvat.analytics.resources.activity,
+                        resourceType,
+                        resourceID,
+                        filter,
+                    );
+                },
+                async events(resourceType, resourceID, filter = {}) {
+                    return PluginRegistry.apiWrapper(
+                        cvat.analytics.resources.events,
+                        resourceType,
+                        resourceID,
+                        filter,
+                    );
+                },
+                async exportEvents(resourceType, resourceID, filter = {}) {
+                    return PluginRegistry.apiWrapper(
+                        cvat.analytics.resources.exportEvents,
+                        resourceType,
+                        resourceID,
+                        filter,
+                    );
+                },
+            },
             events: {
                 async export(filter = {}) {
                     const result = await PluginRegistry.apiWrapper(cvat.analytics.events.export, filter);

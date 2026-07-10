@@ -253,5 +253,163 @@
         "exportSuccess": "已成功将 {{totalCount}} 个{{resourceName}}导出到 {{filename}}",
         "exportFailed": "CSV 导出失败",
         "unknownError": "导出过程中发生未知错误"
+    },
+    "analytics": {
+        "title": "分析：",
+        "subtitle": "当前快照、标注结构与历史活动。每组数据独立加载，并标注其统计口径。",
+        "tabs": {
+            "overview": "概览",
+            "annotations": "标注",
+            "activity": "活动"
+        },
+        "actions": {
+            "retry": "重试",
+            "refresh": "刷新",
+            "exportRaw": "导出原始事件"
+        },
+        "range": {
+            "24h": "最近 24 小时",
+            "7d": "最近 7 天",
+            "30d": "最近 30 天",
+            "90d": "最近 90 天",
+            "lifetime": "全部时间",
+            "custom": "自定义",
+            "localDisplay": "按本地时间显示，查询以 UTC 传输"
+        },
+        "metrics": {
+            "completion": "普通标注作业完成率",
+            "workflow": "当前工作流",
+            "frames": "帧数",
+            "logicalObjects": "逻辑对象",
+            "openIssues": "未解决问题",
+            "quality": "质量准确率",
+            "inactiveAge": "距最近资源更新",
+            "groundTruth": "真值作业",
+            "consensus": "共识副本",
+            "unassignedJobs": "未分配作业",
+            "rejectedJobs": "被拒绝作业",
+            "errors": "质量错误",
+            "warnings": "质量警告",
+            "shapes": "形状",
+            "tracks": "轨迹",
+            "tags": "标签",
+            "intervals": "区间",
+            "keyframes": "关键帧",
+            "interpolatedFrames": "插值帧",
+            "workingTime": "估算活跃时间",
+            "createdObjects": "新增对象（毛值）",
+            "updatedObjects": "更新对象",
+            "deletedObjects": "删除对象",
+            "netObjects": "对象净变化",
+            "objectsPerHour": "每活跃小时新增对象",
+            "reviewRejections": "审核退回",
+            "activeContributors": "活跃贡献者"
+        },
+        "notes": {
+            "ordinaryJobs": "{{completed}} / {{total}} 个普通标注作业",
+            "resourceFrames": "资源覆盖的帧",
+            "logicalObjects": "形状、轨迹、标签与区间；轨迹只计一次",
+            "resolvedIssues": "已解决 {{count}} 个",
+            "qualityConflicts": "最近报告中 {{count}} 个冲突",
+            "sinceResourceUpdate": "基于资源更新时间",
+            "rowsShown": "显示 {{shown}} / {{total}} 行",
+            "tracksOnce": "每条逻辑轨迹只计一次",
+            "interpolated": "另有 {{count}} 个可见插值帧",
+            "densityBounded": "按作业或有界帧区间展示，不会加载完整逐帧列表",
+            "estimatedActiveTime": "由工作时间事件估算，不等于墙上时钟耗时",
+            "grossCreated": "仅新增逻辑对象，不扣除删除",
+            "speedDefinition": "新增逻辑对象 ÷ 估算活跃小时",
+            "deletedObjects": "另有 {{count}} 个删除对象",
+            "netDefinition": "新增减删除；不作为速度",
+            "separateFromEdits": "独立于对象编辑计数",
+            "contributorsInRange": "选定时间范围内有活动的用户",
+            "bucket": "自动按 {{bucket}} 聚合",
+            "neutralContributors": "按名称中性展示贡献明细，不进行排名或绩效着色。",
+            "dwellWallClock": "阶段停留为工作流事件之间的墙上时钟时间，不是活跃工作时间。",
+            "eventsPaginated": "事件在服务端分页；展开一行可查看原始载荷。"
+        },
+        "definitions": {
+            "completion": "仅普通标注作业在阶段为“验收”且状态为“已完成”时计为完成。真值与共识作业分开显示。",
+            "inventoryTitle": "计数口径",
+            "inventory": "逻辑对象不包含轨迹插值展开结果；关键帧与插值帧作为独立指标展示。"
+        },
+        "sections": {
+            "progress": "完成进度",
+            "children": {
+                "project": "任务健康明细",
+                "task": "作业健康明细",
+                "job": "问题帧明细"
+            },
+            "observedFacts": "可观测事实",
+            "byLabel": "按标签分布",
+            "byType": "按类型分布",
+            "bySource": "按来源分布",
+            "frameDensity": "帧区间密度",
+            "activityTrend": "活动趋势",
+            "contributors": "贡献明细",
+            "workflowHistory": "工作流历史",
+            "dwellByStage": "按阶段停留",
+            "dwellByState": "按状态停留",
+            "events": "事件明细"
+        },
+        "table": {
+            "resource": "资源",
+            "workflow": "工作流",
+            "assignee": "负责人",
+            "frames": "帧",
+            "completion": "完成率",
+            "objects": "对象",
+            "issues": "问题",
+            "conflicts": "冲突",
+            "quality": "质量",
+            "label": "标签",
+            "total": "合计",
+            "time": "时间",
+            "contributor": "贡献者",
+            "lastActivity": "最近活动",
+            "job": "作业",
+            "field": "字段",
+            "from": "原值",
+            "to": "新值",
+            "actor": "操作者",
+            "event": "事件",
+            "object": "对象类型",
+            "count": "数量",
+            "duration": "时长"
+        },
+        "quality": {
+            "stale": "质量报告可能已过期",
+            "staleDescription": "资源在最近一次质量报告之后发生过更新。"
+        },
+        "freshness": {
+            "snapshot": "快照生成于 {{date}}",
+            "quality": "质量报告生成于 {{date}}"
+        },
+        "scope": {
+            "selfOnly": "当前仅显示你的贡献",
+            "selfOnlyDescription": "你的角色不能查看同级贡献者；KPI、趋势、事件和导出均已在服务器端限定为本人。"
+        },
+        "availability": {
+            "unavailable": "历史活动暂不可用",
+            "unavailableDescription": "历史活动服务暂时不可用；当前快照仍可正常查看。"
+        },
+        "events": {
+            "deleted": "已删除",
+            "noPayload": "无事件载荷"
+        },
+        "export": {
+            "failed": "无法导出原始事件",
+            "unavailable": "导出完成后没有可用文件"
+        },
+        "errors": {
+            "resource": "无法从服务器获取目标资源"
+        },
+        "empty": {
+            "overview": "暂无概览数据",
+            "annotations": "暂无标注数据",
+            "activity": "暂无活动数据",
+            "noActivityInRange": "所选时间范围内没有活动",
+            "noQuality": "尚无质量报告"
+        }
     }
 }

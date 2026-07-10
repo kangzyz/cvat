@@ -3,67 +3,30 @@
 // SPDX-License-Identifier: MIT
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Title from 'antd/lib/typography/Title';
-import Button from 'antd/lib/button';
-import DatePicker from 'antd/lib/date-picker';
+import Text from 'antd/lib/typography/Text';
 import { Row, Col } from 'antd/lib/grid';
-import { DownloadOutlined } from '@ant-design/icons';
 
 import { Project, Task, Job } from 'cvat-core-wrapper';
 import ResourceLink from 'components/common/resource-link';
 
 interface Props {
-    onExportEvents(): void;
-    onUpdateTimePeriod(from: Date | null, to: Date | null): void;
     resource: Project | Task | Job;
-    exporting: boolean;
-    fetching: boolean;
 }
 
-function AnaylyticsPageHeader(props: Props): JSX.Element {
-    const {
-        onUpdateTimePeriod,
-        onExportEvents,
-        resource,
-        exporting,
-        fetching,
-    } = props;
-
+function AnalyticsPageHeader({ resource }: Props): JSX.Element {
+    const { t } = useTranslation('resources');
     return (
         <Row justify='space-between' align='middle'>
             <Col className='cvat-analytics-header'>
                 <Title level={4} className='cvat-text-color'>
-                    {'Analytics for '}
-                    <ResourceLink resource={resource} />
+                    {t('analytics.title')} <ResourceLink resource={resource} />
                 </Title>
-            </Col>
-            <Col>
-                <DatePicker.RangePicker
-                    placeholder={['UTC start date', 'UTC end date']}
-                    className='cvat-analytics-date-picker'
-                    onChange={(value) => {
-                        if (value) {
-                            const [from, to] = value;
-                            if (from && to) {
-                                onUpdateTimePeriod(from.toDate(), to.toDate());
-                            }
-                        } else {
-                            onUpdateTimePeriod(null, null);
-                        }
-                    }}
-                />
-                <Button
-                    className='cvat-analytics-export-button'
-                    disabled={fetching || exporting}
-                    loading={exporting}
-                    type='link'
-                    icon={<DownloadOutlined />}
-                    onClick={onExportEvents}
-                >
-                    导出事件</Button>
+                <Text type='secondary'>{t('analytics.subtitle')}</Text>
             </Col>
         </Row>
     );
 }
 
-export default React.memo(AnaylyticsPageHeader);
+export default React.memo(AnalyticsPageHeader);
