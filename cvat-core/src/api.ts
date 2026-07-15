@@ -505,8 +505,12 @@ function build(): CVATCore {
                     const result = await PluginRegistry.apiWrapper(cvat.analytics.quality.reports, filter, aggregate);
                     return result;
                 },
-                async conflicts(filter = {}) {
-                    const result = await PluginRegistry.apiWrapper(cvat.analytics.quality.conflicts, filter);
+                async createReport(resource) {
+                    const result = await PluginRegistry.apiWrapper(cvat.analytics.quality.createReport, resource);
+                    return result;
+                },
+                async conflicts(filter = {}, merge = true) {
+                    const result = await PluginRegistry.apiWrapper(cvat.analytics.quality.conflicts, filter, merge);
                     return result;
                 },
                 settings: {
@@ -522,8 +526,8 @@ function build(): CVATCore {
             },
         },
         requests: {
-            async list() {
-                const result = await PluginRegistry.apiWrapper(cvat.requests.list);
+            async list(filter = {}) {
+                const result = await PluginRegistry.apiWrapper(cvat.requests.list, filter);
                 return result;
             },
             async cancel(rqID: string) {

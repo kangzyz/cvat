@@ -156,9 +156,18 @@ class QualityReport(models.Model):
 
         return ComparisonReport.summary_from_json(self.data)
 
+    def _parse_report_parameters(self):
+        from cvat.apps.quality_control.quality_reports import ComparisonReport
+
+        return ComparisonReport.parameters_from_json(self.data)
+
     @property
     def summary(self):
         return self._parse_report_summary()
+
+    @property
+    def parameters(self):
+        return self._parse_report_parameters()
 
     def get_report_data(self) -> str:
         return self.data

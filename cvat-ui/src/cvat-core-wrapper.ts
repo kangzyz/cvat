@@ -18,14 +18,18 @@ import {
 import {
     SerializedAttribute, SerializedLabel, SerializedAPISchema,
     OrganizationMembersFilter, AnalyticsEventsFilter, SerializedApiToken,
-    ApiTokensFilter, SerializedInterval,
+    ApiTokensFilter, RequestsFilter, SerializedInterval,
 } from 'cvat-core/src/server-response-types';
 import { ApiTokenModifiableFields } from 'cvat-core/src/server-request-types';
 import { UpdateStatusData } from 'cvat-core/src/core-types';
 import { Job, Task } from 'cvat-core/src/session';
 import Project from 'cvat-core/src/project';
-import QualityReport, { QualitySummary } from 'cvat-core/src/quality-report';
-import QualityConflict, { AnnotationConflict, ConflictSeverity } from 'cvat-core/src/quality-conflict';
+import QualityReport, {
+    QualityParameters, QualityReportCreateResource, QualitySummary,
+} from 'cvat-core/src/quality-report';
+import QualityConflict, {
+    AnnotationConflict, ConflictSeverity, QualityConflictType,
+} from 'cvat-core/src/quality-conflict';
 import QualitySettings, { TargetMetric, QualitySettingsSaveFields } from 'cvat-core/src/quality-settings';
 import ConsensusSettings from 'cvat-core/src/consensus-settings';
 import ApiToken from 'cvat-core/src/api-token';
@@ -121,6 +125,7 @@ export {
     TargetMetric,
     AnnotationConflict,
     ConflictSeverity,
+    QualityConflictType,
     FramesMetaData,
     ServerError,
     RequestError,
@@ -144,6 +149,8 @@ export type {
     StorageData,
     APIWrapperEnterOptions,
     QualitySummary,
+    QualityParameters,
+    QualityReportCreateResource,
     CVATCore,
     SerializedAPISchema,
     ProjectOrTaskOrJob,
@@ -157,6 +164,7 @@ export type {
     TrackerResults,
     ApiTokenModifiableFields,
     ApiTokensFilter,
+    RequestsFilter,
     ImageProcessing,
     SerializedImageFilter,
     SerializedInterval,

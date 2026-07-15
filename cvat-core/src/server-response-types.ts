@@ -276,6 +276,7 @@ export type ConsensusSettingsFilter = Camelized<APIConsensusSettingsFilter>;
 export interface SerializedQualitySettingsData {
     id?: number;
     task_id?: number;
+    project_id?: number;
     target_metric?: string;
     target_metric_threshold?: number;
     max_validations_per_job?: number;
@@ -296,6 +297,8 @@ export interface SerializedQualitySettingsData {
     descriptions?: Record<string, string>;
     inherit?: boolean;
     job_filter?: string;
+    created_date?: string;
+    updated_date?: string;
 }
 
 export interface APIQualityConflictsFilter extends APICommonFilterParams {
@@ -314,6 +317,7 @@ export interface SerializedAnnotationConflictData {
 
 export interface SerializedQualityConflictData {
     id?: number;
+    report_id?: number;
     frame?: number | null;
     type?: string;
     annotation_ids?: SerializedAnnotationConflictData[];
@@ -331,13 +335,20 @@ export interface APIQualityReportsFilter extends APICommonFilterParams {
 }
 export type QualityReportsFilter = Camelized<APIQualityReportsFilter>;
 
+export interface APIQualityReportCreateRequest {
+    task_id?: number;
+    project_id?: number;
+}
+
 export interface SerializedQualityReportData {
     id?: number;
     parent_id?: number;
+    project_id?: number;
     task_id?: number;
     job_id?: number;
     target: string;
     created_date?: string;
+    target_last_updated?: string;
     gt_last_updated?: string;
     assignee?: SerializedUser | null;
     summary?: {
@@ -378,7 +389,25 @@ export interface SerializedQualityReportData {
             included: number;
         }
     };
+    parameters?: {
+        target_metric: 'accuracy' | 'precision' | 'recall' | null;
+        target_metric_threshold: number | null;
+        inherited: boolean;
+    };
 }
+
+export interface APIRequestsFilter extends APICommonFilterParams {
+    action?: string;
+    format?: string;
+    job_id?: number;
+    project_id?: number;
+    status?: string;
+    subresource?: string;
+    target?: string;
+    task_id?: number;
+}
+
+export type RequestsFilter = Camelized<APIRequestsFilter>;
 
 export interface SerializedConsensusSettingsData {
     id?: number;

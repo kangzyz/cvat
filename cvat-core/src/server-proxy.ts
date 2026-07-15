@@ -19,7 +19,7 @@ import {
     SerializedQualitySettingsData, APIQualitySettingsFilter, SerializedQualityConflictData, APIQualityConflictsFilter,
     SerializedQualityReportData, APIQualityReportsFilter, APIAnalyticsEventsFilter, APIConsensusSettingsFilter,
     SerializedRequest, SerializedJobValidationLayout, SerializedTaskValidationLayout, SerializedConsensusSettingsData,
-    SerializedApiToken, APIApiTokensFilter,
+    SerializedApiToken, APIApiTokensFilter, APIRequestsFilter, APIQualityReportCreateRequest,
 } from './server-response-types';
 import { APIApiTokenModifiableFields } from './server-request-types';
 import { PaginatedResource, SerializedModel, UpdateStatusData } from './core-types';
@@ -1230,9 +1230,9 @@ const defaultRequestConfig = {
     fetchAll: false,
 };
 
-async function getRequestsList(): Promise<PaginatedResource<SerializedRequest>> {
+async function getRequestsList(filter: APIRequestsFilter = {}): Promise<PaginatedResource<SerializedRequest>> {
     const { backendAPI } = config;
-    const params = enableOrganization();
+    const params = { ...filter, ...enableOrganization() };
 
     try {
         const response = await fetchAll<SerializedRequest>(`${backendAPI}/requests`, params);
@@ -3128,6 +3128,19 @@ async function getQualityReports(
     return response.data.results;
 }
 
+async function createQualityReport(data: APIQualityReportCreateRequest): Promise<string> {
+    const { backendAPI } = config;
+
+    try {
+        const response = await Axios.post(`${backendAPI}/quality/reports`, data, {
+            params: enableOrganization(),
+        });
+        return response.data.rq_id;
+    } catch (errorData) {
+        throw generateError(errorData);
+    }
+}
+
 export default Object.freeze({
     server: Object.freeze({
         about,
@@ -3307,6 +3320,7 @@ export default Object.freeze({
     analytics: Object.freeze({
         quality: Object.freeze({
             reports: getQualityReports,
+            createReport: createQualityReport,
             conflicts: getQualityConflicts,
             settings: Object.freeze({
                 get: getQualitySettings,

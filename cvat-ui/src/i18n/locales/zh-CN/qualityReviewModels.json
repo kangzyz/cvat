@@ -27,6 +27,200 @@
         "forceProjectSettingsTitle": "确定要强制使用项目设置吗？",
         "forceProjectSettingsContent": "此操作会覆盖所有任务中的独立设置。",
         "forceProjectSettings": "强制使用项目设置",
+        "settingsSavedStale": "判定规则已保存；当前报告仍基于旧规则。",
+        "settingsLater": "稍后处理",
+        "settingsUnsaved": "有尚未保存的修改",
+        "settingsSaved": "所有修改均已保存",
+        "tabs": {
+            "overview": "质量总览",
+            "management": "验证集",
+            "settings": "判定规则"
+        },
+        "settingsGroups": {
+            "gate": "质量门槛",
+            "scope": "验证范围与反馈",
+            "matching": "通用匹配规则",
+            "points": "点与关键点",
+            "lines": "线段方向",
+            "groups": "分组关系",
+            "segmentation": "分割与可见性"
+        },
+        "overview": {
+            "emptyProjectTitle": "尚无可评估任务",
+            "emptyProjectDescription": "先为项目创建任务并配置真值作业，再生成项目质量报告。",
+            "loadFailed": "无法载入质量报告",
+            "detailsFailed": "无法载入报告明细",
+            "verdict": {
+                "met": "达到质量门槛",
+                "missed": "未达到质量门槛",
+                "insufficient": "证据不足",
+                "metGap": "高于门槛 {{gap}} 个百分点",
+                "missedGap": "相差 {{gap}} 个百分点"
+            },
+            "actions": {
+                "createTask": "创建项目任务",
+                "calculate": "开始计算",
+                "recalculate": "重新计算",
+                "retry": "重试计算",
+                "reload": "重新载入",
+                "viewEvidence": "查看证据",
+                "configure": "前往配置",
+                "completeSetupFirst": "请先完成真值作业和有效验证帧配置"
+            },
+            "calculation": {
+                "submitting": "正在提交计算请求…",
+                "queued": "计算请求正在排队",
+                "started": "正在计算质量报告",
+                "failed": "最近一次计算失败"
+            },
+            "trust": {
+                "calculatedAt": "计算于 {{time}}",
+                "noReport": "尚无计算结果",
+                "fresh": "结果与当前数据一致",
+                "stale": "结果已过期：{{reasons}}",
+                "legacyRule": "旧报告 · 按当前规则估算"
+            },
+            "staleReasons": {
+                "task": "任务已更新",
+                "settings": "判定规则已变更",
+                "groundTruth": "真值作业已更新",
+                "jobs": "标注作业已更新",
+                "project": "项目已更新",
+                "tasks": "纳入汇总的任务已更新"
+            },
+            "coverage": {
+                "project": "覆盖 {{included}}/{{total}} 个任务",
+                "projectAttention": "{{count}} 个任务需要处理",
+                "projectPartial": "另有 {{count}} 个任务未纳入统一汇总",
+                "task": "验证 {{validation}}/{{total}} 帧",
+                "jobsPartial": "纳入 {{included}}/{{total}} 个作业",
+                "jobsExcluded": "{{count}} 个作业被筛选规则排除",
+                "jobsNotCheckable": "{{count}} 个作业暂不可检查"
+            },
+            "metrics": {
+                "title": "关键指标",
+                "description": "三个指标从不同角度描述标注与真值的一致程度。",
+                "help": {
+                    "accuracy": "整体匹配正确的比例",
+                    "precision": "已标注对象中匹配真值的比例",
+                    "recall": "真值对象中被正确找到的比例"
+                }
+            },
+            "evidence": {
+                "title": "问题证据",
+                "description": "从错误、警告和冲突类型进入可复核的具体帧。",
+                "errors": "错误 {{count}}",
+                "warnings": "警告 {{count}}"
+            },
+            "conflicts": {
+                "extra_annotation": "多余标注",
+                "missing_annotation": "缺失标注",
+                "mismatching_label": "标签不一致",
+                "low_overlap": "重叠度偏低",
+                "mismatching_direction": "方向不一致",
+                "mismatching_attributes": "属性不一致",
+                "mismatching_groups": "分组不一致",
+                "covered_annotation": "标注被覆盖"
+            },
+            "conflictHelp": {
+                "extra_annotation": "标注作业包含真值中不存在的对象。",
+                "missing_annotation": "真值对象在标注作业中没有对应标注。",
+                "mismatching_label": "匹配对象使用了不同标签。",
+                "low_overlap": "对象能够匹配，但空间重叠低于要求。",
+                "mismatching_direction": "线段或折线方向与真值不一致。",
+                "mismatching_attributes": "匹配对象的属性值不一致。",
+                "mismatching_groups": "对象之间的分组关系不一致。",
+                "covered_annotation": "对象被其他分割对象覆盖，导致可见区域异常。"
+            },
+            "setup": {
+                "title": "完成质量评估设置",
+                "description": "质量报告需要可用的真值（Ground Truth）作业和验证帧。",
+                "unsupportedTitle": "当前任务不支持自动质量报告",
+                "unsupportedDescription": "自动质量报告目前仅支持 2D 任务。",
+                "step": "步骤 {{number}}",
+                "createGroundTruth": "创建真值作业",
+                "createGroundTruthHelp": "选择一组代表性帧作为质量比较基准。",
+                "createJob": "创建真值作业",
+                "prepareGroundTruth": "完成并启用真值",
+                "completeGroundTruthHelp": "将真值作业推进到“验收 / 已完成”状态。",
+                "validationFramesHelp": "至少保留一个有效验证帧。",
+                "openGroundTruth": "打开真值作业",
+                "openValidation": "管理验证帧",
+                "calculateReport": "生成第一份报告",
+                "calculateReportHelp": "系统将比较标注作业与真值，并生成可追溯快照。"
+            },
+            "risk": {
+                "tasksTitle": "任务风险",
+                "jobsTitle": "作业风险",
+                "attentionCount": "{{count}} 项需要处理",
+                "task": "任务",
+                "job": "作业 / 负责人",
+                "jobName": "作业 #{{id}}",
+                "state": "状态",
+                "targetResult": "目标结果",
+                "coverage": "覆盖范围",
+                "errorsWarnings": "错误 / 警告",
+                "latest": "最近快照",
+                "action": "建议操作",
+                "empty": "没有可评估的子项",
+                "legend": "独立规则任务不会被当作项目失败，但项目汇总不代表这些任务。",
+                "filters": {
+                    "all": "全部",
+                    "attention": "需处理",
+                    "unconfigured": "未配置",
+                    "custom": "独立规则"
+                },
+                "status": {
+                    "unconfigured": "未配置",
+                    "missing": "缺少报告",
+                    "stale": "需重新计算",
+                    "insufficient": "证据不足",
+                    "excluded": "未纳入",
+                    "custom": "独立规则",
+                    "below": "未达标",
+                    "healthy": "正常"
+                }
+            },
+            "drawer": {
+                "title": "问题证据 · {{context}}",
+                "severity": "级别",
+                "error": "错误",
+                "warning": "警告",
+                "type": "冲突类型",
+                "location": "作业 / 帧",
+                "locationWithJob": "作业 #{{job}} · 帧 {{frame}}",
+                "locationWithoutJob": "帧 {{frame}}",
+                "explanation": "说明",
+                "openReview": "进入复核",
+                "reviewAria": "进入作业 {{job}} 第 {{frame}} 帧复核",
+                "filter": "当前筛选：{{filter}}",
+                "reset": "清除筛选",
+                "loadFailed": "无法载入问题证据",
+                "empty": "当前范围内没有冲突证据"
+            },
+            "history": {
+                "title": "最近 5 次报告",
+                "selected": "正在查看历史快照；它不代表当前就绪状态。",
+                "returnLatest": "返回最新报告",
+                "time": "计算时间",
+                "target": "目标结果",
+                "result": "判定",
+                "coverage": "覆盖范围",
+                "projectCoverage": "{{included}}/{{total}} 个任务",
+                "delta": "较上次",
+                "deltaValue": "{{value}} 个百分点",
+                "note": "说明",
+                "ruleChanged": "规则已变更",
+                "legacy": "按当前规则估算"
+            },
+            "manualIssues": {
+                "title": "人工复核 Issue",
+                "description": "人工 Issue 不参与上方质量分数和达标判定。",
+                "unresolved": "未解决 {{count}}",
+                "resolved": "已解决 {{count}}",
+                "item": "Issue #{{id}} · 作业 {{job}} · 帧 {{frame}}"
+            }
+        },
         "summary": {
             "totalValidationFrames": "验证帧总数",
             "excludedValidationFrames": "已排除的验证帧",

@@ -13,7 +13,7 @@ import {
     QualityConflict, FramesMetaData, RQStatus, Event, Invitation, SerializedAPISchema,
     Request, JobValidationLayout, QualitySettings, TaskValidationLayout, ObjectState,
     ConsensusSettings, AboutData, ShapeType, ObjectType, ApiToken, AudioIntervalState,
-    Membership, AnnotationFormats, CloudStorage,
+    Membership, AnnotationFormats, CloudStorage, QualityReport, Issue,
 } from 'cvat-core-wrapper';
 
 import type { IntelligentScissors, OpenCVTracker } from 'utils/opencv-wrapper/opencv-wrapper';
@@ -1188,6 +1188,56 @@ export interface RequestsState {
     query: RequestsQuery;
 }
 
+export interface QualityReportDetails {
+    children: QualityReport[];
+    jobReports: QualityReport[];
+    fetching: boolean;
+    error: Error | null;
+}
+
+export interface QualityConflictsState {
+    items: QualityConflict[];
+    fetching: boolean;
+    error: Error | null;
+}
+
+export interface QualityControlState {
+    resourceKey: string | null;
+    initialized: boolean;
+    fetching: boolean;
+    error: Error | null;
+    instance: Project | Task | null;
+    instanceType: InstanceType | null;
+    tasks: Task[];
+    jobs: Job[];
+    gtJob: Job | null;
+    gtJobMeta: FramesMetaData | null;
+    validationLayout: TaskValidationLayout | null;
+    issues: Issue[];
+    settings: {
+        current: QualitySettings | null;
+        parent: QualitySettings | null;
+        children: QualitySettings[];
+        saving: boolean;
+        justSaved: boolean;
+        error: Error | null;
+    };
+    reports: {
+        history: QualityReport[];
+        selectedID: number | null;
+        detailsByID: Record<number, QualityReportDetails>;
+        conflictsByReportID: Record<number, QualityConflictsState>;
+        refreshing: boolean;
+        error: Error | null;
+    };
+    calculation: {
+        request: Request | null;
+        submitting: boolean;
+        error: Error | null;
+    };
+    validationSaving: boolean;
+}
+
 export interface NavigationState {
     prevLocation: string | null;
 }
@@ -1216,6 +1266,7 @@ export interface CombinedState {
     invitations: InvitationsState;
     webhooks: WebhooksState;
     requests: RequestsState;
+    qualityControl: QualityControlState;
     bulkActions: BulkActionsState;
     serverAPI: ServerAPIState;
     navigation: NavigationState;

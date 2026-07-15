@@ -320,7 +320,17 @@ class TestListQualityReports(_PermissionTestBase):
             )
 
             if expected_data is not None:
-                assert DeepDiff(expected_data, results) == {}
+                comparable_results = results
+                if all("parameters" not in report for report in expected_data):
+                    comparable_results = [
+                        {
+                            key: value
+                            for key, value in report.items()
+                            if key != "parameters"
+                        }
+                        for report in results
+                    ]
+                assert DeepDiff(expected_data, comparable_results) == {}
 
     def _test_list_reports_403(self, user, **kwargs):
         with make_api_client(user) as api_client:
@@ -332,7 +342,6 @@ class TestListQualityReports(_PermissionTestBase):
 
     def test_can_list_quality_reports(self, admin_user, quality_reports):
         reports = sorted(quality_reports, key=lambda r: -r["id"])
-
         self._test_list_reports_200(admin_user, sort="-id", expected_data=reports)
 
     @pytest.mark.usefixtures("restore_db_per_function")
@@ -484,6 +493,18 @@ class TestGetQualityReports(_PermissionTestBase):
             assert response.status == HTTPStatus.FORBIDDEN
 
         return response
+
+    @pytest.mark.parametrize("target", ["project", "task", "job"])
+    def test_legacy_report_parameters_are_nullable(
+        self, admin_user, target, quality_reports
+    ):
+        report = next(r for r in quality_reports if r["target"] == target)
+        response = self._test_get_report_200(admin_user, report["id"])
+
+        parameters = json.loads(response.data)["parameters"]
+        assert parameters["target_metric"] is None
+        assert parameters["target_metric_threshold"] is None
+        assert isinstance(parameters["inherited"], bool)
 
     @pytest.mark.usefixtures("restore_db_per_function")
     @pytest.mark.parametrize(*_PermissionTestBase._default_sandbox_cases)
@@ -686,6 +707,23 @@ class TestPostQualityReports(_PermissionTestBase):
 
         report = self.create_quality_report(user=admin_user, task_id=task_id)
         assert models.QualityReport._from_openapi_data(**report)
+        assert report["parameters"]["target_metric"] == "accuracy"
+        assert report["parameters"]["target_metric_threshold"] == 0.7
+        assert isinstance(report["parameters"]["inherited"], bool)
+
+        with make_api_client(admin_user) as api_client:
+            job_reports = get_paginated_collection(
+                api_client.quality_api.list_reports_endpoint,
+                parent_id=report["id"],
+                target="job",
+                return_json=True,
+            )
+
+        assert job_reports
+        assert all(
+            job_report["parameters"] == report["parameters"]
+            for job_report in job_reports
+        )
 
     @pytest.mark.parametrize("has_assignee", [False, True])
     def test_can_create_report_with_job_assignees(
@@ -2105,6 +2143,11 @@ class TestPostProjectQualityReports(_PermissionTestBase):
 
         # Create project report
         report = self.create_quality_report(user=admin_user, project_id=project_id)
+        assert report["parameters"] == {
+            "target_metric": "accuracy",
+            "target_metric_threshold": 0.7,
+            "inherited": False,
+        }
 
         # Check report data
         with make_api_client(admin_user) as api_client:
@@ -2125,10 +2168,24 @@ class TestPostProjectQualityReports(_PermissionTestBase):
                 target="task",
                 return_json=True,
             )
+            job_reports = get_paginated_collection(
+                api_client.quality_api.list_reports_endpoint,
+                parent_id=report["id"],
+                target="job",
+                return_json=True,
+            )
 
         assert len(child_reports) == len(tasks)
         for child in child_reports:
             assert child["parent_id"] == report["id"]
+            assert child["parameters"]["target_metric"] == "accuracy"
+            assert child["parameters"]["target_metric_threshold"] == 0.7
+            assert child["parameters"]["inherited"] is True
+
+        assert job_reports
+        assert all(
+            job_report["parameters"]["inherited"] is True for job_report in job_reports
+        )
 
     def test_can_create_project_report_in_empty_project(self, admin_user, projects):
         project = next(p for p in projects if p["tasks"]["count"] == 0)

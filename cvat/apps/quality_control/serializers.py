@@ -106,6 +106,14 @@ class QualityReportSummarySerializer(serializers.Serializer):
         return representation
 
 
+class QualityReportParametersSerializer(serializers.Serializer):
+    target_metric = serializers.ChoiceField(
+        choices=models.QualityTargetMetricType.choices(), allow_null=True
+    )
+    target_metric_threshold = serializers.FloatField(allow_null=True)
+    inherited = serializers.BooleanField()
+
+
 class QualityReportListSerializer(serializers.ListSerializer):
     def to_representation(self, data):
         if isinstance(data, list) and data:
@@ -151,6 +159,7 @@ class QualityReportSerializer(serializers.ModelSerializer):
     target = serializers.ChoiceField(choices=models.QualityReportTarget.choices())
     assignee = engine_serializers.BasicUserSerializer(allow_null=True, read_only=True)
     summary = QualityReportSummarySerializer()
+    parameters = QualityReportParametersSerializer()
     parent_id = serializers.IntegerField(default=None, allow_null=True, read_only=True)
     task_id = serializers.IntegerField(
         source="get_task.id", default=None, allow_null=True, read_only=True
@@ -169,6 +178,7 @@ class QualityReportSerializer(serializers.ModelSerializer):
             "parent_id",
             "target",
             "summary",
+            "parameters",
             "created_date",
             "target_last_updated",
             "gt_last_updated",

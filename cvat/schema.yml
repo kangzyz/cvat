@@ -10502,6 +10502,8 @@ components:
           $ref: '#/components/schemas/QualityReportTarget'
         summary:
           $ref: '#/components/schemas/QualityReportSummary'
+        parameters:
+          $ref: '#/components/schemas/QualityReportParameters'
         created_date:
           type: string
           format: date-time
@@ -10521,6 +10523,7 @@ components:
           readOnly: true
           nullable: true
       required:
+      - parameters
       - summary
       - target
     QualityReportCreateRequest:
@@ -10552,6 +10555,23 @@ components:
       - included
       - not_checkable
       - total
+    QualityReportParameters:
+      type: object
+      properties:
+        target_metric:
+          allOf:
+          - $ref: '#/components/schemas/QualityTargetMetric'
+          nullable: true
+        target_metric_threshold:
+          type: number
+          format: double
+          nullable: true
+        inherited:
+          type: boolean
+      required:
+      - inherited
+      - target_metric
+      - target_metric_threshold
     QualityReportSummary:
       type: object
       properties:

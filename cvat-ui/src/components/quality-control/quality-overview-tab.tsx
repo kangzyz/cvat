@@ -2,23 +2,47 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { ReloadOutlined, SettingOutlined } from '@ant-design/icons';
+import React, {
+    useCallback, useEffect, useMemo, useState,
+} from 'react';
+import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Alert from 'antd/lib/alert';
 import Button from 'antd/lib/button';
-import { Row, Col } from 'antd/lib/grid';
-import Space from 'antd/lib/space';
-import Statistic from 'antd/lib/statistic';
-import Text from 'antd/lib/typography/Text';
-import dayjs from 'dayjs';
+import Empty from 'antd/lib/empty';
+import Spin from 'antd/lib/spin';
 
 import {
-    JobType, Project, QualityReport, QualitySettings, Task, getCore,
+    DimensionType,
+    JobType,
+    Project,
+    QualitySettings,
+    RQStatus,
+    Task,
 } from 'cvat-core-wrapper';
+import {
+    calculateQualityReportAsync,
+    loadQualityConflictsAsync,
+    refreshQualityReportsAsync,
+    selectQualityReportAsync,
+} from 'actions/quality-control-actions';
 import { CombinedState } from 'reducers';
-import CVATLoadingSpinner from 'components/common/loading-spinner';
-import { shallowEqual } from 'utils/redux';
+import { shallowEqual, ThunkDispatch } from 'utils/redux';
+import {
+    deriveTaskRisk,
+    getProjectStaleReasons,
+    getTaskStaleReasons,
+    isGroundTruthReady,
+} from './quality-control-utils';
+import QualityVerdict from './overview/quality-verdict';
+import QualityMetrics from './overview/quality-metrics';
+import QualityEvidence from './overview/quality-evidence';
+import QualityRiskTable from './overview/quality-risk-table';
+import QualityEvidenceDrawer from './overview/quality-evidence-drawer';
+import QualitySetupChecklist from './overview/quality-setup-checklist';
+import QualityHistory from './overview/quality-history';
+import ManualIssuesSummary from './overview/manual-issues-summary';
 
 interface Props {
     instance: Project | Task;
@@ -28,199 +52,310 @@ interface Props {
     };
 }
 
-const core = getCore();
-
-function formatPercent(value?: number): string {
-    if (typeof value !== 'number' || Number.isNaN(value)) {
-        return '无数据';
-    }
-
-    return `${(value * 100).toFixed(1)}%`;
+interface DrawerState {
+    open: boolean;
+    reportID: number | null;
+    context: string;
+    filter: { severity?: 'error' | 'warning'; conflictType?: string };
 }
 
-function metricName(value: string | undefined): string {
-    if (value === 'precision') {
-        return '精确率';
-    }
-
-    if (value === 'recall') {
-        return '召回率';
-    }
-
-    return '准确率';
-}
-
-function QualityOverviewTab(props: Readonly<Props>): JSX.Element {
-    const { instance, qualitySettings } = props;
-    const [report, setReport] = useState<QualityReport | null>(null);
-    const [fetching, setFetching] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const receiveLatestReport = useCallback(async (): Promise<void> => {
-        setFetching(true);
-        setError(null);
-
-        try {
-            const filter = instance instanceof Task ? {
-                taskID: instance.id,
-                target: 'task',
-                pageSize: 1,
-            } : {
-                projectID: instance.id,
-                target: 'project',
-                pageSize: 1,
-            };
-            const [latestReport] = await core.analytics.quality.reports(filter);
-            setReport(latestReport || null);
-        } catch (reportError: unknown) {
-            setError(reportError instanceof Error ? reportError.message : String(reportError));
-        } finally {
-            setFetching(false);
-        }
-    }, [instance]);
+function BuiltInQualityOverview(): JSX.Element {
+    const { t } = useTranslation('qualityReviewModels');
+    const dispatch = useDispatch<ThunkDispatch>();
+    const state = useSelector((combined: CombinedState) => combined.qualityControl);
+    const [drawer, setDrawer] = useState<DrawerState>({
+        open: false,
+        reportID: null,
+        context: '',
+        filter: {},
+    });
+    const {
+        resourceKey,
+        instance,
+        tasks,
+        jobs,
+        gtJob,
+        validationLayout,
+        issues,
+        settings,
+        reports,
+        calculation,
+    } = state;
+    const report = reports.history.find(({ id }) => id === reports.selectedID) || null;
+    const latestReportID = reports.history[0]?.id || null;
+    const details = report ? reports.detailsByID[report.id] : null;
+    const effectiveSettings = instance instanceof Task && settings.current?.inherit ?
+        settings.parent || settings.current : settings.current;
+    const activeFrames = validationLayout ? Math.max(
+        0, validationLayout.validationFrames.length - validationLayout.disabledFrames.length,
+    ) : 0;
+    const taskEligible = instance instanceof Task &&
+        instance.dimension === DimensionType.DIMENSION_2D &&
+        isGroundTruthReady(gtJob) && activeFrames > 0;
+    const canCalculate = instance instanceof Project ? tasks.length > 0 : taskEligible;
+    const calculating = calculation.submitting || Boolean(
+        calculation.request && [RQStatus.QUEUED, RQStatus.STARTED].includes(calculation.request.status),
+    );
 
     useEffect(() => {
-        receiveLatestReport();
-    }, [receiveLatestReport]);
+        setDrawer({
+            open: false,
+            reportID: null,
+            context: '',
+            filter: {},
+        });
+    }, [resourceKey]);
 
-    const settings = qualitySettings.settings;
-    const summary = report?.summary;
-    const taskHasGroundTruth = !(instance instanceof Task) ||
-        instance.jobs.some((job) => job.type === JobType.GROUND_TRUTH);
+    const projectTaskRisks = useMemo(() => {
+        if (!(instance instanceof Project) || !details) return [];
+        return tasks.map((task) => {
+            const childReport = details.children.find(({ taskID }) => taskID === task.id) || null;
+            const childSettings = settings.children.find(({ taskId }) => taskId === task.id) || null;
+            return {
+                ...deriveTaskRisk(
+                    task,
+                    jobs,
+                    childReport,
+                    childSettings,
+                    settings.current,
+                    details.jobReports,
+                ),
+                inherited: Boolean(childSettings?.inherit),
+            };
+        });
+    }, [instance, details, tasks, jobs, settings.current, settings.children]);
+
+    const staleReasons = useMemo(() => {
+        if (!instance || !report) return [];
+        if (instance instanceof Project) {
+            return getProjectStaleReasons(
+                instance.updatedDate,
+                report,
+                settings.current,
+                projectTaskRisks.filter(({ inherited }) => inherited),
+            );
+        }
+        return getTaskStaleReasons(
+            instance,
+            report,
+            effectiveSettings,
+            gtJob,
+            jobs.filter((job) => (
+                job.type !== JobType.GROUND_TRUTH &&
+                Boolean(details?.jobReports.some(({ jobID }) => jobID === job.id))
+            )),
+        );
+    }, [instance, report, settings.current, effectiveSettings, projectTaskRisks, gtJob, jobs, details]);
+
+    const coverageFacts = useMemo(() => {
+        if (!report) return [];
+        if (instance instanceof Project && report.summary.tasks) {
+            const {
+                included, total, custom, notConfigured, excluded,
+            } = report.summary.tasks;
+            const result = [t('quality.overview.coverage.project', { included, total })];
+            const attention = projectTaskRisks.filter(({ status }) => (
+                !['healthy', 'custom'].includes(status)
+            )).length;
+            if (attention) result.push(t('quality.overview.coverage.projectAttention', { count: attention }));
+            const partial = custom + notConfigured + excluded;
+            if (partial) result.push(t('quality.overview.coverage.projectPartial', { count: partial }));
+            return result;
+        }
+        const result = [t('quality.overview.coverage.task', {
+            validation: report.summary.validationFrames,
+            total: report.summary.totalFrames,
+        })];
+        if (report.summary.jobs && report.summary.jobs.included < report.summary.jobs.total) {
+            result.push(t('quality.overview.coverage.jobsPartial', {
+                included: report.summary.jobs.included,
+                total: report.summary.jobs.total,
+            }));
+            if (report.summary.jobs.excluded) {
+                result.push(t('quality.overview.coverage.jobsExcluded', {
+                    count: report.summary.jobs.excluded,
+                }));
+            }
+            if (report.summary.jobs.notCheckable) {
+                result.push(t('quality.overview.coverage.jobsNotCheckable', {
+                    count: report.summary.jobs.notCheckable,
+                }));
+            }
+        }
+        return result;
+    }, [instance, report, projectTaskRisks, t]);
+
+    const calculate = useCallback(() => {
+        if (resourceKey) dispatch(calculateQualityReportAsync(resourceKey));
+    }, [dispatch, resourceKey]);
+
+    const openEvidence = useCallback((
+        reportID: number,
+        context: string,
+        filter: DrawerState['filter'] = {},
+    ) => {
+        setDrawer({
+            open: true, reportID, context, filter,
+        });
+        if (resourceKey) dispatch(loadQualityConflictsAsync(resourceKey, reportID));
+    }, [dispatch, resourceKey]);
+
+    if (!instance || !resourceKey) return <Empty />;
+
+    const setup = instance instanceof Task ? (
+        <QualitySetupChecklist
+            task={instance}
+            gtJob={gtJob}
+            validationLayout={validationLayout}
+            reportExists={Boolean(report)}
+            calculating={calculating}
+            calculationRequest={calculation.request}
+            calculationError={calculation.error}
+            onCalculate={calculate}
+        />
+    ) : null;
+    const showWorkspace = Boolean(report) || instance instanceof Project;
+    let calculateDisabledReason: string | undefined;
+    if (!canCalculate) {
+        calculateDisabledReason = instance instanceof Task ?
+            t('quality.overview.actions.completeSetupFirst') :
+            t('quality.overview.emptyProjectDescription');
+    }
+    let detailsContent: JSX.Element | null = null;
+    if (report && details?.error) {
+        detailsContent = (
+            <Alert
+                type='error'
+                showIcon
+                message={t('quality.overview.detailsFailed')}
+                description={details.error.message}
+                action={(
+                    <Button onClick={() => dispatch(selectQualityReportAsync(resourceKey, report.id))}>
+                        {t('quality.overview.actions.retry')}
+                    </Button>
+                )}
+            />
+        );
+    } else if (details?.fetching) {
+        detailsContent = <div className='cvat-quality-details-loading'><Spin /></div>;
+    } else if (report && details) {
+        detailsContent = (
+            <QualityRiskTable
+                instance={instance}
+                tasks={tasks}
+                jobs={jobs}
+                report={report}
+                childReports={details.children}
+                jobReports={details.jobReports}
+                settings={effectiveSettings}
+                childrenSettings={settings.children}
+                onOpenEvidence={(reportID, context) => openEvidence(reportID, context)}
+            />
+        );
+    }
 
     return (
         <div className='cvat-quality-overview-tab'>
-            <Row justify='space-between' align='middle' className='cvat-quality-overview-header'>
-                <Col>
-                    <Text strong>社区版质量概览</Text>
-                    <br />
-                    <Text type='secondary'>
-                        基于真值作业和当前质量设置汇总最近一次质量报告。
-                    </Text>
-                </Col>
-                <Col>
-                    <Space>
-                        <Button
-                            icon={<SettingOutlined />}
-                            onClick={() => {
-                                window.location.hash = 'settings';
-                            }}
-                        >
-                            打开设置
-                        </Button>
-                        <Button
-                            icon={<ReloadOutlined />}
-                            loading={fetching}
-                            onClick={receiveLatestReport}
-                        >
-                            刷新
-                        </Button>
-                    </Space>
-                </Col>
-            </Row>
+            {setup}
 
-            {!taskHasGroundTruth && (
+            {instance instanceof Project && tasks.length === 0 && (
                 <Alert
                     className='cvat-quality-overview-alert'
-                    type='warning'
+                    type='info'
                     showIcon
-                    message='当前任务还没有真值作业'
-                    description='质量控制需要 Ground Truth 作业作为基准。创建真值作业后，概览会显示质量报告结果。'
+                    message={t('quality.overview.emptyProjectTitle')}
+                    description={t('quality.overview.emptyProjectDescription')}
+                    action={(
+                        <Link to={`/tasks/create?projectId=${instance.id}`}>
+                            {t('quality.overview.actions.createTask')}
+                        </Link>
+                    )}
                 />
             )}
 
-            {error && (
+            {reports.error && (
                 <Alert
                     className='cvat-quality-overview-alert'
                     type='error'
                     showIcon
-                    message='无法获取质量报告'
-                    description={error}
+                    message={t('quality.overview.loadFailed')}
+                    description={reports.error.message}
+                    action={(
+                        <Button onClick={() => dispatch(refreshQualityReportsAsync(resourceKey))}>
+                            {t('quality.overview.actions.reload')}
+                        </Button>
+                    )}
                 />
             )}
 
-            {fetching && !report ? (
-                <div className='cvat-quality-overview-loading'>
-                    <CVATLoadingSpinner />
-                </div>
-            ) : (
+            {showWorkspace && (
                 <>
-                    <Row className='cvat-quality-overview-summary' gutter={[16, 16]}>
-                        <Col xs={12} md={6}>
-                            <Statistic title='准确率' value={formatPercent(summary?.accuracy)} />
-                        </Col>
-                        <Col xs={12} md={6}>
-                            <Statistic title='精确率' value={formatPercent(summary?.precision)} />
-                        </Col>
-                        <Col xs={12} md={6}>
-                            <Statistic title='召回率' value={formatPercent(summary?.recall)} />
-                        </Col>
-                        <Col xs={12} md={6}>
-                            <Statistic title='冲突数' value={summary?.conflictCount ?? '无数据'} />
-                        </Col>
-                    </Row>
+                    <QualityVerdict
+                        report={report}
+                        latestReportID={latestReportID}
+                        settings={effectiveSettings}
+                        staleReasons={staleReasons}
+                        coverageFacts={coverageFacts}
+                        calculation={calculation}
+                        canCalculate={canCalculate}
+                        calculateDisabledReason={calculateDisabledReason}
+                        onCalculate={calculate}
+                        onReturnLatest={() => {
+                            if (latestReportID) dispatch(selectQualityReportAsync(resourceKey, latestReportID));
+                        }}
+                    />
 
-                    <Row className='cvat-quality-overview-details' gutter={[16, 16]}>
-                        <Col xs={24} md={12}>
-                            <div>
-                                <Text type='secondary'>目标指标</Text>
-                                <br />
-                                <Text>
-                                    {metricName(settings?.targetMetric)}
-                                    {typeof settings?.targetMetricThreshold === 'number' &&
-                                        ` >= ${formatPercent(settings.targetMetricThreshold)}`}
-                                </Text>
-                            </div>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <div>
-                                <Text type='secondary'>每个作业最大验证次数</Text>
-                                <br />
-                                <Text>{settings?.maxValidationsPerJob ?? '无数据'}</Text>
-                            </div>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <div>
-                                <Text type='secondary'>最近报告</Text>
-                                <br />
-                                <Text>
-                                    {report?.createdDate ? dayjs(report.createdDate).format('YYYY-MM-DD HH:mm') : '暂无报告'}
-                                </Text>
-                            </div>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <div>
-                                <Text type='secondary'>验证帧</Text>
-                                <br />
-                                <Text>
-                                    {typeof summary?.validationFrames === 'number' ?
-                                        `${summary.validationFrames} / ${summary.totalFrames ?? 0}` : '无数据'}
-                                </Text>
-                            </div>
-                        </Col>
-                    </Row>
+                    {report && (
+                        <>
+                            <QualityMetrics report={report} />
+                            <QualityEvidence
+                                report={report}
+                                onOpenEvidence={(severity, conflictType) => openEvidence(
+                                    report.id,
+                                    instance.name,
+                                    { severity, conflictType },
+                                )}
+                            />
 
-                    {!report && (
-                        <Alert
-                            className='cvat-quality-overview-alert'
-                            type='info'
-                            showIcon
-                            message='暂无质量报告'
-                            description='质量设置已经可用。生成质量报告后，这里会显示最近一次结果和关键指标。'
-                        />
+                            {detailsContent}
+                        </>
                     )}
                 </>
             )}
+
+            {instance instanceof Task && <ManualIssuesSummary task={instance} issues={issues} />}
+
+            {reports.history.length > 0 && (
+                <QualityHistory
+                    history={reports.history}
+                    selectedID={reports.selectedID}
+                    settings={effectiveSettings}
+                    onSelect={(reportID) => dispatch(selectQualityReportAsync(resourceKey, reportID))}
+                />
+            )}
+
+            <QualityEvidenceDrawer
+                open={drawer.open}
+                context={drawer.context}
+                reportID={drawer.reportID}
+                filter={drawer.filter}
+                conflictState={drawer.reportID ? reports.conflictsByReportID[drawer.reportID] : undefined}
+                instance={instance}
+                jobs={jobs}
+                jobReports={details?.jobReports || []}
+                onClose={() => setDrawer((current) => ({ ...current, open: false }))}
+                onResetFilter={() => setDrawer((current) => ({ ...current, filter: {} }))}
+                onRetry={() => {
+                    if (drawer.reportID) dispatch(loadQualityConflictsAsync(resourceKey, drawer.reportID));
+                }}
+            />
         </div>
     );
 }
 
 function QualityOverviewTabWrap(props: Readonly<Props>): JSX.Element {
     const { instance } = props;
-
-    const {
-        taskOverrides, projectOverrides,
-    } = useSelector((state: CombinedState) => ({
+    const { taskOverrides, projectOverrides } = useSelector((state: CombinedState) => ({
         taskOverrides: state.plugins.overridableComponents.qualityControlPage.task.overviewTab,
         projectOverrides: state.plugins.overridableComponents.qualityControlPage.project.overviewTab,
     }), shallowEqual);
@@ -235,7 +370,7 @@ function QualityOverviewTabWrap(props: Readonly<Props>): JSX.Element {
         return <Component {...props} instance={instance} />;
     }
 
-    return <QualityOverviewTab {...props} />;
+    return <BuiltInQualityOverview />;
 }
 
 export default React.memo(QualityOverviewTabWrap);

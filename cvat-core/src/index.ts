@@ -4,7 +4,7 @@
 
 import {
     AnalyticsEventsFilter, QualityConflictsFilter, QualityReportsFilter,
-    QualitySettingsFilter, ConsensusSettingsFilter, ApiTokensFilter,
+    QualitySettingsFilter, ConsensusSettingsFilter, ApiTokensFilter, RequestsFilter,
 } from './server-response-types';
 import PluginRegistry from './plugins';
 import serverProxy from './server-proxy';
@@ -30,7 +30,7 @@ import { FrameData, FramesMetaData } from './frames';
 import CloudStorage from './cloud-storage';
 import Organization, { Invitation } from './organization';
 import Webhook from './webhook';
-import QualityReport from './quality-report';
+import QualityReport, { QualityReportCreateResource } from './quality-report';
 import QualityConflict from './quality-conflict';
 import QualitySettings from './quality-settings';
 import ConsensusSettings from './consensus-settings';
@@ -150,6 +150,7 @@ export default interface CVATCore {
             search?: string;
             jobID?: number;
             taskID?: number;
+            projectID?: number;
             type?: string;
         }, aggregate?: boolean) => Promise<PaginatedResource<Job>>;
     };
@@ -203,7 +204,8 @@ export default interface CVATCore {
     analytics: {
         quality: {
             reports: (filter: QualityReportsFilter, aggregate?: boolean) => Promise<PaginatedResource<QualityReport>>;
-            conflicts: (filter: QualityConflictsFilter) => Promise<QualityConflict[]>;
+            createReport: (resource: QualityReportCreateResource) => Promise<string>;
+            conflicts: (filter: QualityConflictsFilter, merge?: boolean) => Promise<QualityConflict[]>;
             settings: {
                 get: (
                     filter: QualitySettingsFilter,
@@ -219,7 +221,7 @@ export default interface CVATCore {
         getMeta: (type: 'task' | 'job', id: number) => Promise<FramesMetaData>;
     };
     requests: {
-        list: () => Promise<PaginatedResource<Request>>;
+        list: (filter?: RequestsFilter) => Promise<PaginatedResource<Request>>;
         listen: (
             rqID: string,
             options: {

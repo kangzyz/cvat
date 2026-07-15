@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Text from 'antd/lib/typography/Text';
@@ -16,10 +16,9 @@ import Modal from 'antd/lib/modal';
 import {
     Project, QualitySettings, QualitySettingsSaveFields, Task,
 } from 'cvat-core-wrapper';
+import { UpdateQualitySettingsData } from 'actions/quality-control-actions';
 import CVATLoadingSpinner from 'components/common/loading-spinner';
 import QualitySettingsForm from './task-quality/quality-settings-form';
-
-export type UpdateSettingsData = Record<number, { settings: QualitySettings, fields: QualitySettingsSaveFields }>;
 
 interface Props {
     instance: Task | Project;
@@ -28,7 +27,12 @@ interface Props {
         settings: QualitySettings | null;
         childrenSettings: QualitySettings[] | null;
     };
-    setQualitySettings: (updatedSettingsData: UpdateSettingsData) => void;
+    justSaved: boolean;
+    error: Error | null;
+    setQualitySettings: (updatedSettingsData: UpdateQualitySettingsData) => void;
+    onRecalculate: () => void;
+    canRecalculate: boolean;
+    onDismissSaved: () => void;
 }
 
 function QualitySettingsTab(props: Readonly<Props>): JSX.Element | null {
@@ -36,11 +40,21 @@ function QualitySettingsTab(props: Readonly<Props>): JSX.Element | null {
         instance,
         fetching,
         qualitySettings: { settings, childrenSettings },
+        justSaved,
+        error,
         setQualitySettings,
+        onRecalculate,
+        canRecalculate,
+        onDismissSaved,
     } = props;
     const { t } = useTranslation('qualityReviewModels');
 
     const [form] = Form.useForm();
+    const [dirty, setDirty] = useState(false);
+
+    useEffect(() => {
+        setDirty(false);
+    }, [settings?.id, settings?.updatedDate]);
 
     const onSave = useCallback(async () => {
         if (settings) {
@@ -77,7 +91,7 @@ function QualitySettingsTab(props: Readonly<Props>): JSX.Element | null {
 
     const nonInheritedChildSettings = childrenSettings ? childrenSettings.filter((child) => !child.inherit) : [];
     const onChildInheritChange = useCallback(() => {
-        const updatedSettings = nonInheritedChildSettings.reduce<UpdateSettingsData>((acc, child) => {
+        const updatedSettings = nonInheritedChildSettings.reduce<UpdateQualitySettingsData>((acc, child) => {
             acc[child.id] = {
                 settings: child,
                 fields: { inherit: true },
@@ -87,7 +101,7 @@ function QualitySettingsTab(props: Readonly<Props>): JSX.Element | null {
         setQualitySettings(updatedSettings);
     }, [nonInheritedChildSettings, setQualitySettings]);
 
-    if (fetching) {
+    if (fetching && !settings) {
         return (
             <div className='cvat-quality-control-settings-tab'>
                 <div className='cvat-quality-control-loading'>
@@ -144,20 +158,67 @@ function QualitySettingsTab(props: Readonly<Props>): JSX.Element | null {
     if (settings) {
         return (
             <div className='cvat-quality-control-settings-tab'>
-                <Row justify='end' className='cvat-quality-settings-save-btn'>
+                {header}
+                {justSaved && (
+                    <Alert
+                        className='cvat-quality-settings-feedback'
+                        type='success'
+                        showIcon
+                        message={t('quality.settingsSavedStale')}
+                        action={(
+                            <>
+                                <Button
+                                    size='small'
+                                    type='primary'
+                                    disabled={!canRecalculate}
+                                    onClick={onRecalculate}
+                                >
+                                    {t('quality.overview.actions.recalculate')}
+                                </Button>
+                                <Button size='small' type='text' onClick={onDismissSaved}>
+                                    {t('quality.settingsLater')}
+                                </Button>
+                            </>
+                        )}
+                    />
+                )}
+                {error && (
+                    <Alert
+                        className='cvat-quality-settings-feedback'
+                        type='error'
+                        showIcon
+                        message={t('quality.couldNotSaveSettings')}
+                        description={error.message}
+                    />
+                )}
+                <QualitySettingsForm
+                    key={`${settings.id}-${settings.updatedDate || ''}`}
+                    form={form}
+                    settings={settings}
+                    onSave={onSave}
+                    onValuesChange={() => setDirty(true)}
+                    disabled={settings.inherit && instance instanceof Task && instance.projectId !== null}
+                />
+                <Row justify='space-between' align='middle' className='cvat-quality-settings-action-bar'>
                     <Col>
-                        <Button onClick={onSave} type='primary'>
+                        <Text type='secondary'>
+                            {dirty ? t('quality.settingsUnsaved') : t('quality.settingsSaved')}
+                        </Text>
+                    </Col>
+                    <Col>
+                        <Button
+                            onClick={onSave}
+                            type='primary'
+                            loading={fetching}
+                            disabled={
+                                !dirty ||
+                                (settings.inherit && instance instanceof Task && instance.projectId !== null)
+                            }
+                        >
                             {t('common.save')}
                         </Button>
                     </Col>
                 </Row>
-                {header}
-                <QualitySettingsForm
-                    form={form}
-                    settings={settings}
-                    onSave={onSave}
-                    disabled={settings.inherit && instance instanceof Task && instance.projectId !== null}
-                />
             </div>
         );
     }

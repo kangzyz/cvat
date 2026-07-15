@@ -8,6 +8,8 @@ import { Request } from './request';
 import { RequestError } from './exceptions';
 import { PaginatedResource } from './core-types';
 import config from './config';
+import { RequestsFilter } from './server-response-types';
+import { fieldsToSnakeCase } from './common';
 
 const REQUESTS_COUNT = 5;
 const PROGRESS_EPS = 25;
@@ -43,8 +45,8 @@ class RequestsManager {
         this.requestStack = [];
     }
 
-    async list(): Promise<PaginatedResource<Request>> {
-        const result = await serverProxy.requests.list();
+    async list(filter: RequestsFilter = {}): Promise<PaginatedResource<Request>> {
+        const result = await serverProxy.requests.list(fieldsToSnakeCase(filter));
         const requests = result.map((serializedRequest) => new Request({
             ...serializedRequest,
         })) as PaginatedResource<Request>;

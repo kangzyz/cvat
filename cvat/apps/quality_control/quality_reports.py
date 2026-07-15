@@ -320,6 +320,14 @@ class ComparisonParameters(ReportNode):
     job_filter: str = ""
     "JSON filter expression for included jobs"
 
+    target_metric: models.QualityTargetMetricType = (
+        models.QualityTargetMetricType.ACCURACY
+    )
+    "Metric used to determine whether the report meets the quality target"
+
+    target_metric_threshold: float = 0.7
+    "Minimum value of the target metric required to meet the quality target"
+
     def _value_serializer(self, v):
         if isinstance(v, dm.AnnotationType):
             return str(v.name)
@@ -868,6 +876,20 @@ class ComparisonReport(ReportNode):
         return ComparisonReportSummary.from_dict(
             json_stream.load(StringIO(data), persistent=True)["comparison_summary"]
         )
+
+    @classmethod
+    def parameters_from_json(cls, data: str) -> dict[str, Any]:
+        # Parse only the compact parameters section. Older reports do not contain
+        # target metric fields, so keep them nullable instead of applying today's
+        # settings retroactively.
+        parameters = dict(
+            json_stream.load(StringIO(data), persistent=True)["parameters"]
+        )
+        return {
+            "target_metric": parameters.get("target_metric"),
+            "target_metric_threshold": parameters.get("target_metric_threshold"),
+            "inherited": parameters.get("inherited", False),
+        }
 
 
 class JobDataProvider:

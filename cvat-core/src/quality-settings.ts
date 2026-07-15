@@ -22,7 +22,8 @@ export enum PointSizeBase {
 }
 
 export type QualitySettingsSaveFields = Partial<Camelized<
-    Omit<SerializedQualitySettingsData, 'id' | 'task_id' | 'descriptions'>
+    Omit<SerializedQualitySettingsData,
+    'id' | 'task_id' | 'project_id' | 'created_date' | 'updated_date' | 'descriptions'>
 >>;
 
 export default class QualitySettings {
@@ -31,6 +32,7 @@ export default class QualitySettings {
     #targetMetricThreshold: number;
     #maxValidationsPerJob: number;
     #taskId: number;
+    #projectId: number;
     #iouThreshold: number;
     #oksSigma: number;
     #pointSizeBase: PointSizeBase;
@@ -48,10 +50,13 @@ export default class QualitySettings {
     #jobFilter: string;
     #inherit: boolean;
     #descriptions: Record<string, string>;
+    #createdDate: string;
+    #updatedDate: string;
 
     constructor(initialData: SerializedQualitySettingsData) {
         this.#id = initialData.id;
         this.#taskId = initialData.task_id;
+        this.#projectId = initialData.project_id;
         this.#targetMetric = initialData.target_metric as TargetMetric;
         this.#targetMetricThreshold = initialData.target_metric_threshold;
         this.#maxValidationsPerJob = initialData.max_validations_per_job;
@@ -72,6 +77,8 @@ export default class QualitySettings {
         this.#jobFilter = initialData.job_filter || '';
         this.#inherit = initialData.inherit;
         this.#descriptions = initialData.descriptions;
+        this.#createdDate = initialData.created_date;
+        this.#updatedDate = initialData.updated_date;
     }
 
     get id(): number {
@@ -80,6 +87,18 @@ export default class QualitySettings {
 
     get taskId(): number {
         return this.#taskId;
+    }
+
+    get projectId(): number {
+        return this.#projectId;
+    }
+
+    get createdDate(): string {
+        return this.#createdDate;
+    }
+
+    get updatedDate(): string {
+        return this.#updatedDate;
     }
 
     get iouThreshold(): number {

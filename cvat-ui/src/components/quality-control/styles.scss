@@ -19,17 +19,8 @@
     display: block;
     height: 100%;
     position: relative;
-
-    .cvat-quality-settings-save-btn {
-        position: sticky;
-        z-index: 1;
-        top: $grid-unit-size;
-        height: 0;
-    }
-
-    .ant-divider-horizontal {
-        margin: $grid-unit-size 0;
-    }
+    overflow-y: auto;
+    padding: $grid-unit-size * 2 $grid-unit-size $grid-unit-size * 10;
 
     .cvat-resource-page-filters {
         position: relative;
@@ -69,7 +60,45 @@
     .cvat-quality-settings-form {
         display: block;
         position: relative;
-        height: calc(100vh - $grid-unit-size * 30);
+    }
+
+    .cvat-quality-settings-feedback {
+        margin-bottom: $grid-unit-size * 2;
+    }
+
+    .cvat-quality-settings-action-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        margin: $grid-unit-size * 3 (-$grid-unit-size) (-$grid-unit-size * 10);
+        padding: $grid-unit-size * 1.5 $grid-unit-size * 2;
+        border-top: 1px solid $border-color-1;
+        background: rgba(255, 255, 255, 96%);
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 5%);
+    }
+
+    .cvat-quality-settings-groups {
+        border: 1px solid $border-color-1;
+        background: $background-color-1;
+
+        > .ant-collapse-item > .ant-collapse-header {
+            padding: $grid-unit-size * 2;
+            font-weight: 600;
+        }
+
+        .ant-collapse-content-box {
+            padding: 0 $grid-unit-size * 3 $grid-unit-size * 2;
+        }
+
+        .ant-form-item-extra {
+            max-width: 44rem;
+            color: $text-color-secondary;
+            line-height: 1.45;
+        }
+
+        .ant-input-number, .ant-select {
+            width: min(100%, $grid-unit-size * 32);
+        }
     }
 }
 
@@ -157,46 +186,363 @@ $excluded-background: #d9d9d973;
 
 .cvat-quality-control-page-tabs {
     @include cvat-management-page-tabs;
+
+    > .ant-tabs-nav {
+        margin-bottom: 0;
+    }
 }
 
 .cvat-quality-overview-tab {
-    padding-top: $grid-unit-size;
+    @extend .cvat-scrollbar;
 
-    .cvat-quality-overview-header {
-        margin-bottom: $grid-unit-size * 2;
-    }
+    height: 100%;
+    overflow-y: auto;
+    padding: $grid-unit-size * 2 $grid-unit-size $grid-unit-size * 6;
 
     .cvat-quality-overview-alert {
         margin-bottom: $grid-unit-size * 2;
     }
+}
 
-    .cvat-quality-overview-loading {
-        min-height: $grid-unit-size * 20;
+.cvat-quality-verdict {
+    margin-bottom: $grid-unit-size * 4;
+    border: 1px solid #d9dfe7;
+    border-left-width: 4px;
+    border-radius: $grid-unit-size;
+    background: #fafbfd;
+    overflow: hidden;
+
+    &.cvat-quality-verdict-met {
+        border-left-color: #3f8f4f;
+    }
+
+    &.cvat-quality-verdict-missed {
+        border-left-color: $danger-icon-color;
+    }
+
+    &.cvat-quality-verdict-insufficient {
+        border-left-color: #d48806;
+    }
+
+    .cvat-quality-historical-alert {
+        border-width: 0 0 1px;
+        border-radius: 0;
+    }
+}
+
+.cvat-quality-verdict-main {
+    display: flex;
+    justify-content: space-between;
+    gap: $grid-unit-size * 4;
+    padding: $grid-unit-size * 3;
+}
+
+.cvat-quality-verdict-copy {
+    min-width: 0;
+}
+
+.cvat-quality-verdict-title {
+    display: flex;
+    align-items: center;
+    gap: $grid-unit-size;
+    margin-bottom: $grid-unit-size;
+    color: $text-color;
+    font-size: 22px;
+    font-weight: 650;
+
+    .cvat-quality-verdict-met & {
+        color: #2f743c;
+    }
+
+    .cvat-quality-verdict-missed & {
+        color: #c83d35;
+    }
+
+    .cvat-quality-verdict-insufficient & {
+        color: #9a6700;
+    }
+}
+
+.cvat-quality-verdict-score {
+    display: flex;
+    align-items: baseline;
+    gap: $grid-unit-size;
+
+    > span:nth-child(2) {
+        color: $text-color;
+        font-size: 30px;
+        font-variant-numeric: tabular-nums;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+    }
+}
+
+.cvat-quality-verdict-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: $grid-unit-size;
+    max-width: $grid-unit-size * 28;
+    text-align: right;
+}
+
+.cvat-quality-calculation-progress {
+    padding: 0 $grid-unit-size * 3 $grid-unit-size * 2;
+
+    .ant-progress {
+        max-width: $grid-unit-size * 42;
+        margin-right: $grid-unit-size * 2;
+    }
+}
+
+.cvat-quality-verdict-trust {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-unit-size;
+    padding: $grid-unit-size * 1.5 $grid-unit-size * 3;
+    border-top: 1px solid #e4e8ee;
+    color: #5c6673;
+    font-size: 13px;
+
+    .anticon {
+        margin-right: $grid-unit-size * 0.5;
+    }
+
+    .cvat-quality-trust-warning, .cvat-quality-legacy-rule {
+        color: #8a5b00;
+    }
+}
+
+.cvat-quality-section {
+    margin-bottom: $grid-unit-size * 4;
+    padding-bottom: $grid-unit-size * 4;
+    border-bottom: 1px solid $border-color-1;
+}
+
+.cvat-quality-section-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $grid-unit-size * 3;
+    margin-bottom: $grid-unit-size * 2;
+
+    > div:first-child {
         display: flex;
+        flex-direction: column;
+        gap: $grid-unit-size * 0.5;
+    }
+}
+
+.cvat-quality-metric-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border: 1px solid $border-color-1;
+    border-radius: $grid-unit-size * 0.75;
+    background: $background-color-1;
+}
+
+.cvat-quality-metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: $grid-unit-size * 0.5;
+    min-width: 0;
+    padding: $grid-unit-size * 2;
+
+    & + & {
+        border-left: 1px solid $border-color-1;
+    }
+
+    strong {
+        color: $text-color;
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+.cvat-quality-severity-row {
+    display: flex;
+    gap: $grid-unit-size;
+    margin-bottom: $grid-unit-size * 1.5;
+
+    .ant-btn {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
+        gap: $grid-unit-size;
+        border: 1px solid $border-color-1;
+    }
+}
+
+.cvat-quality-error-icon {
+    color: $danger-icon-color;
+}
+
+.cvat-quality-warning-icon {
+    color: #d48806;
+}
+
+.cvat-quality-conflict-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $grid-unit-size;
+
+    .ant-btn:not(:disabled) {
+        color: #334155;
+        background: #f8fafc;
+    }
+}
+
+.cvat-quality-risk-heading {
+    align-items: center;
+}
+
+.cvat-quality-risk {
+    .ant-table-wrapper {
+        border: 1px solid $border-color-1;
+        border-radius: $grid-unit-size * 0.75;
+        overflow: hidden;
     }
 
-    .cvat-quality-overview-summary {
-        margin-bottom: $grid-unit-size * 2;
+    .ant-table-cell {
+        vertical-align: middle;
+    }
+}
 
-        .ant-col {
-            min-height: $grid-unit-size * 10;
-            padding: $grid-unit-size * 1.5;
-            border: 1px solid $border-color-1;
-            background: $background-color-1;
+.cvat-quality-risk-legend {
+    margin-top: $grid-unit-size;
+}
+
+.cvat-quality-details-loading, .cvat-quality-drawer-loading {
+    display: flex;
+    min-height: $grid-unit-size * 16;
+    align-items: center;
+    justify-content: center;
+}
+
+.cvat-quality-setup {
+    margin-bottom: $grid-unit-size * 4;
+    padding: $grid-unit-size * 3;
+    border: 1px solid #d9dfe7;
+    border-radius: $grid-unit-size;
+    background: #fafbfd;
+
+    > span {
+        display: block;
+    }
+
+    ol {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: $grid-unit-size * 2;
+        margin: $grid-unit-size * 3 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        display: flex;
+        gap: $grid-unit-size * 1.5;
+        min-width: 0;
+        padding-top: $grid-unit-size * 2;
+        border-top: 2px solid #d7dde5;
+
+        &.active {
+            border-top-color: $border-color-hover;
+        }
+
+        &.done {
+            border-top-color: #3f8f4f;
+        }
+
+        > div {
+            display: flex;
+            flex-direction: column;
+            gap: $grid-unit-size * 0.5;
         }
     }
 
-    .cvat-quality-overview-details {
-        margin-bottom: $grid-unit-size * 2;
+    .cvat-quality-setup-icon {
+        color: #8a94a1;
+    }
 
-        .ant-col > div {
-            min-height: $grid-unit-size * 7;
-            padding: $grid-unit-size * 1.5;
-            border: 1px solid $border-color-1;
-            background: $background-color-1;
-        }
+    li.active .cvat-quality-setup-icon {
+        color: $info-icon-color;
+    }
+
+    li.done .cvat-quality-setup-icon {
+        color: #3f8f4f;
+    }
+
+    .ant-btn-link {
+        height: auto;
+        padding: 0;
+    }
+}
+
+.cvat-quality-setup-alert {
+    margin-bottom: $grid-unit-size * 3;
+}
+
+.cvat-quality-manual-issues {
+    background: #fcfcfd;
+
+    .ant-list {
+        margin-top: $grid-unit-size;
+    }
+}
+
+.cvat-quality-history {
+    border-bottom: 0;
+
+    .ant-collapse-header {
+        padding-inline: 0 !important;
+    }
+
+    .ant-collapse-content-box {
+        padding-inline: 0 !important;
+    }
+
+    .ant-table-row {
+        cursor: pointer;
+    }
+
+    .cvat-quality-history-selected > td {
+        background: #f0f7ff !important;
+    }
+}
+
+.cvat-quality-drawer-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $grid-unit-size * 2;
+    padding: $grid-unit-size $grid-unit-size * 1.5;
+    border: 1px solid $border-color-1;
+    border-radius: $grid-unit-size * 0.5;
+    background: #fafbfd;
+}
+
+@media screen and (width <= 768px) {
+    .cvat-quality-verdict-main, .cvat-quality-section-heading {
+        flex-direction: column;
+    }
+
+    .cvat-quality-verdict-action {
+        align-items: flex-start;
+        max-width: none;
+        text-align: left;
+    }
+
+    .cvat-quality-metric-strip, .cvat-quality-setup ol {
+        grid-template-columns: 1fr;
+    }
+
+    .cvat-quality-metric-item + .cvat-quality-metric-item {
+        border-top: 1px solid $border-color-1;
+        border-left: 0;
+    }
+
+    .cvat-quality-evidence-drawer .ant-drawer-content-wrapper {
+        width: 100% !important;
     }
 }
 
@@ -212,6 +558,11 @@ $excluded-background: #d9d9d973;
 .cvat-quality-control-management-tab {
     display: flex;
     flex-direction: column;
+    height: 100%;
+}
+
+.cvat-quality-management-saving,
+.cvat-quality-management-saving > .ant-spin-container {
     height: 100%;
 }
 

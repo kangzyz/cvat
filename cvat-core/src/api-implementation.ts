@@ -562,7 +562,30 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
         );
         return reports;
     });
-    implementationMixin(cvat.analytics.quality.conflicts, async (filter: QualityConflictsFilter) => {
+    implementationMixin(cvat.analytics.quality.createReport, async (
+        resource: Parameters<CVATCore['analytics']['quality']['createReport']>[0],
+    ): ReturnType<CVATCore['analytics']['quality']['createReport']> => {
+        checkFilter(resource, {
+            taskID: isInteger,
+            projectID: isInteger,
+        });
+
+        if (Number.isInteger(resource.taskID) === Number.isInteger(resource.projectID)) {
+            throw new ArgumentError('Specify exactly one quality report resource');
+        }
+        if ((resource.taskID ?? resource.projectID) <= 0) {
+            throw new ArgumentError('Quality report resource ID must be a positive integer');
+        }
+
+        return serverProxy.analytics.quality.createReport(fieldsToSnakeCase(resource));
+    });
+    implementationMixin(cvat.analytics.quality.conflicts, async (
+        filter: QualityConflictsFilter,
+        merge = true,
+    ) => {
+        if (!isBoolean(merge)) {
+            throw new ArgumentError('Quality conflict merge option must be a boolean');
+        }
         checkFilter(filter, {
             reportID: isInteger,
         });
@@ -571,6 +594,10 @@ export default function implementAPI(cvat: CVATCore): CVATCore {
 
         const conflictsData = await serverProxy.analytics.quality.conflicts(params);
         const conflicts = conflictsData.map((conflict) => new QualityConflict({ ...conflict }));
+        if (!merge) {
+            return conflicts;
+        }
+
         const frames = Array.from(new Set(conflicts.map((conflict) => conflict.frame)))
             .sort((a, b) => a - b);
 

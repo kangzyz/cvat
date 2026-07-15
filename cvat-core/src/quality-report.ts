@@ -13,6 +13,7 @@ export interface QualitySummary {
     validCount: number;
     dsCount: number;
     gtCount: number;
+    totalCount: number;
     accuracy: number;
     precision: number;
     recall: number;
@@ -43,26 +44,42 @@ export interface QualitySummary {
     } | null;
 }
 
+export interface QualityParameters {
+    targetMetric: 'accuracy' | 'precision' | 'recall' | null;
+    targetMetricThreshold: number | null;
+    inherited: boolean;
+}
+
+export type QualityReportCreateResource =
+    { taskID: number; projectID?: never } |
+    { taskID?: never; projectID: number };
+
 export default class QualityReport {
     #id: number;
     #parentID: number;
+    #projectID: number;
     #taskID: number;
     #jobID: number;
     #target: string;
     #createdDate: string;
+    #targetLastUpdated: string;
     #gtLastUpdated: string;
     #assignee: User | null;
     #summary: Partial<SerializedQualityReportData['summary']>;
+    #parameters: Partial<SerializedQualityReportData['parameters']>;
 
     constructor(initialData: SerializedQualityReportData) {
         this.#id = initialData.id;
         this.#parentID = initialData.parent_id;
+        this.#projectID = initialData.project_id;
         this.#taskID = initialData.task_id;
         this.#jobID = initialData.job_id;
         this.#target = initialData.target;
         this.#gtLastUpdated = initialData.gt_last_updated;
+        this.#targetLastUpdated = initialData.target_last_updated;
         this.#createdDate = initialData.created_date;
         this.#summary = initialData.summary;
+        this.#parameters = initialData.parameters || {};
 
         if (initialData.assignee) {
             this.#assignee = new User(initialData.assignee);
@@ -83,6 +100,10 @@ export default class QualityReport {
         return this.#taskID;
     }
 
+    get projectID(): number {
+        return this.#projectID;
+    }
+
     get jobID(): number {
         return this.#jobID;
     }
@@ -93,6 +114,10 @@ export default class QualityReport {
 
     get gtLastUpdated(): string {
         return this.#gtLastUpdated;
+    }
+
+    get targetLastUpdated(): string {
+        return this.#targetLastUpdated;
     }
 
     get createdDate(): string {
@@ -112,6 +137,7 @@ export default class QualityReport {
             validCount: this.#summary.valid_count,
             dsCount: this.#summary.ds_count,
             gtCount: this.#summary.gt_count,
+            totalCount: this.#summary.total_count,
             accuracy: this.#summary.accuracy,
             precision: this.#summary.precision,
             recall: this.#summary.recall,
@@ -140,6 +166,14 @@ export default class QualityReport {
                 excluded: this.#summary.jobs.excluded,
                 included: this.#summary.jobs.included,
             } : null,
+        };
+    }
+
+    get parameters(): QualityParameters {
+        return {
+            targetMetric: this.#parameters.target_metric ?? null,
+            targetMetricThreshold: this.#parameters.target_metric_threshold ?? null,
+            inherited: this.#parameters.inherited ?? false,
         };
     }
 }

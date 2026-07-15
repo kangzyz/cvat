@@ -117,7 +117,7 @@ context('Ground truth jobs', () => {
         cy.clickInTaskMenu('Quality control', true);
         cy.get('.cvat-quality-control-page-tabs')
             .within(() => {
-                cy.contains('Management').click();
+                cy.contains('验证集').click();
             });
         cy.get('.cvat-quality-control-management-tab').should('exist').and('be.visible');
     }
