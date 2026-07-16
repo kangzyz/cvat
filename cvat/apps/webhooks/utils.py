@@ -26,6 +26,73 @@ _WECOM_WEBHOOK_HOST = "qyapi.weixin.qq.com"
 _WECOM_WEBHOOK_PATH = "/cgi-bin/webhook/send"
 _WECOM_MARKDOWN_CONTENT_LIMIT = 4096
 _WECOM_MARKDOWN_VALUE_LIMIT = 1024
+_WECOM_ACTION_LABELS = {
+    "create": "创建",
+    "update": "更新",
+    "delete": "删除",
+}
+_WECOM_RESOURCE_LABELS = {
+    "project": "项目",
+    "task": "任务",
+    "job": "作业",
+    "label": "标签",
+    "issue": "问题",
+    "comment": "评论",
+    "organization": "组织",
+    "invitation": "邀请",
+    "membership": "成员",
+    "export": "导出",
+    "backup": "备份",
+    "webhook": "Webhook",
+}
+_WECOM_FIELD_LABELS = {
+    "id": "ID",
+    "name": "名称",
+    "description": "描述",
+    "status": "状态",
+    "stage": "阶段",
+    "state": "状态",
+    "assignee": "负责人",
+    "owner": "所有者",
+    "created_date": "创建日期",
+    "updated_date": "更新日期",
+    "assignee_updated_date": "负责人更新日期",
+    "task_id": "任务 ID",
+    "task_name": "任务名称",
+    "project_id": "项目 ID",
+    "project_name": "项目名称",
+    "type": "类型",
+    "dimension": "维度",
+    "mode": "模式",
+    "media_type": "媒体类型",
+    "subset": "子集",
+    "organization": "组织",
+    "organization_id": "组织 ID",
+    "validation_mode": "验证模式",
+    "resolved": "是否解决",
+    "message": "消息",
+    "role": "角色",
+}
+_WECOM_DETAIL_VALUE_LABELS = {
+    "status": {
+        "annotation": "标注",
+        "validation": "验证",
+        "completed": "已完成",
+        "succeeded": "成功",
+        "failed": "失败",
+    },
+    "stage": {
+        "annotation": "标注",
+        "validation": "验证",
+        "acceptance": "验收",
+    },
+    "state": {
+        "new": "新建",
+        "in progress": "进行中",
+        "rejected": "已拒绝",
+        "completed": "已完成",
+    },
+}
 
 
 def get_sender(instance) -> dict:
@@ -108,6 +175,37 @@ def _append_wecom_markdown_detail(lines: list[str], label: str, value) -> None:
     lines.append(f"> {label}：`{_format_wecom_markdown_value(value)}`")
 
 
+def _format_wecom_event(event: str) -> str:
+    if event == "ping":
+        return "连通性测试"
+
+    action, separator, resource_name = event.partition(":")
+    if not separator:
+        return event
+
+    action_label = _WECOM_ACTION_LABELS.get(action)
+    resource_label = _WECOM_RESOURCE_LABELS.get(resource_name)
+    if action_label is None or resource_label is None:
+        return event
+
+    return f"{action_label}{resource_label}"
+
+
+def _translate_wecom_detail_value(field: str, value):
+    if field == "lightweight" and isinstance(value, bool):
+        return "是" if value else "否"
+
+    labels = _WECOM_DETAIL_VALUE_LABELS.get(field)
+    if labels is None:
+        return value
+
+    return labels.get(str(value), value)
+
+
+def _format_wecom_changed_fields(before_update: dict) -> str:
+    return "、".join(_WECOM_FIELD_LABELS.get(str(field), str(field)) for field in before_update)
+
+
 def _get_wecom_resource(payload: dict, event: str) -> tuple[str, dict | None]:
     if event == "ping":
         resource_name = "webhook"
@@ -134,7 +232,7 @@ def _get_wecom_sender_name(payload: dict):
     return full_name or sender.get("id")
 
 
-def _get_wecom_resource_url(resource: dict | None) -> str | None:
+def _get_wecom_resource_url(resource_name: str, resource: dict | None) -> str | None:
     if resource is None or not isinstance(resource.get("url"), str):
         return None
 
@@ -147,7 +245,33 @@ def _get_wecom_resource_url(resource: dict | None) -> str | None:
     if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
         return None
 
-    return quote(url, safe=":/?&=#%+,-._~")
+    resource_id = str(resource.get("id", ""))
+    task_id = str(resource.get("task_id", ""))
+    if resource_name == "project" and resource_id.isdecimal():
+        page_path = f"/projects/{resource_id}"
+    elif resource_name == "task" and resource_id.isdecimal():
+        page_path = f"/tasks/{resource_id}"
+    elif resource_name == "job" and resource_id.isdecimal() and task_id.isdecimal():
+        page_path = f"/tasks/{task_id}/jobs/{resource_id}"
+    elif resource_name == "invitation":
+        page_path = "/invitations"
+    elif resource_name in {"organization", "membership"}:
+        page_path = "/organization"
+    else:
+        return quote(url, safe=":/?&=#%+,-._~")
+
+    path_prefix, separator, _ = parsed_url.path.partition("/api/")
+    if not separator:
+        path_prefix = ""
+
+    # The serializer URL is request-derived. Replace only its route so deployments keep the
+    # externally visible scheme, host, port, query, and optional path prefix.
+    page_url = parsed_url._replace(
+        path=f"{path_prefix.rstrip('/')}{page_path}",
+        params="",
+        fragment="",
+    ).geturl()
+    return quote(page_url, safe=":/?&=#%+,-._~")
 
 
 def _build_wecom_payload(payload: dict) -> dict:
@@ -155,10 +279,10 @@ def _build_wecom_payload(payload: dict) -> dict:
     resource_name, resource = _get_wecom_resource(payload, event)
 
     lines = ["### CVAT 通知"]
-    _append_wecom_markdown_detail(lines, "事件", event)
+    _append_wecom_markdown_detail(lines, "事件", _format_wecom_event(event))
 
     if resource_name:
-        resource_label = resource_name
+        resource_label = _WECOM_RESOURCE_LABELS.get(resource_name, resource_name)
         if resource is not None and resource.get("id") is not None:
             resource_label = f"{resource_label} #{resource['id']}"
         _append_wecom_markdown_detail(lines, "资源", resource_label)
@@ -171,12 +295,13 @@ def _build_wecom_payload(payload: dict) -> dict:
             ("stage", "阶段"),
             ("state", "进度"),
         ):
-            _append_wecom_markdown_detail(lines, label, resource.get(key))
+            value = _translate_wecom_detail_value(key, resource.get(key))
+            _append_wecom_markdown_detail(lines, label, value)
     else:
         target = payload.get("target")
         target_id = payload.get("target_id")
         if target is not None:
-            target_label = str(target)
+            target_label = _WECOM_RESOURCE_LABELS.get(str(target), str(target))
             if target_id is not None:
                 target_label = f"{target_label} #{target_id}"
             _append_wecom_markdown_detail(lines, "目标", target_label)
@@ -190,15 +315,20 @@ def _build_wecom_payload(payload: dict) -> dict:
             ("rq_id", "请求 ID"),
             ("message", "消息"),
         ):
-            _append_wecom_markdown_detail(lines, label, payload.get(key))
+            value = _translate_wecom_detail_value(key, payload.get(key))
+            _append_wecom_markdown_detail(lines, label, value)
 
     _append_wecom_markdown_detail(lines, "操作人", _get_wecom_sender_name(payload))
 
     before_update = payload.get("before_update")
     if isinstance(before_update, dict) and before_update:
-        _append_wecom_markdown_detail(lines, "变更字段", ", ".join(before_update))
+        _append_wecom_markdown_detail(
+            lines,
+            "变更字段",
+            _format_wecom_changed_fields(before_update),
+        )
 
-    if resource_url := _get_wecom_resource_url(resource):
+    if resource_url := _get_wecom_resource_url(resource_name, resource):
         lines.append(f"[查看详情]({resource_url})")
 
     content = _truncate_utf8("\n".join(lines), _WECOM_MARKDOWN_CONTENT_LIMIT)

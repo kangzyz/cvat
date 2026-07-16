@@ -61,14 +61,43 @@ class TestPerformWebhookRequest(TestCase):
         assert request_kwargs["headers"] == {}
         assert request_kwargs["json"]["msgtype"] == "markdown"
         content = request_kwargs["json"]["markdown"]["content"]
-        assert "事件：`update:task`" in content
-        assert "资源：`task #42`" in content
+        assert "事件：`更新任务`" in content
+        assert "资源：`任务 #42`" in content
         assert "名称：`training 'set' ‹@all› second line`" in content
-        assert "状态：`annotation`" in content
+        assert "状态：`标注`" in content
         assert "操作人：`alice`" in content
-        assert "变更字段：`name, status`" in content
-        assert "[查看详情](https://cvat.example/api/tasks/42)" in content
+        assert "变更字段：`名称、状态`" in content
+        assert "[查看详情](https://cvat.example/tasks/42)" in content
         assert "<@all>" not in content
+
+    def test_wecom_job_event_uses_chinese_page_values_and_frontend_url(self) -> None:
+        self.webhook.target_url = self.WECOM_URL
+        event_payload = {
+            "event": "update:job",
+            "job": {
+                "id": 1,
+                "task_id": 7,
+                "status": "validation",
+                "stage": "validation",
+                "state": "completed",
+                "url": "https://123.123.123.123:8080/api/jobs/1",
+            },
+            "before_update": {"state": "in progress", "updated_date": "old date"},
+            "sender": {"username": "admin"},
+        }
+
+        status_code, _response = perform_webhook_request(self.webhook, event_payload)
+
+        assert status_code == HTTPStatus.OK
+        content = self.session.post.call_args.kwargs["json"]["markdown"]["content"]
+        assert "事件：`更新作业`" in content
+        assert "资源：`作业 #1`" in content
+        assert "状态：`验证`" in content
+        assert "阶段：`验证`" in content
+        assert "进度：`已完成`" in content
+        assert "操作人：`admin`" in content
+        assert "变更字段：`状态、更新日期`" in content
+        assert "[查看详情](https://123.123.123.123:8080/tasks/7/jobs/1)" in content
 
     def test_wecom_markdown_content_has_utf8_byte_limit(self) -> None:
         self.webhook.target_url = self.WECOM_URL
@@ -91,7 +120,7 @@ class TestPerformWebhookRequest(TestCase):
 
         content = self.session.post.call_args.kwargs["json"]["markdown"]["content"]
         assert len(content.encode("utf-8")) <= 4096
-        assert content.startswith("### CVAT 通知\n> 事件：`update:task`")
+        assert content.startswith("### CVAT 通知\n> 事件：`更新任务`")
         assert content.endswith("…")
 
     def test_wecom_nonzero_errcode_is_bad_gateway(self) -> None:
