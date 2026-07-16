@@ -3,8 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-import itertools
 import io
+import itertools
 import os
 import os.path as osp
 import re
@@ -48,8 +48,7 @@ from rq.job import Job as RQJob
 import cvat.apps.dataset_manager as dm
 import cvat.apps.dataset_manager.views  # pylint: disable=unused-import
 from cvat.apps.dataset_manager.serializers import DatasetFormatsSerializer
-from cvat.apps.engine import backup
-from cvat.apps.engine import data_analytics
+from cvat.apps.engine import backup, data_analytics
 from cvat.apps.engine.background import BackupImporter, DatasetImporter, TaskCreator
 from cvat.apps.engine.cache import (
     CacheTooLargeDataError,
@@ -61,7 +60,6 @@ from cvat.apps.engine.cloud_provider import Status as CloudStorageStatus
 from cvat.apps.engine.cloud_provider import db_storage_to_storage_instance
 from cvat.apps.engine.exceptions import CloudStorageMissingError
 from cvat.apps.engine.media_extractors import get_mime, get_video_chapters
-from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.media_io.audio_provider import (
     IAudioProvider,
     JobAudioProvider,
@@ -73,6 +71,7 @@ from cvat.apps.engine.media_io.frame_provider import (
     TaskFrameProvider,
 )
 from cvat.apps.engine.media_io.media_provider import DataWithMeta, PreviewNotAvailable
+from cvat.apps.engine.mime_types import mimetypes
 from cvat.apps.engine.mixins import BackupMixin, DatasetMixin, PartialUpdateModelMixin, UploadMixin
 from cvat.apps.engine.model_utils import bulk_create
 from cvat.apps.engine.models import (
@@ -619,7 +618,9 @@ class ServerViewSet(viewsets.ViewSet):
 
         total = queryset.count()
         offset = (page - 1) * page_size
-        serializer = FrameExtractionFrameSerializer(queryset[offset : offset + page_size], many=True)
+        serializer = FrameExtractionFrameSerializer(
+            queryset[offset : offset + page_size], many=True
+        )
         return Response(
             {
                 "count": total,

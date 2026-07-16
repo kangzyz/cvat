@@ -7944,8 +7944,9 @@ class DataAnalyticsAPITestCase(ApiTestBase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_share_video_scan_filters_by_extension_and_reuses_cache(self):
-        with tempfile.TemporaryDirectory() as temp_dir, override_settings(
-            SHARE_ROOT=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            override_settings(SHARE_ROOT=Path(temp_dir)),
         ):
             share_root = Path(temp_dir)
             nested_dir = share_root / "nested"

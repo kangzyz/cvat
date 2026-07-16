@@ -324,7 +324,7 @@
     white-space: pre-wrap;
 }
 
-@media screen and (max-width: 992px) {
+@media screen and (width <= 992px) {
     .cvat-analytics-inner {
         padding-right: $grid-unit-size * 2;
         padding-left: $grid-unit-size * 2;
@@ -355,7 +355,7 @@
     }
 }
 
-@media screen and (max-width: 576px) {
+@media screen and (width <= 576px) {
     .cvat-analytics-metric-strip,
     .cvat-analytics-split-section,
     .cvat-analytics-fact-grid {

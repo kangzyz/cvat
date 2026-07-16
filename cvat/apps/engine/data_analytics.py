@@ -117,9 +117,7 @@ def _original_data_sources(
 
     linked_dataset_prefix = ""
     if task.source_frame_extraction_id:
-        linked_dataset_prefix = _normalize_prefix(
-            task.source_frame_extraction.output_share_path
-        )
+        linked_dataset_prefix = _normalize_prefix(task.source_frame_extraction.output_share_path)
         if linked_dataset_prefix:
             append_source("frame_extraction_dataset", f"{linked_dataset_prefix}/")
 
@@ -156,8 +154,7 @@ def _original_data_sources(
         append_source("client_file", _source_item_name(client_file.file.name))
     for server_file, normalized_path in ordinary_server_files:
         if server_file.endswith(("/", "\\")) and any(
-            prefix.startswith(f"{normalized_path}/")
-            for prefix in matched_dataset_prefixes
+            prefix.startswith(f"{normalized_path}/") for prefix in matched_dataset_prefixes
         ):
             continue
         append_source("server_file", _source_item_name(server_file))
@@ -271,9 +268,7 @@ def link_task_to_frame_extraction(task: models.Task, server_files: list[str]) ->
     )
     for session in saved:
         prefix = _normalize_prefix(session.output_share_path)
-        if prefix and any(
-            f == prefix or f.startswith(prefix + "/") for f in candidates
-        ):
+        if prefix and any(f == prefix or f.startswith(prefix + "/") for f in candidates):
             task.source_frame_extraction_id = session.id
             return
 
@@ -288,21 +283,16 @@ def _session_usage(session: models.FrameExtractionSession) -> list[dict[str, Any
 def build_overview() -> dict[str, Any]:
     sessions = models.FrameExtractionSession.objects
     session_status = {
-        row["status"]: row["count"]
-        for row in sessions.values("status").annotate(count=Count("id"))
+        row["status"]: row["count"] for row in sessions.values("status").annotate(count=Count("id"))
     }
-    frame_totals = sessions.aggregate(
-        kept=Sum("kept_frames"), duplicate=Sum("duplicate_frames")
-    )
+    frame_totals = sessions.aggregate(kept=Sum("kept_frames"), duplicate=Sum("duplicate_frames"))
 
     jobs = models.Job.objects
     job_state = {
-        row["state"]: row["count"]
-        for row in jobs.values("state").annotate(count=Count("id"))
+        row["state"]: row["count"] for row in jobs.values("state").annotate(count=Count("id"))
     }
     job_stage = {
-        row["stage"]: row["count"]
-        for row in jobs.values("stage").annotate(count=Count("id"))
+        row["stage"]: row["count"] for row in jobs.values("stage").annotate(count=Count("id"))
     }
     total_jobs = jobs.count()
     completed_jobs = jobs.filter(state=_COMPLETED, stage=_ACCEPTANCE).count()
@@ -312,9 +302,7 @@ def build_overview() -> dict[str, Any]:
         "frame_extraction": {
             "total": sessions.count(),
             "by_status": session_status,
-            "saved_datasets": session_status.get(
-                models.FrameExtractionStatus.SAVED.value, 0
-            ),
+            "saved_datasets": session_status.get(models.FrameExtractionStatus.SAVED.value, 0),
             "kept_frames": frame_totals["kept"] or 0,
             "duplicate_frames": frame_totals["duplicate"] or 0,
         },
@@ -335,9 +323,7 @@ def build_overview() -> dict[str, Any]:
     }
 
 
-def build_projects_list(
-    search: str = "", page: int = 1, page_size: int = 20
-) -> dict[str, Any]:
+def build_projects_list(search: str = "", page: int = 1, page_size: int = 20) -> dict[str, Any]:
     queryset = models.Project.objects.select_related("owner", "organization")
     if search:
         queryset = queryset.filter(name__icontains=search)
@@ -364,15 +350,11 @@ def build_projects_list(
             "id": project.id,
             "name": project.name,
             "owner": project.owner.username if project.owner_id else None,
-            "organization": project.organization.slug
-            if project.organization_id
-            else None,
+            "organization": project.organization.slug if project.organization_id else None,
             "tasks_count": project.tasks_count,
             "jobs_count": project.jobs_count,
             "completed_jobs": project.completed_jobs,
-            "completion_percent": _completion_percent(
-                project.completed_jobs, project.jobs_count
-            ),
+            "completion_percent": _completion_percent(project.completed_jobs, project.jobs_count),
             "labels_count": project.labels_count,
             "annotations": annotation_totals.get(project.id, 0),
         }
@@ -408,25 +390,19 @@ def build_project_detail(project: models.Project) -> dict[str, Any]:
             ),
             "annotations": task_annotations.get(task.id, 0),
             "source_frame_extraction": (
-                str(task.source_frame_extraction_id)
-                if task.source_frame_extraction_id
-                else None
+                str(task.source_frame_extraction_id) if task.source_frame_extraction_id else None
             ),
-            "original_data_sources": _original_data_sources(
-                task, saved_dataset_prefixes
-            ),
+            "original_data_sources": _original_data_sources(task, saved_dataset_prefixes),
         }
         for task in tasks
     ]
 
     jobs = models.Job.objects.filter(segment__task__project_id=project.id)
     job_state = {
-        row["state"]: row["count"]
-        for row in jobs.values("state").annotate(count=Count("id"))
+        row["state"]: row["count"] for row in jobs.values("state").annotate(count=Count("id"))
     }
     job_stage = {
-        row["stage"]: row["count"]
-        for row in jobs.values("stage").annotate(count=Count("id"))
+        row["stage"]: row["count"] for row in jobs.values("stage").annotate(count=Count("id"))
     }
     total_jobs = sum(job_state.values())
     completed_jobs = jobs.filter(state=_COMPLETED, stage=_ACCEPTANCE).count()

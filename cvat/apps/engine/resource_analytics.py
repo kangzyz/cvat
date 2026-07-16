@@ -293,12 +293,10 @@ def _job_progress(jobs) -> dict[str, Any]:
         state=models.StateChoice.COMPLETED.value,
     ).count()
     by_stage = {
-        row["stage"]: row["count"]
-        for row in jobs.values("stage").annotate(count=Count("id"))
+        row["stage"]: row["count"] for row in jobs.values("stage").annotate(count=Count("id"))
     }
     by_state = {
-        row["state"]: row["count"]
-        for row in jobs.values("state").annotate(count=Count("id"))
+        row["state"]: row["count"] for row in jobs.values("state").annotate(count=Count("id"))
     }
     return {
         "total": total,
@@ -324,9 +322,7 @@ def _progress(resource: Resource) -> dict[str, Any]:
 
     return {
         "mode": "jobs",
-        "annotation_jobs": _job_progress(
-            jobs.filter(type=models.JobType.ANNOTATION.value)
-        ),
+        "annotation_jobs": _job_progress(jobs.filter(type=models.JobType.ANNOTATION.value)),
         "ground_truth_jobs": ground_truth,
         "consensus_jobs": consensus,
         "job": None,
@@ -492,7 +488,9 @@ def _task_children(task: models.Task) -> tuple[int, list[dict[str, Any]]]:
     return children_count, rows
 
 
-def _job_children(job: models.Job, report: QualityReport | None) -> tuple[int, list[dict[str, Any]]]:
+def _job_children(
+    job: models.Job, report: QualityReport | None
+) -> tuple[int, list[dict[str, Any]]]:
     issues = {
         row["frame"]: {"issue_count": row["count"], "open_issues": row["open"]}
         for row in models.Issue.objects.filter(job_id=job.id)
@@ -607,19 +605,25 @@ def _frame_density(resource: Resource, job_ids: list[int], report: QualityReport
         for item in queryset.values("frame").annotate(count=Count("id")):
             if (index := bucket_index(item["frame"])) is not None:
                 rows[index]["object_count"] += item["count"]
-    for item in models.LabeledInterval.objects.filter(job_id=resource.id).values("start").annotate(
-        count=Count("id")
+    for item in (
+        models.LabeledInterval.objects.filter(job_id=resource.id)
+        .values("start")
+        .annotate(count=Count("id"))
     ):
         if (index := bucket_index(item["start"])) is not None:
             rows[index]["object_count"] += item["count"]
-    for item in models.Issue.objects.filter(job_id=resource.id, resolved=False).values(
-        "frame"
-    ).annotate(count=Count("id")):
+    for item in (
+        models.Issue.objects.filter(job_id=resource.id, resolved=False)
+        .values("frame")
+        .annotate(count=Count("id"))
+    ):
         if (index := bucket_index(item["frame"])) is not None:
             rows[index]["issue_count"] += item["count"]
     if report:
-        for item in AnnotationConflict.objects.filter(report_id=report.id).values("frame").annotate(
-            count=Count("id")
+        for item in (
+            AnnotationConflict.objects.filter(report_id=report.id)
+            .values("frame")
+            .annotate(count=Count("id"))
         ):
             if (index := bucket_index(item["frame"])) is not None:
                 rows[index]["conflict_count"] += item["count"]
@@ -717,15 +721,21 @@ def contributor_user_filter(
     if request.user.is_superuser or request.user.is_staff:
         forced_user_id = None
     elif getattr(resource, "organization_id", None):
-        membership = Membership.objects.filter(
-            organization_id=resource.organization_id,
-            user_id=request.user.id,
-            is_active=True,
-        ).only("role").first()
+        membership = (
+            Membership.objects.filter(
+                organization_id=resource.organization_id,
+                user_id=request.user.id,
+                is_active=True,
+            )
+            .only("role")
+            .first()
+        )
         full_roles = {Membership.OWNER, Membership.MAINTAINER, Membership.SUPERVISOR}
         forced_user_id = None if membership and membership.role in full_roles else request.user.id
     else:
-        forced_user_id = None if request.user.id in _resource_owner_ids(resource) else request.user.id
+        forced_user_id = (
+            None if request.user.id in _resource_owner_ids(resource) else request.user.id
+        )
 
     if forced_user_id is not None:
         if requested_user_id is not None and requested_user_id != forced_user_id:

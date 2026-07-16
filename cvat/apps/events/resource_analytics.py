@@ -7,7 +7,8 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone as datetime_timezone
+from datetime import datetime, timedelta
+from datetime import timezone as datetime_timezone
 from typing import Any
 
 import clickhouse_connect
@@ -550,15 +551,15 @@ def build_events_page(
                     "duration": duration,
                     "end_timestamp": row["timestamp"] + timedelta(milliseconds=duration),
                     "working_time_ms": duration if scope == "send:working_time" else 0,
-                    "created_objects": count
-                    if is_logical_object_scope and scope.startswith("create:")
-                    else 0,
-                    "updated_objects": count
-                    if is_logical_object_scope and scope.startswith("update:")
-                    else 0,
-                    "deleted_objects": count
-                    if is_logical_object_scope and scope.startswith("delete:")
-                    else 0,
+                    "created_objects": (
+                        count if is_logical_object_scope and scope.startswith("create:") else 0
+                    ),
+                    "updated_objects": (
+                        count if is_logical_object_scope and scope.startswith("update:") else 0
+                    ),
+                    "deleted_objects": (
+                        count if is_logical_object_scope and scope.startswith("delete:") else 0
+                    ),
                     "job_type": (job_details or {}).get("type") or job_payload.get("type"),
                     "assignee": (job_details or {}).get("assignee")
                     or _payload_assignee(job_payload.get("assignee")),
