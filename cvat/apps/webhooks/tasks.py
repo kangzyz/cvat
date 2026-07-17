@@ -15,6 +15,7 @@ def send_webhook(
     webhook_id: int,
     payload: dict,
     redelivery: bool = False,
+    presentation: dict | None = None,
 ) -> WebhookDelivery | None:
     webhook = Webhook.objects.filter(pk=webhook_id, is_active=True).first()
     if webhook is None:
@@ -25,6 +26,7 @@ def send_webhook(
         payload=payload,
         attempt=get_current_job_attempt(),
         redelivery=redelivery,
+        presentation=presentation,
     )
 
     if delivery.status_code >= 500 or delivery.status_code in (

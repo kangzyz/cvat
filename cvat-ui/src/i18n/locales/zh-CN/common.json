@@ -160,6 +160,51 @@
         "emailRequired": "请输入邮箱地址",
         "usernameRequired": "请输入用户名"
     },
+    "webhooks": {
+        "setup": {
+            "title": "设置 Webhook",
+            "targetURL": "目标 URL",
+            "targetURLRequired": "请输入目标 URL",
+            "description": "描述",
+            "project": "项目",
+            "contentType": "内容类型",
+            "secret": "密钥",
+            "enableSSL": "启用 SSL",
+            "sslHelp": "发送消息时验证目标服务器的 SSL 证书",
+            "active": "启用",
+            "activeHelp": "仅启用状态的 Webhook 会接收事件",
+            "eventScope": "订阅事件",
+            "eventsMethodRequired": "请选择事件范围",
+            "sendAllEvents": "发送所有事件",
+            "customEvents": "自定义事件",
+            "customEventsHelp": "按资源选择需要监听的动作，只有勾选的具体事件会触发推送。",
+            "selectAll": "全选",
+            "selectAtLeastOneEvent": "请至少选择一个事件",
+            "selectedEventCount": "{{selected}}/{{total}}",
+            "updatedSuccess": "Webhook 已成功更新",
+            "createdSuccess": "Webhook 已成功添加"
+        },
+        "events": {
+            "actions": {
+                "create": "创建",
+                "update": "更新",
+                "delete": "删除"
+            },
+            "resources": {
+                "backup": "备份",
+                "comment": "评论",
+                "export": "导出",
+                "invitation": "邀请",
+                "issue": "问题",
+                "job": "作业",
+                "label": "标签",
+                "membership": "成员关系",
+                "organization": "组织",
+                "project": "项目",
+                "task": "任务"
+            }
+        }
+    },
     "opencv": {
         "trackerMilDescription": "轻量级客户端算法，适合跟踪简单对象"
     }

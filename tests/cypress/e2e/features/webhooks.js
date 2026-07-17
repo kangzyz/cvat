@@ -18,7 +18,7 @@ context('Webhooks pipeline.', () => {
         enableSSL: true,
         isActive: true,
         events: [
-            'project', 'job', 'task',
+            'update:project', 'update:job', 'update:task',
         ],
     };
     const projectWebhookParams = {
@@ -35,7 +35,7 @@ context('Webhooks pipeline.', () => {
         enableSSL: true,
         isActive: false,
         events: [
-            'job',
+            'update:job',
         ],
     };
 
@@ -78,6 +78,14 @@ context('Webhooks pipeline.', () => {
                 cy.contains(orgWebhookParams.description).should('exist');
                 cy.contains(orgWebhookParams.targetURL).should('exist');
             });
+
+            cy.openWebhookActions(orgWebhookParams.description);
+            cy.contains('[role="menuitem"]', 'Edit').click();
+            cy.get('.cvat-webhook-events-custom-radio [type="radio"]').should('be.checked');
+            cy.get('[data-event="update:job"] [type="checkbox"]').should('be.checked');
+            cy.get('[data-event="create:job"] [type="checkbox"]').should('not.be.checked');
+            cy.get('[data-event="delete:job"] [type="checkbox"]').should('not.be.checked');
+            cy.get('.cvat-webhooks-go-back').click();
 
             cy.editWebhook(orgWebhookParams.description, newOrganizationWebhookParams);
             cy.get('.cvat-webhooks-list').within(() => {

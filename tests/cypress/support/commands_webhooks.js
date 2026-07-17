@@ -47,22 +47,23 @@ Cypress.Commands.add('setUpWebhook', (webhookData) => {
     if (!webhookData.isActive) cy.get('#isActive').uncheck();
 
     if (webhookData.events && Array.isArray(webhookData.events)) {
-        cy.get('#eventsMethod')
-            .within(() => {
-                cy.contains('Select individual events').click();
-            });
+        cy.get('.cvat-webhook-events-custom-radio').click();
         cy.get('.cvat-setup-webhook-content').within(() => {
             cy.get('.cvat-webhook-detailed-events').within(() => {
-                cy.get('[type="checkbox"]').uncheck();
+                cy.get('.cvat-webhook-event-option [type="checkbox"]').uncheck();
                 for (const event of webhookData.events) {
-                    cy.contains(event).click();
+                    if (event.includes(':')) {
+                        cy.get(`[data-event="${event}"] [type="checkbox"]`).check();
+                    } else {
+                        cy.get(`[data-resource="${event}"]`)
+                            .find('.cvat-webhook-event-group-select-all [type="checkbox"]')
+                            .check();
+                    }
                 }
             });
         });
     }
-    cy.get('.cvat-setup-webhook-content').within(() => {
-        cy.contains('Submit').click();
-    });
+    cy.get('.cvat-submit-webhook-button').click();
 });
 
 Cypress.Commands.add('openOrganizationWebhooks', () => {

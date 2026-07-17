@@ -45,14 +45,23 @@ def select_webhooks(
 
 
 def redeliver(webhook: Webhook, data: dict) -> None:
-    add_to_queue(webhook=webhook, payload=data, redelivery=True)
+    # Manual redelivery is an explicit administrator action: it bypasses milestone suppression
+    # but still rebuilds provider presentation (e.g. a fresh Task progress snapshot).
+    plan = utils.plan_wecom_delivery(webhook, data, redelivery=True)
+    add_to_queue(webhook=webhook, payload=data, redelivery=True, presentation=plan.presentation)
 
 
 def send_webhook(
-    webhook: Webhook, payload: dict, attempt: int, redelivery: bool = False
+    webhook: Webhook,
+    payload: dict,
+    attempt: int,
+    redelivery: bool = False,
+    presentation: dict | None = None,
 ) -> WebhookDelivery:
     start = time.perf_counter()
-    status_code, response = utils.perform_webhook_request(webhook=webhook, payload=payload)
+    status_code, response = utils.perform_webhook_request(
+        webhook=webhook, payload=payload, presentation=presentation, redelivery=redelivery
+    )
     request_duration = int((time.perf_counter() - start) * 1000)
 
     return WebhookDelivery.objects.create(
